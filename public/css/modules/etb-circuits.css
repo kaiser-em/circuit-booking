@@ -102,7 +102,6 @@
 /* Section Formulaire — Révélée après sélection véhicule (étape 1b) */
 .co-booking-form-reveal {
     width: 100% !important;
-    max-width: 720px !important;
     margin: 50px auto 0 !important;
     /* Animation de révélation préparée pour étape 1b */
     opacity: 1;
@@ -3273,4 +3272,53 @@
 
 .etb-step-photo-premium img {
     animation: etbImageFadeIn 0.6s ease-out both;
+}
+/* ==========================================================================
+   BOOKING LAYOUT (STYLE NEXORA / PREMIUM)
+   ========================================================================== */
+.etb-booking-layout {
+    display: grid !important;
+    grid-template-columns: 1.2fr 0.8fr !important;
+    gap: 40px !important;
+    align-items: start !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding-top: 30px;
+}
+.etb-booking-main { width: 100% !important; }
+.etb-booking-main .etb-booking-widget {
+    padding: 0 !important; border: none !important; box-shadow: none !important; background: transparent !important;
+}
+.etb-booking-main .etb-progress-bar {
+    background: #ffffff !important; padding: 20px 24px !important; border-radius: 16px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important; border: 1px solid #f1e9e0 !important; margin-bottom: 30px !important;
+}
+.etb-booking-main .etb-step {
+    background: #ffffff !important; padding: 30px !important; border-radius: 16px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important; border: 1px solid #f1e9e0 !important;
+}
+.etb-booking-sidebar { width: 100% !important; }
+.etb-sidebar-sticky {
+    position: sticky !important; top: 30px !important; background: #ffffff !important; border-radius: 16px !important; padding: 24px !important; box-shadow: 0 10px 40px rgba(91, 53, 22, 0.08) !important; border: 1px solid #ebd9cc !important;
+}
+.etb-sidebar-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important; font-size: 18px !important; font-weight: 700 !important; color: var(--etb-theme-secondary, #5b3516) !important; margin: 0 0 20px 0 !important; padding-bottom: 16px !important; border-bottom: 1px solid #f1f5f9 !important;
+}
+.etb-sidebar-sticky .etb-mission-card {
+    background: transparent !important; border: none !important; padding: 0 0 20px 0 !important; margin: 0 0 20px 0 !important; border-bottom: 1px dashed #ebd9cc !important; box-shadow: none !important;
+}
+.etb-summary-receipt { margin-bottom: 24px !important; }
+.etb-summary-receipt #etb-summary-text { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+.etb-summary-receipt .etb-summary-row { display: flex !important; justify-content: space-between !important; font-size: 14px !important; color: #475569 !important; margin: 0 !important; }
+.etb-summary-receipt .etb-summary-row strong { color: var(--etb-theme-secondary, #5b3516) !important; font-weight: 700 !important; }
+.etb-summary-receipt .etb-summary-row span { color: #64748b !important; }
+.etb-summary-receipt .etb-summary-card { background: transparent !important; color: inherit !important; padding: 0 !important; margin: 0 !important; }
+.etb-submit-button {
+    width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 16px 24px !important; border-radius: 12px !important; background: var(--etb-theme-primary, #ba6827) !important; color: #ffffff !important; border: none !important; font-size: 15px !important; font-weight: 700 !important; cursor: pointer !important; transition: all 0.3s ease !important;
+}
+.etb-submit-button .etb-submit-price { font-size: 18px !important; background: rgba(255,255,255,0.2) !important; padding: 4px 12px !important; border-radius: 8px !important; }
+.etb-submit-button:hover { background: #a3591f !important; transform: translateY(-2px) !important; box-shadow: 0 8px 20px rgba(186, 104, 39, 0.3) !important; }
+@media (max-width: 992px) {
+    .etb-booking-layout { grid-template-columns: 1fr !important; gap: 24px !important; }
+    .etb-booking-sidebar { order: -1 !important; }
+    .etb-sidebar-sticky { position: static !important; padding: 16px !important; }
+    .etb-booking-main .etb-step { padding: 20px !important; }
 }
