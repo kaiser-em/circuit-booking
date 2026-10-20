@@ -1280,6 +1280,34 @@
                 2: 'Please complete all required fields before continuing.'
             };
 
+                        // 🔧 Mettre à jour la carte de récapitulatif
+            const updateReviewCard = () => {
+                const dateVal = root.querySelector('input[name="etb_date"]')?.value;
+                const timeVal = root.querySelector('input[name="etb_time"]')?.value;
+                const adults = root.querySelector('input[name="etb_adults"]')?.value || 1;
+                const children = root.querySelector('input[name="etb_children"]')?.value || 0;
+
+                const revDatetime = document.getElementById('etb-review-datetime');
+                const revPax = document.getElementById('etb-review-pax');
+
+                if (revDatetime) {
+                    if (dateVal && timeVal) {
+                        // Formater la date proprement (ex: Oct 20, 2026)
+                        const dateObj = new Date(dateVal);
+                        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        revDatetime.textContent = `${formattedDate} at ${timeVal}`;
+                    } else {
+                        revDatetime.textContent = 'Not set';
+                    }
+                }
+
+                if (revPax) {
+                    let paxStr = `${adults} Adult(s)`;
+                    if (parseInt(children) > 0) paxStr += `, ${children} Child(ren)`;
+                    revPax.textContent = paxStr;
+                }
+            };
+
                         // Positionne la barre de progression et l'état visuel des étapes
             const setActiveStep = (stepNum, skipScroll = false) => {
                 // Barre de progression
@@ -1288,6 +1316,9 @@
                     el.classList.toggle('is-active', s === stepNum);
                     el.classList.toggle('is-complete', s < stepNum);
                 });
+
+                 // 🔧 Met à jour les données du reçu avant d'afficher l'étape
+                updateReviewCard();
 
                 // Bascule des étapes : on masque tout sauf l'étape cible
                 steps.forEach(el => {

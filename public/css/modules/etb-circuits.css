@@ -3322,3 +3322,80 @@
     .etb-sidebar-sticky { position: static !important; padding: 16px !important; }
     .etb-booking-main .etb-step { padding: 20px !important; }
 }
+
+/* ==========================================================================
+   REVIEW CARD (ÉTAPE 3)
+   ========================================================================== */
+.etb-review-card {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-top: 10px !important;
+}
+
+.etb-review-block {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px dashed #cbd5e1 !important;
+}
+
+.etb-review-block:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.etb-review-icon {
+    width: 36px !important;
+    height: 36px !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+    flex-shrink: 0 !important;
+}
+
+.etb-review-icon .dashicons {
+    color: var(--etb-theme-primary, #ba6827) !important;
+    font-size: 18px !important;
+}
+
+.etb-review-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+.etb-review-label {
+    font-size: 12px !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+}
+
+.etb-review-content strong {
+    font-size: 15px !important;
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+}
+
+.etb-review-route {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    margin-top: 2px !important;
+}
+
+.etb-review-route strong {
+    font-weight: 700 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+}

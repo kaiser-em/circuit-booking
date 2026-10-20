@@ -673,7 +673,7 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                             </div>
                         </section>
                         <?php endif; ?>
-                        
+
                         <div class="etb-step-nav">
                             <div class="etb-step-nav-error" data-nav-error="1" style="display:none;"></div>
                             <button type="button" class="etb-btn-next" data-next="2">
@@ -752,19 +752,58 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                         </div>
                     </div>
 
-                    <!-- ÉTAPE 3 -->
+                    <!-- ÉTAPE 3 : RÉCAPITULATIF VISUEL -->
                     <div class="etb-step etb-step-3 is-hidden" data-step="3">
-                        <div style="padding: 20px 0;">
+                        <section class="etb-section">
                             <h2 class="etb-section-title">Review your booking</h2>
-                            <p style="color: #64748b; margin-bottom: 24px;">Please check your selection on the right panel. If everything is correct, click the button below to proceed.</p>
-                            <div class="etb-error-message etb-global-error" id="etb-global-submit-error" style="display:none; margin-bottom: 18px; font-size: 13px; line-height: 1.4;">⚠ Please complete or fix the required information above.</div>
-                            <div class="etb-step-nav etb-step-nav-split" style="border-top: none; padding-top: 0; margin-top: 0;">
+                            
+                            <div class="etb-review-card">
+                            <!-- Bloc Circuit -->
+                                <div class="etb-review-block">
+                                    <div class="etb-review-icon"><span class="dashicons dashicons-location-alt"></span></div>
+                                    <div class="etb-review-content">
+                                        <span class="etb-review-label">Selected Circuit</span>
+                                        <div class="etb-review-route">
+                                            <strong><?php echo esc_html( get_the_title( $circuit_id ) ); ?></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bloc Date & Heure -->
+                                <div class="etb-review-block">
+                                    <div class="etb-review-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+                                    <div class="etb-review-content">
+                                        <span class="etb-review-label">Date & Time</span>
+                                        <strong id="etb-review-datetime">—</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Bloc Passagers -->
+                                <div class="etb-review-block">
+                                    <div class="etb-review-icon"><span class="dashicons dashicons-groups"></span></div>
+                                    <div class="etb-review-content">
+                                        <span class="etb-review-label">Passengers</span>
+                                        <strong id="etb-review-pax">—</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p style="color: #64748b; margin-top: 24px; font-size: 14px;">
+                                By clicking "Confirm Booking", you agree to our terms and conditions. Your driver will be assigned shortly.
+                            </p>
+
+                            <!-- Message d'alerte global -->
+                            <div class="etb-error-message etb-global-error" id="etb-global-submit-error" style="display:none; margin-bottom: 18px; font-size: 13px; line-height: 1.4;">
+                                ⚠ Please complete or fix the required information in the previous steps.
+                            </div>
+                            
+                            <div class="etb-step-nav etb-step-nav-split" style="border-top: none; padding-top: 0; margin-top: 24px;">
                                 <button type="button" class="etb-btn-back" data-back="2">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
                                     <span>Back</span>
                                 </button>
                             </div>
-                        </div>
+                        </section>
                     </div>
                 </form>
             </div> 
