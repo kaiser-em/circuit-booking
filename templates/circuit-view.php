@@ -474,373 +474,167 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                 </div> <!-- Fermeture de .co-left-details -->
     </div> <!-- Fermeture de .co-itinerary-section -->
 
-    <!-- SECTION VÉHICULES (DÉPLACÉE ICI) -->
-    <?php if ( ! empty( $vehicles ) ) : ?>
-    <div class="co-top-vehicles-section">
-        <h2 class="co-section-title"><span class="dashicons dashicons-car"></span> Choose your vehicle</h2>
+    <!-- LAYOUT GLOBAL (VÉHICULES + FORMULAIRE) -->
+    <div class="etb-booking-layout">
         
-        <div class="co-vehicles-grid" id="co-vehicles-grid">
-            <?php foreach ( $vehicles as $vehicle ) : 
-                $base_price    = get_post_meta( $vehicle->ID, '_etb_base_price', true );
-                $hourly_rate   = get_post_meta( $vehicle->ID, '_etb_hourly_rate', true );
-                $pack_10h      = get_post_meta( $vehicle->ID, '_etb_pack_10h', true );
-                $sup_hour_rate = get_post_meta( $vehicle->ID, '_etb_sup_hour_rate', true );
-                $display_price = ( $hourly_rate > 0 ) ? $hourly_rate : $base_price;
-                $max_pax       = get_post_meta( $vehicle->ID, '_etb_max_pax', true ) ?: 1;
-                $max_bag       = get_post_meta( $vehicle->ID, '_etb_max_baggage', true ) ?: 0;
-                $img_url       = get_the_post_thumbnail_url( $vehicle->ID, 'full' ) ?: ( defined('ETB_URL') ? ETB_URL . 'public/images/default-car.png' : '' );
-                $hover_img     = get_post_meta( $vehicle->ID, '_etb_hover_image', true );
-                $is_featured   = ( get_post_meta( $vehicle->ID, '_etb_vehicle_featured', true ) === '1' );
-            ?>
-            <div class="etb-vehicle-card<?php echo $is_featured ? ' etb-featured' : ''; ?>" 
-                     data-id="<?php echo $vehicle->ID; ?>" 
-                     data-featured="<?php echo $is_featured ? '1' : '0'; ?>"
-                     data-hourly-rate="<?php echo esc_attr( $hourly_rate ); ?>"
-                     data-pack-10h="<?php echo esc_attr( $pack_10h ); ?>"
-                     data-sup-hour-rate="<?php echo esc_attr( $sup_hour_rate ); ?>"
-                     data-base-price="<?php echo esc_attr( $base_price ); ?>"
-                     data-max-pax="<?php echo esc_attr( $max_pax ); ?>" 
-                     data-max-baggage="<?php echo esc_attr( $max_bag ); ?>">
-                    <span class="etb-selection-check"><i class="dashicons dashicons-yes"></i></span>
-                    <?php if ( $is_featured ) : ?>
-                        <span class="etb-featured-badge" aria-label="Véhicule signature">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l2.92 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l7.08-1.01L12 2z"/></svg>
-                            Signature
-                        </span>
-                    <?php endif; ?>
-                    <?php if ( $img_url ) : ?>
-                        <div class="etb-vehicle-image-wrapper">
-                            <img src="<?php echo esc_url( $img_url ); ?>" class="etb-vehicle-image etb-img-static" alt="<?php echo esc_attr( $vehicle->post_title ); ?>">
-                            <?php if ( ! empty( $hover_img ) ) : ?>
-                                <img src="<?php echo esc_url( $hover_img ); ?>" class="etb-vehicle-image etb-img-hover" alt="<?php echo esc_attr( $vehicle->post_title ); ?> (animated)">
-                            <?php endif; ?>
+        <!-- COLONNE GAUCHE : VÉHICULES + FORMULAIRE -->
+        <div class="etb-booking-main">
+            
+            <!-- SECTION VÉHICULES -->
+            <?php if ( ! empty( $vehicles ) ) : ?>
+            <div class="co-top-vehicles-section">
+                <div class="nexora-section-header">
+                    <h2 class="nexora-main-title">Choose your vehicle</h2>
+                    <p class="nexora-sub-title">Premium vehicles for optimal comfort.</p>
+                </div>
+
+                <!-- Filtres (Visuel pour l'instant) -->
+                <div class="nexora-filters">
+                    <button class="nexora-filter-btn active">All</button>
+                    <button class="nexora-filter-btn">Sedan</button>
+                    <button class="nexora-filter-btn">Van</button>
+                    <button class="nexora-filter-btn">SUV</button>
+                </div>
+                
+                <div class="co-vehicles-grid" id="co-vehicles-grid">
+                    <?php foreach ( $vehicles as $vehicle ) : 
+                        $base_price    = get_post_meta( $vehicle->ID, '_etb_base_price', true );
+                        $hourly_rate   = get_post_meta( $vehicle->ID, '_etb_hourly_rate', true );
+                        $pack_10h      = get_post_meta( $vehicle->ID, '_etb_pack_10h', true );
+                        $sup_hour_rate = get_post_meta( $vehicle->ID, '_etb_sup_hour_rate', true );
+                        $display_price = ( $hourly_rate > 0 ) ? $hourly_rate : $base_price;
+                        $max_pax       = get_post_meta( $vehicle->ID, '_etb_max_pax', true ) ?: 1;
+                        $max_bag       = get_post_meta( $vehicle->ID, '_etb_max_baggage', true ) ?: 0;
+                        $img_url       = get_the_post_thumbnail_url( $vehicle->ID, 'full' ) ?: ( defined('ETB_URL') ? ETB_URL . 'public/images/default-car.png' : '' );
+                        $is_featured   = ( get_post_meta( $vehicle->ID, '_etb_vehicle_featured', true ) === '1' );
+                    ?>
+                    <div class="etb-vehicle-card<?php echo $is_featured ? ' etb-featured' : ''; ?>" 
+                             data-id="<?php echo $vehicle->ID; ?>" 
+                             data-hourly-rate="<?php echo esc_attr( $hourly_rate ); ?>"
+                             data-pack-10h="<?php echo esc_attr( $pack_10h ); ?>"
+                             data-sup-hour-rate="<?php echo esc_attr( $sup_hour_rate ); ?>"
+                             data-base-price="<?php echo esc_attr( $base_price ); ?>"
+                             data-max-pax="<?php echo esc_attr( $max_pax ); ?>" 
+                             data-max-baggage="<?php echo esc_attr( $max_bag ); ?>">
+                            
+                            <span class="etb-selection-check"><i class="dashicons dashicons-yes"></i></span>
+                            
+                            <div class="etb-vehicle-image-wrapper">
+                                <img src="<?php echo esc_url( $img_url ); ?>" class="etb-vehicle-image etb-img-static" alt="<?php echo esc_attr( $vehicle->post_title ); ?>">
+                            </div>
+                            
+                            <div class="etb-card-content">
+                                <h3 class="etb-vehicle-name"><?php echo esc_html( $vehicle->post_title ); ?></h3>
+                                <span class="etb-vehicle-subtitle"><?php echo $is_featured ? 'Signature Collection' : 'Premium Class'; ?></span>
+                                
+                                <div class="etb-vehicle-specs">
+                                    <span class="etb-spec-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" class="etb-ico"><use href="#etb-ico-user"/></svg>
+                                        <?php echo esc_html( $max_pax ); ?> passengers
+                                    </span>
+                                    <span class="etb-spec-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" class="etb-ico"><use href="#etb-ico-luggage"/></svg>
+                                        <?php echo esc_html( $max_bag ); ?> luggage
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="etb-card-footer">
+                                <p class="etb-vehicle-price"><strong><?php echo esc_html( $display_price ); ?> <?php echo esc_html( $currency ); ?></strong> / hour</p>
+                                <?php if ( $is_featured ) : ?>
+                                    <span class="etb-popular-badge">Popular</span>
+                                <?php endif; ?>
+                            </div>
+                            <input type="hidden" name="etb_car_qty[<?php echo $vehicle->ID; ?>]" value="0">
                         </div>
-                    <?php endif; ?>
-                    <h3 class="etb-vehicle-name"><?php echo esc_html( $vehicle->post_title ); ?></h3>
-                    <p class="etb-vehicle-price"><?php echo esc_html( $display_price ); ?> <?php echo esc_html( $currency ); ?> /h</p>
-                    <div class="etb-vehicle-specs">
-                    <span class="etb-spec-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" class="etb-ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-user" xlink:href="#etb-ico-user"/></svg>
-                        <?php echo esc_html( $max_pax ); ?> Max pax
-                    </span>
-                    <span class="etb-spec-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" class="etb-ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-luggage" xlink:href="#etb-ico-luggage"/></svg>
-                        <?php echo esc_html( $max_bag ); ?> Luggage
-                    </span>
-                </div>
-                    <input type="hidden" name="etb_car_qty[<?php echo $vehicle->ID; ?>]" value="0">
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-    <?php endif; ?>
+                    <?php endforeach; ?>
+                </div> <!-- Fin de co-vehicles-grid -->
 
-        <!-- SECTION FORMULAIRE DE RÉSERVATION (LAYOUT 2 COLONNES) -->
-    <div class="co-booking-form-reveal is-hidden" id="etb-booking-form-wrapper">
-        <div class="etb-booking-layout">
+                
+                <!-- BOUTON CONTINUE (Caché par défaut, apparaît au clic sur un véhicule) -->
+                <div class="etb-vehicle-continue-wrap" id="etb-vehicle-continue-wrap" style="display: none;">
+                    <button type="button" class="etb-btn-continue-vehicle" id="etb-btn-continue-vehicle">
+                        <span>Continue to Details</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+            <?php endif; ?>
 
-            <!-- COLONNE GAUCHE : LE TUNNEL (WIZARD) -->
-            <div class="etb-booking-main">
+            <!-- FORMULAIRE (Caché au début, apparaît après sélection) -->
+            <div class="co-booking-form-reveal is-hidden" id="etb-booking-form-wrapper" style="margin-top: 30px;">
                 <form class="etb-booking-widget" id="etb-booking-app" onsubmit="return false;">
                     
-                    <!-- CHAMPS DE SÉCURITÉ -->
-                    <div style="position: absolute !important; left: -9999px !important; top: -9999px !important; opacity: 0 !important; width: 0 !important; height: 0 !important; overflow: hidden !important;" aria-hidden="true">
+                    <div style="position: absolute !important; left: -9999px !important; opacity: 0 !important;" aria-hidden="true">
                         <input type="text" name="etb_hp_email" value="" tabindex="-1" autocomplete="off">
                         <input type="hidden" name="etb_sec_time" value="<?php echo esc_attr( $sec_token['time'] ); ?>">
                         <input type="hidden" name="etb_sec_token" value="<?php echo esc_attr( $sec_token['token'] ); ?>">
                     </div>
 
-                    <!-- Barre de progression -->
                     <div class="etb-progress-bar" id="etb-progress-bar">
                         <div class="etb-progress-step is-active" data-step="1">
-                            <span class="etb-progress-num">1</span>
-                            <span class="etb-progress-label">Trip Details</span>
+                            <span class="etb-progress-num">1</span><span class="etb-progress-label">Trip Details</span>
                         </div>
                         <div class="etb-progress-divider" aria-hidden="true"></div>
                         <div class="etb-progress-step" data-step="2">
-                            <span class="etb-progress-num">2</span>
-                            <span class="etb-progress-label">Your Info</span>
+                            <span class="etb-progress-num">2</span><span class="etb-progress-label">Your Info</span>
                         </div>
                         <div class="etb-progress-divider" aria-hidden="true"></div>
                         <div class="etb-progress-step" data-step="3">
-                            <span class="etb-progress-num">3</span>
-                            <span class="etb-progress-label">Confirm</span>
+                            <span class="etb-progress-num">3</span><span class="etb-progress-label">Confirm</span>
                         </div>
                     </div>
 
                     <!-- ÉTAPE 1 -->
                     <div class="etb-step etb-step-1" data-step="1">
-                        <section class="etb-section">
-                            <h2 class="etb-section-title">Passengers</h2>
-                            <p class="etb-error-message" id="etb-vehicle-selection-error" style="display:none; margin-top: 0; margin-bottom: 16px;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" class="etb-ico etb-ico-alert" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-alert" xlink:href="#etb-ico-alert"/></svg>Please select at least one vehicle before adding passengers.
-                            </p>
-                            <div class="etb-pax-grid">
-                                <?php if ( ( $form_settings['show_adults'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-pax-card">
-                                        <div class="etb-pax-info"><strong>Adults</strong><span>12+ years</span></div>
-                                        <div class="etb-qty-control">
-                                            <button type="button" class="etb-qty-btn etb-minus" aria-label="Decrease">-</button>
-                                            <input type="number" name="etb_adults" value="1" min="1" readonly>
-                                            <button type="button" class="etb-qty-btn etb-plus" aria-label="Increase">+</button>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_children'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-pax-card">
-                                        <div class="etb-pax-info"><strong>Children</strong><span>2-11 years</span></div>
-                                        <div class="etb-qty-control">
-                                            <button type="button" class="etb-qty-btn etb-minus" aria-label="Decrease">-</button>
-                                            <input type="number" name="etb_children" value="0" min="0" readonly>
-                                            <button type="button" class="etb-qty-btn etb-plus" aria-label="Increase">+</button>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <p class="etb-error-message" id="etb-pax-capacity-error" style="display:none;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" class="etb-ico etb-ico-alert" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-alert" xlink:href="#etb-ico-alert"/></svg> Passenger capacity exceeded
-                            </p>
-                        </section>
-
-                        <?php if ( ( $form_settings['show_pickup'] ?? '1' ) !== '0' ) : ?>
-                        <section class="etb-section">
-                           <h2 class="etb-section-title">Itinerary</h2>
-                            <div class="etb-field etb-field-full">
-                                <div class="etb-field-icon-wrapper">
-                                    <span class="dashicons dashicons-location"></span>
-                                    <input type="text" name="etb_pickup_address" id="etb-pickup-address" placeholder="Pickup location (e.g. Airport, Hotel...)" autocomplete="off">
-                                </div>
-                            </div>
-                            <p class="etb-error-message" id="etb-pickup-error" style="display:none;">⚠ Please provide the pickup address.</p>
-                            
-                            <div class="etb-field etb-field-full etb-dropoff-toggle-wrapper">
-                                <label id="etb-dropoff-label" class="etb-toggle-dropoff-label" for="etb-diff-dropoff-cb">
-                                    <input type="checkbox" id="etb-diff-dropoff-cb" class="hidden-input">
-                                    <span class="etb-custom-box"><span class="dashicons dashicons-yes"></span></span>
-                                    <span class="etb-dropoff-label-text">Different drop-off location</span>
-                                </label>
-                            </div>
-                            
-                            <div class="etb-field etb-field-full" id="etb-dropoff-container" style="display: none;">
-                                <div id="etb-dropoff-div" class="etb-field-icon-wrapper">
-                                    <span class="dashicons dashicons-location"></span>
-                                    <input type="text" name="etb_dropoff_info" id="etb-dropoff-info" placeholder="Drop-off location..." autocomplete="off">
-                                </div>
-                            </div>
-                        </section>
-                        <?php endif; ?>
-
-                                                <!-- SECTION : OPTIONS SUPPLÉMENTAIRES (EXTRAS) -->
-                        <?php if ( ( $form_settings['show_extras'] ?? '1' ) !== '0' && ! empty( $extras ) ) : ?>
-                        <section class="etb-section">
-                            <h2 class="etb-section-title">Additional Options</h2>
-                            <div class="etb-grid-2">
-                                <?php foreach ( $extras as $extra ) : 
-                                    $e_price = get_post_meta( $extra->ID, '_etb_price', true );
-                                    $e_type  = get_post_meta( $extra->ID, '_etb_price_type', true );
-                                    $e_icon  = get_post_meta( $extra->ID, '_etb_icon', true ) ?: 'dashicons-tag';
-                                    $price_display = ( $e_price <= 0 ) ? 'Free' : '+ ' . $e_price . ' ' . $currency;
-                                ?>
-                                    <div class="etb-pax-card etb-extra-item <?php echo ( $e_type === 'per_quantity' ) ? 'etb-type-qty' : 'etb-type-toggle'; ?>" 
-                                         data-id="<?php echo esc_attr( $extra->ID ); ?>" 
-                                         data-price="<?php echo esc_attr( $e_price ); ?>">
-
-                                        <div class="etb-option-row-top">
-                                            <span class="etb-icon-badge">
-                                                <span class="dashicons <?php echo esc_attr( $e_icon ); ?>"></span>
-                                            </span>
-                                            <strong><?php echo esc_html( $extra->post_title ); ?></strong>
-                                        </div>
-
-                                        <div class="etb-option-row-bottom">
-                                            <span class="etb-price-tag"><?php echo esc_html( $price_display ); ?></span>
-
-                                            <?php if ( $e_type === 'per_quantity' ) : ?>
-                                                <div class="etb-qty-control mini">
-                                                    <button type="button" class="etb-qty-btn etb-minus">-</button>
-                                                    <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" readonly>
-                                                    <button type="button" class="etb-qty-btn etb-plus">+</button>
-                                                </div>
-                                            <?php else : ?>
-                                                <div class="etb-toggle-check">
-                                                    <i class="dashicons dashicons-yes"></i>
-                                                    <input type="hidden" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0">
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
-                        <?php endif; ?>
-
-                        <div class="etb-step-nav">
-                            <div class="etb-step-nav-error" data-nav-error="1" style="display:none;"></div>
-                            <button type="button" class="etb-btn-next" data-next="2">
-                                <span>Continue to Details</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                        </div>
+                        <!-- (Garde tout le contenu de l'étape 1 actuel : Carte Passagers, Carte Itinéraire, bouton Next) -->
+                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 1 (celui qu'on a fait avec les .nexora-card) ... -->
                     </div>
 
                     <!-- ÉTAPE 2 -->
                     <div class="etb-step etb-step-2 is-hidden" data-step="2">
-                        <section class="etb-section">
-                            <h2 class="etb-section-title">Your Details</h2>
-                            <div class="etb-grid-2">
-                                <?php if ( ( $form_settings['show_name'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Full name *</label>
-                                        <div class="etb-field-icon-wrapper"><span class="dashicons dashicons-admin-users"></span><input type="text" name="etb_name" placeholder="Full Name"></div>
-                                        <p class="etb-error-message" id="etb-name-error" style="display:none;">⚠ Please enter your full name.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_email'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Email *</label>
-                                        <div class="etb-field-icon-wrapper"><span class="dashicons dashicons-email"></span><input type="email" name="etb_email" placeholder="name@email.com"></div>
-                                        <p class="etb-error-message" id="etb-email-error" style="display:none;">⚠ Please enter a valid email address.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_phone'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Phone *</label>
-                                        <div class="etb-phone-wrapper"><input type="tel" name="etb_phone" class="etb-phone-input" autocomplete="tel"></div>
-                                        <p class="etb-error-message" id="etb-phone-error" style="display:none;">⚠ Please enter a valid phone number.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_date'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Date *</label>
-                                        <div class="etb-field-icon-wrapper"><input type="date" name="etb_date"></div>
-                                        <p class="etb-error-message" id="etb-date-error" style="display:none;">⚠ Please select a date.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_time'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Time *</label>
-                                        <div class="etb-field-icon-wrapper"><input type="time" name="etb_time"></div>
-                                        <p class="etb-error-message" id="etb-time-error" style="display:none;">⚠ Please select a time.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_total_bag'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field">
-                                        <label>Luggage *</label>
-                                        <div class="etb-field-icon-wrapper"><span class="dashicons dashicons-portfolio"></span><input type="number" name="etb_total_luggage" value="0" min="0"></div>
-                                        <p class="etb-error-message" id="etb-baggage-capacity-error" style="display:none;">⚠ Exceeds vehicle capacity.</p>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ( ( $form_settings['show_note'] ?? '1' ) !== '0' ) : ?>
-                                    <div class="etb-field etb-field-full">
-                                        <label>Special requests</label>
-                                        <textarea name="etb_note" rows="3" placeholder="Any special requests?"></textarea>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </section>
-
-                        <div class="etb-step-nav etb-step-nav-split">
-                            <button type="button" class="etb-btn-back" data-back="1">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
-                                <span>Back</span>
-                            </button>
-                            <button type="button" class="etb-btn-next" data-next="3">
-                                <span>Review & Confirm</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                            <div class="etb-step-nav-error" data-nav-error="2" style="display:none;"></div>
-                        </div>
+                        <!-- (Garde tout le contenu de l'étape 2 actuel) -->
+                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 2 ... -->
                     </div>
 
-                    <!-- ÉTAPE 3 : RÉCAPITULATIF VISUEL -->
+                    <!-- ÉTAPE 3 -->
                     <div class="etb-step etb-step-3 is-hidden" data-step="3">
-                        <section class="etb-section">
-                            <h2 class="etb-section-title">Review your booking</h2>
-                            
-                            <div class="etb-review-card">
-                            <!-- Bloc Circuit -->
-                                <div class="etb-review-block">
-                                    <div class="etb-review-icon"><span class="dashicons dashicons-location-alt"></span></div>
-                                    <div class="etb-review-content">
-                                        <span class="etb-review-label">Selected Circuit</span>
-                                        <div class="etb-review-route">
-                                            <strong><?php echo esc_html( get_the_title( $circuit_id ) ); ?></strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Bloc Date & Heure -->
-                                <div class="etb-review-block">
-                                    <div class="etb-review-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
-                                    <div class="etb-review-content">
-                                        <span class="etb-review-label">Date & Time</span>
-                                        <strong id="etb-review-datetime">—</strong>
-                                    </div>
-                                </div>
-
-                                <!-- Bloc Passagers -->
-                                <div class="etb-review-block">
-                                    <div class="etb-review-icon"><span class="dashicons dashicons-groups"></span></div>
-                                    <div class="etb-review-content">
-                                        <span class="etb-review-label">Passengers</span>
-                                        <strong id="etb-review-pax">—</strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p style="color: #64748b; margin-top: 24px; font-size: 14px;">
-                                By clicking "Confirm Booking", you agree to our terms and conditions. Your driver will be assigned shortly.
-                            </p>
-
-                            <!-- Message d'alerte global -->
-                            <div class="etb-error-message etb-global-error" id="etb-global-submit-error" style="display:none; margin-bottom: 18px; font-size: 13px; line-height: 1.4;">
-                                ⚠ Please complete or fix the required information in the previous steps.
-                            </div>
-                            
-                            <div class="etb-step-nav etb-step-nav-split" style="border-top: none; padding-top: 0; margin-top: 24px;">
-                                <button type="button" class="etb-btn-back" data-back="2">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>
-                                    <span>Back</span>
-                                </button>
-                            </div>
-                        </section>
+                        <!-- (Garde tout le contenu de l'étape 3 actuel) -->
+                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 3 ... -->
                     </div>
                 </form>
-            </div> 
+            </div> <!-- Fin du formulaire -->
+        </div> <!-- /etb-booking-main -->
 
-            <!-- COLONNE DROITE : LE SIDEBAR STICKY (VOTRE SÉLECTION) -->
-            <div class="etb-booking-sidebar">
-                <div class="etb-sidebar-sticky">
-                    <h3 class="etb-sidebar-title">Your Selection</h3>
-                    
-                    <div class="etb-mission-card" id="etb-mission-card">
-                        <div class="etb-mission-row">
-                            <div class="etb-mission-thumb"><img id="etb-mc-img" src="" alt=""></div>
-                            <div class="etb-mission-info">
-                                <div class="etb-mission-name" id="etb-mc-name">—</div>
-                                <div class="etb-mission-meta" id="etb-mc-meta"></div>
-                            </div>
-                            <button type="button" class="etb-mission-change" id="etb-mc-change" aria-label="Change vehicle">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.36-2.64"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.36 2.64"/><polyline points="21 3 21 9 15 9"/><polyline points="3 21 3 15 9 15"/></svg>
-                            </button>
+        <!-- COLONNE DROITE : LE SIDEBAR STICKY -->
+        <div class="etb-booking-sidebar">
+            <div class="etb-sidebar-sticky">
+                <h3 class="etb-sidebar-title">Your Selection</h3>
+                
+                <div class="etb-mission-card" id="etb-mission-card">
+                    <div class="etb-mission-row">
+                        <div class="etb-mission-thumb"><img id="etb-mc-img" src="" alt=""></div>
+                        <div class="etb-mission-info">
+                            <div class="etb-mission-name" id="etb-mc-name">—</div>
+                            <div class="etb-mission-meta" id="etb-mc-meta"></div>
                         </div>
                     </div>
-
-                    <div class="etb-summary-receipt">
-                        <div id="etb-summary-text">
-                            <p style="opacity: 0.7;">Select your options to see the details.</p>
-                        </div>
-                    </div>
-
-                    <button type="button" class="etb-submit-button" id="etb-submit-button">
-                        <span class="etb-submit-label">Confirm Booking</span>
-                        <span class="etb-submit-price"><span id="etb-submit-price-val">0</span> <?php echo esc_html( $currency ); ?></span>
-                    </button>
                 </div>
-            </div>
 
+                <div class="etb-summary-receipt">
+                    <div id="etb-summary-text">
+                        <p style="opacity: 0.7; font-size: 14px;">Select a vehicle to see the price.</p>
+                    </div>
+                </div>
+
+                <button type="button" class="etb-submit-button" id="etb-submit-button" style="display: none;">
+                    <span class="etb-submit-label">Confirm Booking</span>
+                    <span class="etb-submit-price"><span id="etb-submit-price-val">0</span> <?php echo esc_html( $currency ); ?></span>
+                </button>
+            </div>
         </div>
-    </div>
+
+    </div> <!-- /etb-booking-layout -->
     
     <!-- BARRE FLOTTANTE UNIVERSELLE (Sticky Dock) -->
     <div class="etb-mobile-sticky-bar" id="etb-mobile-sticky-bar">

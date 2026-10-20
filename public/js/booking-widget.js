@@ -419,6 +419,14 @@
                 sidebarHeaderEl.classList.toggle('etb-visible', hasSelectedVehicle && totalCapacityPax > 0);
             }
 
+
+            // 🔧 NOUVEAU : Gérer l'affichage du bouton "Continue" de la grille véhicule
+            const btnContinueVehicle = document.getElementById('etb-btn-continue-vehicle');
+            const continueWrap = document.getElementById('etb-vehicle-continue-wrap');
+            if (continueWrap) {
+                continueWrap.classList.toggle('is-visible', hasSelectedVehicle);
+            }
+
             // ────────────────────────────────────────────────────────────────
             // RÉVÉLATION DU FORMULAIRE — Apparaît après sélection d'un véhicule
             // ────────────────────────────────────────────────────────────────
@@ -431,6 +439,12 @@
                     formWrapper.classList.toggle('is-hidden', shouldHide);
                 }
             }
+
+            // 🔧 NOUVEAU : Afficher/Cacher le layout 2 colonnes
+            //const bookingLayout = document.querySelector('.etb-booking-layout');
+            //if (bookingLayout) {
+             //   bookingLayout.classList.toggle('has-selection', hasSelectedVehicle);
+            //}
 
                         // ────────────────────────────────────────────────────────────────
             // CARTE UNIFIÉE — Véhicule + Total (Étape 3)
@@ -1238,6 +1252,34 @@
                 if (grid) {
                     grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+            });
+        }
+
+        // 🔧 NOUVEAU : Clic sur le bouton "Continue" sous la grille de véhicules
+        const btnContinueVehicle = document.getElementById('etb-btn-continue-vehicle');
+        if (btnContinueVehicle) {
+            btnContinueVehicle.addEventListener('click', function() {
+                                // 1. Cacher le bouton
+                document.getElementById('etb-vehicle-continue-wrap').classList.remove('is-visible');
+                
+                // 2. Afficher le formulaire
+                const formWrapper = document.getElementById('etb-booking-form-wrapper');
+                if (formWrapper) {
+                    formWrapper.classList.remove('is-hidden');
+                }
+                
+                // 3. Activer le layout 2 colonnes avec le Sidebar
+                const bookingLayout = document.querySelector('.etb-booking-layout');
+                if (bookingLayout) {
+                    bookingLayout.classList.add('has-selection');
+                }
+
+                // 4. Scroll doux vers le formulaire
+                setTimeout(() => {
+                    if (formWrapper) {
+                        formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
             });
         }
 
