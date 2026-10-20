@@ -12,8 +12,7 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
 ?>
 
 <?php
-// Instagram embed : ne charge le SDK que si au moins une étape du circuit
-// contient un embed. Évite une requête tierce sur toutes les pages circuit.
+// Instagram embed : ne charge le SDK que si au moins une étape contient un embed.
 $etb_has_embed = false;
 if ( ! empty( $options ) && is_array( $options ) ) {
     foreach ( $options as $opt_data ) {
