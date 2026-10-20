@@ -1012,8 +1012,11 @@
             };
 
             const handlePhoneInputLive = function (e) {
-                // Ne pas interférer quand l'utilisateur efface
-                if (e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward')) return;
+                                // Ne pas reformater pendant l'effacement, mais rafraîchir la validation
+                if (e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward')) {
+                    refreshAll();
+                    return;
+                }
                 if (!phoneIti) { refreshAll(); return; }
 
                 const cursorPosition = this.selectionStart;
