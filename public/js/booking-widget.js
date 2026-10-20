@@ -1341,6 +1341,12 @@
                 const revDatetime = document.getElementById('etb-review-datetime');
                 const revPax = document.getElementById('etb-review-pax');
 
+                // ... (à l'intérieur de updateReviewCard, après revPax)
+                const revPickup = document.getElementById('etb-review-pickup');
+                if (revPickup) {
+                    const pickupVal = root.querySelector('input[name="etb_pickup_address"]')?.value;
+                    revPickup.textContent = pickupVal ? pickupVal : 'Not set';
+                }
                 if (revDatetime) {
                     if (dateVal && timeVal) {
                         // Formater la date proprement (ex: Oct 20, 2026)
@@ -1499,8 +1505,17 @@
             setActiveStep(1, true); // true = Ne pas scroller au chargement
         };
 
-
+        // Lier le bouton de confirmation de l'étape 3 au bouton de soumission global
+        const finalConfirmBtn = document.getElementById('etb-final-confirm-btn');
+        const sidebarSubmitBtn = document.getElementById('etb-submit-button');
+        if (finalConfirmBtn && sidebarSubmitBtn) {
+            finalConfirmBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sidebarSubmitBtn.click();
+            });
+        }
         // Lancement initial
+        
         refreshAll();
         initBookingWizard();
     };

@@ -639,7 +639,6 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                                     <div class="etb-field">
                                         <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Date *</label>
                                         <div class="nexora-input-wrapper">
-                                            <span class="dashicons dashicons-calendar-alt"></span>
                                             <input type="date" name="etb_date" lang="en">
                                         </div>
                                         <p class="etb-error-message" id="etb-date-error" style="display:none;">⚠ Please select a date.</p>
@@ -650,7 +649,7 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                                     <div class="etb-field">
                                         <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Time *</label>
                                         <div class="nexora-input-wrapper">
-                                            <span class="dashicons dashicons-clock"></span>
+                                            
                                             <input type="time" name="etb_time">
                                         </div>
                                         <p class="etb-error-message" id="etb-time-error" style="display:none;">⚠ Please select a time.</p>
@@ -717,14 +716,107 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                     </div>
                     <!-- ÉTAPE 2 -->
                     <div class="etb-step etb-step-2 is-hidden" data-step="2">
-                        <!-- (Garde tout le contenu de l'étape 2 actuel) -->
-                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 2 ... -->
+                        
+                        <!-- CARTE : VOS COORDONNÉES -->
+                        <div class="nexora-card">
+                            <div class="nexora-card-header">
+                                <span class="dashicons dashicons-admin-users"></span>
+                                <h3>Your Information</h3>
+                            </div>
+                            <div class="nexora-field-group">
+                                
+                                <div class="etb-field">
+                                    <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Full Name *</label>
+                                    <div class="nexora-input-wrapper">
+                                        <!-- J'ai retiré le <span class="dashicons dashicons-user"></span> ici -->
+                                        <input type="text" name="etb_name" id="etb-name" placeholder="John Doe" autocomplete="name">
+                                    </div>
+                                    <p class="etb-error-message" id="etb-name-error" style="display:none; margin-top:6px; margin-bottom:0;">⚠ Please enter your name.</p>
+                                </div>
+
+                                <div class="etb-field" style="margin-top: 15px;">
+                                    <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Email Address *</label>
+                                    <div class="nexora-input-wrapper">
+                                        <span class="dashicons dashicons-email"></span>
+                                        <input type="email" name="etb_email" id="etb-email" placeholder="john@example.com" autocomplete="email">
+                                    </div>
+                                    <p class="etb-error-message" id="etb-email-error" style="display:none; margin-top:6px; margin-bottom:0;">⚠ Please enter a valid email.</p>
+                                </div>
+
+                                <div class="etb-field" style="margin-top: 15px;">
+                                    <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Phone Number *</label>
+                                    <!-- Le JS s'occupe d'initialiser intl-tel-input sur ce champ -->
+                                    <div class="nexora-input-wrapper">
+                                        <input type="tel" name="etb_phone" id="etb-phone" class="etb-phone-input" placeholder="+33 6 12 34 56 78" autocomplete="tel">
+                                    </div>
+                                    <p class="etb-error-message" id="etb-phone-error" style="display:none; margin-top:6px; margin-bottom:0;">⚠ Please enter a valid phone number.</p>
+                                </div>
+
+                                <!-- Optionnel : Message spécial -->
+                                <div class="etb-field" style="margin-top: 15px;">
+                                    <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Special Requests (Optional)</label>
+                                    <textarea name="etb_notes" rows="3" placeholder="Flight number, special needs..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; resize: vertical;"></textarea>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="etb-step-nav etb-step-nav-split">
+                            <button type="button" class="etb-btn-back" data-back="1">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                <span>Back</span>
+                            </button>
+                            <button type="button" class="etb-btn-next" data-next="3">
+                                <span>Review Booking</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- ÉTAPE 3 -->
+                     <!-- ÉTAPE 3 -->
                     <div class="etb-step etb-step-3 is-hidden" data-step="3">
-                        <!-- (Garde tout le contenu de l'étape 3 actuel) -->
-                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 3 ... -->
+                        
+                        <!-- CARTE : RÉCAPITULATIF -->
+                        <div class="nexora-card">
+                            <div class="nexora-card-header">
+                                <span class="dashicons dashicons-yes-alt"></span>
+                                <h3>Review & Confirm</h3>
+                            </div>
+                            
+                            <div class="etb-summary-details" style="margin-bottom: 20px;">
+                                <div class="etb-summary-row" style="padding: 10px 0; border-bottom: 1px dashed #e2e8f0;">
+                                    <span style="color: #64748b; font-size: 14px;">Date & Time</span>
+                                    <strong id="etb-review-datetime" style="color: #1e293b; font-size: 14px;">Not set</strong>
+                                </div>
+                                <div class="etb-summary-row" style="padding: 10px 0; border-bottom: 1px dashed #e2e8f0;">
+                                    <span style="color: #64748b; font-size: 14px;">Passengers</span>
+                                    <strong id="etb-review-pax" style="color: #1e293b; font-size: 14px;">1 Adult(s)</strong>
+                                </div>
+                                <div class="etb-summary-row" style="padding: 10px 0;">
+                                    <span style="color: #64748b; font-size: 14px;">Pickup Location</span>
+                                    <strong id="etb-review-pickup" style="color: #1e293b; font-size: 14px;">Not set</strong>
+                                </div>
+                            </div>
+
+                            <!-- Conditions Générales -->
+                            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
+                                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13.5px; color: #475569; line-height: 1.5;">
+                                    <input type="checkbox" name="etb_terms" required style="margin-top: 3px; width: 16px; height: 16px; accent-color: #ba6827;">
+                                    <span>I agree to the <a href="#" style="color: #ba6827; text-decoration: underline;">Terms and Conditions</a> and <a href="#" style="color: #ba6827; text-decoration: underline;">Privacy Policy</a>.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="etb-step-nav etb-step-nav-split">
+                            <button type="button" class="etb-btn-back" data-back="2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                <span>Back</span>
+                            </button>
+                            <!-- Le bouton de soumission finale (ou tu peux laisser celui de la sidebar) -->
+                            <button type="button" class="etb-btn-next" id="etb-final-confirm-btn" style="background: var(--etb-theme-primary, #ba6827);">
+                                <span>Confirm Booking</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div> <!-- Fin du formulaire -->

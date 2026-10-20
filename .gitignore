@@ -21,3 +21,4 @@ update_tunnel.py
 *.log
 *.tmp
 .env
+.txt

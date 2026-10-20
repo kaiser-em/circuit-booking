@@ -3990,3 +3990,91 @@
     padding-top: 24px !important; 
     margin-top: 70px !important;
 }
+
+/* ==========================================================================
+   FIX UI/UX : ALIGNEMENT DES CHAMPS NEXORA & AUTOFILL CHROME
+   ========================================================================== */
+
+/* 1. Alignement parfait de l'icône et du texte dans le wrapper */
+.nexora-input-wrapper {
+    align-items: center !important; /* Force le centrage vertical */
+}
+
+.nexora-input-wrapper .dashicons {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    margin-top: 0 !important;
+    position: relative !important;
+    top: 1px !important; /* Micro-ajustement optique pour l'alignement */
+}
+
+.nexora-input-wrapper input {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: normal !important;
+}
+
+/* 2. Neutralisation du fond bleu "Autofill" de Google Chrome */
+.nexora-input-wrapper input:-webkit-autofill,
+.nexora-input-wrapper input:-webkit-autofill:hover, 
+.nexora-input-wrapper input:-webkit-autofill:focus, 
+.nexora-input-wrapper input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 50px #ffffff inset !important; /* Force le fond blanc */
+    -webkit-text-fill-color: #1e293b !important; /* Force la couleur du texte */
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* 3. Amélioration du contraste des placeholders (Accessibilité WCAG) */
+.nexora-input-wrapper input::placeholder,
+.etb-field textarea::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important; /* Firefox baisse l'opacité par défaut */
+}
+
+/* 4. Focus State cohérent avec la charte (au lieu du bleu natif) */
+.nexora-input-wrapper input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================================================
+   FIX ICÔNES NATIVES (DATE & TIME) — POSITIONNEMENT ABSOLU À DROITE
+   ========================================================================== */
+
+/* 1. Le wrapper devient la référence de positionnement */
+.nexora-input-wrapper {
+    position: relative !important;
+}
+
+/* 2. L'input prend toute la largeur et on laisse de la place à droite pour l'icône */
+.nexora-input-wrapper input[type="date"],
+.nexora-input-wrapper input[type="time"] {
+    width: 100% !important;
+    padding-right: 40px !important; /* Évite que le texte passe sous l'icône */
+    background: transparent !important;
+    display: block !important; /* On annule le flex qui cassait le rendu */
+}
+
+/* 3. On sort l'icône native du flux pour la forcer à l'extrême droite */
+.nexora-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator,
+.nexora-input-wrapper input[type="time"]::-webkit-calendar-picker-indicator {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    cursor: pointer !important;
+    opacity: 0.6 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 4. L'icône reprend sa pleine opacité au survol */
+.nexora-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.nexora-input-wrapper input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1 !important;
+}
