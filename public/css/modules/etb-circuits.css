@@ -1,0 +1,3276 @@
+
+@font-face {
+    font-family: 'Sunsive-Medium';
+    src: url('../../fonts/Sunsive-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ==========================================================================
+   ETB MODULE — CIRCUITS TOURISTIQUES & TOUR BOOKING SIDEBAR
+   ========================================================================== */
+
+/* ==========================================================================
+   2. BOUCLIER ANTI-THÈME (SCOPED CSS RESET & ISOLATION)
+   ========================================================================== */
+
+.co-circuit-wrapper,
+.etb-booking-widget {
+    font-family: var(--etb-font-family) !important;
+    color: var(--etb-text-main) !important;
+    line-height: 1.5 !important;
+    box-sizing: border-box !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* Forcer le box-sizing sur tous les éléments enfants */
+.co-circuit-wrapper *,
+.etb-booking-widget * {
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+}
+
+/* Protection de la police Dashicons contre les resets de thème */
+.co-circuit-wrapper .dashicons,
+.etb-booking-widget .dashicons {
+    font-family: dashicons !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+}
+
+/* Protection essentielle de Font Awesome contre le reset font-family: inherit */
+.co-circuit-wrapper .fa,
+.co-circuit-wrapper .fas,
+.co-circuit-wrapper .fa-solid,
+.co-circuit-wrapper .far,
+.co-circuit-wrapper .fa-regular {
+    font-family: "Font Awesome 6 Free" !important;
+    display: inline-block !important;
+    font-style: normal !important;
+    line-height: 1 !important;
+}
+
+.co-circuit-wrapper .fab,
+.co-circuit-wrapper .fa-brands {
+    font-family: "Font Awesome 6 Brands" !important;
+    display: inline-block !important;
+    font-style: normal !important;
+    line-height: 1 !important;
+}
+
+/* Neutralisation des styles de listes des thèmes */
+.co-circuit-wrapper ul,
+.etb-booking-widget ul {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 600 !important;
+}
+
+/* Neutralisation des boutons et inputs */
+.co-circuit-wrapper button,
+.etb-booking-widget button {
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+/* ==========================================================================
+   3. CONTENEUR GLOBAL & LAYOUT PRINCIPAL (SPLIT 2 COLONNES)
+   ========================================================================== */
+
+.co-circuit-wrapper {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 30px auto !important;
+}
+
+/* NOUVEAU LAYOUT VERTICAL — Section Itinéraire pleine largeur */
+.co-itinerary-section {
+    width: 100% !important;
+    margin-bottom: 50px !important;
+}
+
+.co-left-details {
+    width: 100% !important;
+}
+
+/* Section Formulaire — Révélée après sélection véhicule (étape 1b) */
+.co-booking-form-reveal {
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 50px auto 0 !important;
+    /* Animation de révélation préparée pour étape 1b */
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.co-booking-form-reveal.is-hidden {
+    opacity: 0;
+    transform: translateY(24px);
+    pointer-events: none;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0 !important;
+}
+
+/* En mode caché, on empêche la sticky de déborder */
+.co-booking-form-reveal.is-hidden .co-sticky-box {
+    position: static !important;
+}
+
+.co-right-sidebar {
+    width: 100% !important;
+}
+
+.co-sticky-box {
+    position: sticky !important;
+    top: 30px !important;
+}
+
+/* ==========================================================================
+   4. SECTION HAUTE : GRILLE DES VÉHICULES (ANIMATION FLUIDE & ÉLASTIQUE)
+   ========================================================================= */
+
+.co-top-vehicles-section {
+    width: 100% !important;
+    margin-bottom: 40px !important;
+    clear: both !important;
+}
+
+.co-section-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--etb-theme-secondary) !important;
+    margin: 0 0 20px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.co-section-title .dashicons {
+    color: var(--etb-accent) !important;
+    font-size: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+}
+
+/* Grille responsive — 3 colonnes fixes desktop (6 véhicules = 3×2 propre) */
+.co-vehicles-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* Tablette : 2 colonnes */
+@media (max-width: 992px) {
+    .co-vehicles-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+    }
+}
+
+/* Mobile : 1 colonne */
+@media (max-width: 600px) {
+    .co-vehicles-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+}
+
+/* 1. Carte Véhicule (Cadre fixe 255px avec transition douce) */
+.co-vehicles-grid .etb-vehicle-card {
+    background: var(--etb-white) !important;
+    border: 1px solid #eaeaea !important;
+    border-radius: var(--etb-radius-md) !important;
+    height: 255px !important;
+    min-height: 255px !important;
+    max-height: 255px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px 10px !important;
+    color: var(--etb-text-main) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    position: relative !important;
+    box-shadow: var(--etb-shadow-sm) !important;
+    transition: border-color 0.28s cubic-bezier(0.25, 1, 0.5, 1), 
+                box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1), 
+                transform 0.2s ease !important;
+}
+
+.co-vehicles-grid .etb-vehicle-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--etb-shadow-md) !important;
+    border-color: var(--etb-border-hover) !important;
+}
+
+/* 2. État carte sélectionnée */
+.co-vehicles-grid .etb-vehicle-card.etb-selected {
+    border: 2px solid var(--etb-accent) !important;
+    box-shadow: var(--etb-shadow-md), 0 0 0 1px var(--etb-accent) !important;
+}
+
+/* 3. Coche orange : Animation avec rebond élastique subtil */
+.co-vehicles-grid .etb-selection-check {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: var(--etb-radius-pill) !important;
+    background: var(--etb-accent) !important;
+    color: var(--etb-white) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    transform: scale(0) rotate(-45deg) !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1), 
+                opacity 0.2s ease !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+}
+
+.co-vehicles-grid .etb-selection-check .dashicons {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: var(--etb-white) !important;
+    line-height: 1 !important;
+}
+
+.co-vehicles-grid .etb-vehicle-card.etb-selected .etb-selection-check {
+    opacity: 1 !important;
+    transform: scale(1) rotate(0deg) !important;
+}
+
+/* 4. Image du véhicule & Animation au survol (Hover GIF) */
+.co-vehicles-grid .etb-vehicle-image-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    height: 135px !important;
+    max-height: 135px !important;
+    margin: 0 auto 8px auto !important;
+    border-radius: var(--etb-radius-sm);
+    overflow: hidden !important;
+}
+
+.co-vehicles-grid .etb-vehicle-image-wrapper .etb-vehicle-image {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+    display: block !important;
+    transition: opacity 0.35s ease, transform 0.3s ease !important;
+}
+
+.co-vehicles-grid .etb-vehicle-image-wrapper .etb-img-static {
+    opacity: 1 !important;
+    z-index: 1 !important;
+}
+
+.co-vehicles-grid .etb-vehicle-image-wrapper .etb-img-hover {
+    opacity: 0 !important;
+    z-index: 2 !important;
+    pointer-events: none !important;
+}
+
+/* 1. Sur Ordinateur (Desktop) : Animation UNIQUEMENT au survol de la souris ou si sélectionnée */
+.co-vehicles-grid .etb-vehicle-card:hover .etb-vehicle-image-wrapper .etb-img-hover,
+.co-vehicles-grid .etb-vehicle-card.etb-selected .etb-vehicle-image-wrapper .etb-img-hover {
+    opacity: 1 !important;
+}
+
+.co-vehicles-grid .etb-vehicle-card:hover .etb-vehicle-image-wrapper .etb-img-static,
+.co-vehicles-grid .etb-vehicle-card.etb-selected .etb-vehicle-image-wrapper .etb-img-static {
+    opacity: 0 !important;
+}
+
+
+
+
+
+/* 5. Titre et Prix */
+.co-vehicles-grid .etb-vehicle-card h3.etb-vehicle-name {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    margin: 0 0 2px 0 !important;
+    line-height: 1.2 !important;
+    color: var(--etb-primary-dark) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.co-vehicles-grid .etb-vehicle-price {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: var(--etb-accent) !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.2 !important;
+}
+
+/* 6. Caractéristiques (Passagers / Bagages) */
+.co-vehicles-grid .etb-vehicle-specs {
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--etb-text-specs) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+
+/* Wrapper des specs véhicule — alignement icône + texte */
+.co-vehicles-grid .etb-vehicle-specs .etb-spec-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--etb-text-specs, #64748b) !important;
+}
+
+.co-vehicles-grid .etb-vehicle-specs .etb-ico {
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    stroke: var(--etb-theme-primary, #ba6827) !important;
+    fill: none !important;
+    margin: 0 !important;
+}
+
+/* 7. Ligne de quantité : Transition continue sans délai */
+.co-vehicles-grid .etb-vehicle-qty {
+    border-top: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    font-size: 10px !important;
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    transform: translateY(8px) scale(0.9) !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    transition: max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                opacity 0.22s ease, 
+                transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+                margin-top 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.co-vehicles-grid .etb-vehicle-qty span:first-child {
+    display: none !important;
+}
+
+/* Déploiement fluide à la sélection */
+.co-vehicles-grid .etb-vehicle-card.etb-selected .etb-vehicle-qty {
+    max-height: 38px !important;
+    opacity: 1 !important;
+    margin-top: 6px !important;
+    transform: translateY(0) scale(1) !important;
+    pointer-events: auto !important;
+}
+
+/* 8. Pilule de quantité orange avec boutons et chiffre blancs */
+.co-vehicles-grid .etb-qty-control.mini {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 2px 6px !important;
+    background: var(--etb-accent) !important;
+    border: none !important;
+    border-radius: var(--etb-radius-pill) !important;
+    height: 28px !important;
+    width: 78px !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 2px 8px rgba(230, 90, 21, 0.25) !important;
+}
+
+.co-vehicles-grid .etb-qty-control.mini .etb-qty-btn {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    background: transparent !important;
+    color: var(--etb-white) !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.co-vehicles-grid .etb-qty-control.mini input {
+    width: 24px !important;
+    height: 20px !important;
+    text-align: center !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: var(--etb-white) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    line-height: 20px !important;
+}
+
+
+.etb-vehicle-card .etb-qty-btn:focus ,
+.etb-qty-control .etb-qty-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+.etb-vehicle-card .etb-qty-btn:active ,
+.etb-qty-control .etb-qty-btn:active {
+  outline: none;
+  box-shadow: none;
+}
+/* ==========================================================================
+   5. COLONNE GAUCHE : DÉTAILS DU CIRCUIT (ONGLETS, BADGES, TIMELINE)
+   ========================================================================== */
+
+.co-departure-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    margin-bottom: 25px !important;
+    flex-wrap: wrap !important;
+}
+
+.co-nav-label {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--etb-muted) !important;
+}
+
+.co-nav-buttons {
+    display: flex !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+}
+
+.co-pub-tab-btn {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: var(--etb-white) !important;
+    border: 1.5px solid var(--etb-border-input) !important;
+    border-radius: var(--etb-radius-sm) !important;
+    padding: 10px 18px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--etb-primary) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.co-pub-tab-btn:hover {
+    border-color: var(--etb-accent) !important;
+    color: var(--etb-accent) !important;
+}
+
+.co-pub-tab-btn.active {
+    background: var(--etb-primary) !important;
+    color: var(--etb-white) !important;
+    border-color: var(--etb-primary) !important;
+    box-shadow: 0 4px 12px rgba(5, 32, 33, 0.15) !important;
+}
+
+.co-pub-tab-btn.active .dashicons {
+    color: var(--etb-accent) !important;
+}
+
+.co-option-pane {
+    display: none !important;
+}
+
+.co-option-pane.active {
+    display: block !important;
+    animation: coFadeIn 0.3s ease-in-out !important;
+}
+
+@keyframes coFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Badges Highlights */
+.co-highlights-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 30px !important;
+}
+
+.co-highlight-card {
+    background: var(--etb-bg-light) !important;
+    border: 1px solid var(--etb-border) !important;
+    border-radius: var(--etb-radius-sm) !important;
+    padding: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--etb-primary) !important;
+}
+
+.co-highlight-card .dashicons {
+    color: var(--etb-accent) !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* Timeline (Programme) */
+.co-timeline-block {
+    margin-bottom: 40px !important;
+}
+
+.co-block-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: var(--etb-primary) !important;
+    margin: 0 0 20px 0 !important;
+}
+
+.co-timeline-track {
+    position: relative !important;
+    padding-left: 20px !important;
+}
+
+.co-timeline-track::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 6px !important;
+    top: 10px !important;
+    bottom: 10px !important;
+    width: 2px !important;
+    border-left: 2px dashed #cbd5e1 !important;
+}
+
+.co-timeline-step {
+    position: relative !important;
+    margin-bottom: 25px !important;
+    padding-left: 25px !important;
+}
+
+.co-timeline-step:last-child {
+    margin-bottom: 0 !important;
+}
+
+.co-timeline-bullet {
+    position: absolute !important;
+    left: -19px !important;
+    top: 3px !important;
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: var(--etb-radius-pill) !important;
+    background: var(--etb-accent) !important;
+    border: 2px solid var(--etb-white) !important;
+    box-shadow: 0 0 0 2px var(--etb-accent) !important;
+}
+
+.co-timeline-time {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: var(--etb-accent) !important;
+    margin-bottom: 3px !important;
+}
+
+.co-timeline-content h4 {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--etb-primary) !important;
+    margin: 0 0 5px 0 !important;
+}
+
+.co-timeline-content p {
+    font-size: 14px !important;
+    color: var(--etb-text-muted) !important;
+    margin: 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* Inclus / Non Inclus */
+.co-inclusions-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-bottom: 30px !important;
+}
+
+.co-inc-card {
+    border-radius: var(--etb-radius-md) !important;
+    padding: 20px !important;
+    background: var(--etb-white) !important;
+    border: 1px solid var(--etb-border) !important;
+}
+
+.co-inc-card h4 {
+    margin: 0 0 15px 0 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--etb-primary) !important;
+}
+
+.co-inc-card ul {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.co-inc-card li {
+    font-size: 14px !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #334155 !important;
+}
+
+.co-icon-check {
+    color: var(--etb-success) !important;
+    font-weight: bold !important;
+}
+
+.co-icon-cross {
+    color: var(--etb-danger) !important;
+    font-weight: bold !important;
+}
+
+/* ==========================================================================
+   6. COLONNE DROITE : WIDGET FORMULAIRE DE RÉSERVATION (SIDEBAR)
+   ========================================================================== */
+.etb-booking-widget {
+    border: 1px solid #f1e9e0 !important;
+    width: 100% !important;
+    min-width: 0 !important; /* Débloque l'adaptation sur mobile (au lieu de 400px fixe) */
+    max-width: 100% !important;
+    background: var(--etb-white) !important;
+    padding: 24px 16px !important;
+    border-radius: var(--etb-radius-lg) !important;
+    box-shadow: var(--etb-shadow-lg) !important;
+    margin: 0 !important;
+}
+
+.etb-section {
+    padding-bottom:20px !important ;
+    margin-bottom: 24px !important;
+    /*border-bottom: 2px #8080804f solid !important ;*/
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+.etb-section-title {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: #5b3516 !important;
+    margin: 0 0 14px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.etb-section-title .dashicons {
+    color: #5b3516 !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* En-tête de prix latéral "À PARTIR DE" (Animé) */
+.etb-sidebar-price-card {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: 1px solid transparent !important;
+    transform: translateY(-8px) !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    transition: max-height 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                opacity 0.28s ease,
+                transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                margin-bottom 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                padding-bottom 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                border-color 0.35s ease !important;
+}
+
+.etb-sidebar-price-card.etb-visible {
+    max-height: 200px !important;
+    opacity: 1 !important;
+    margin-bottom: 20px !important;
+    padding-bottom: 0 !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+/* En-tête prix — Refonte premium (Lot 1) */
+.etb-sidebar-price-card {
+    background: linear-gradient(135deg, #fdf8f3 0%, #f8f0e6 100%) !important;
+    border: 1px solid #ebd9cc !important;
+    border-radius: var(--etb-radius-md, 12px) !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 2px 10px rgba(91, 53, 22, 0.04) !important;
+}
+
+.etb-sidebar-price-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 6px !important;
+    gap: 10px !important;
+}
+
+.etb-sidebar-label {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: 0.02em !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    display: inline-block !important;
+}
+
+.etb-sidebar-live-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: #15803d !important;
+    background: rgba(34, 197, 94, 0.1) !important;
+    padding: 3px 9px 3px 7px !important;
+    border-radius: 50px !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+}
+
+.etb-live-dot {
+    display: inline-block !important;
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background: #22c55e !important;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7) !important;
+    animation: etb-live-pulse 1.8s ease-out infinite !important;
+}
+
+@keyframes etb-live-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+    70%  { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.etb-sidebar-amount-row {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+    margin: 2px 0 6px 0 !important;
+}
+
+.etb-sidebar-val {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 40px !important;
+    font-weight: 900 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    letter-spacing: -1.5px !important;
+    line-height: 1 !important;
+    transition: color 0.25s ease !important;
+}
+
+.etb-sidebar-currency {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1 !important;
+    opacity: 0.85 !important;
+}
+
+.etb-sidebar-pax-notice {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--etb-theme-text, #797979) !important;
+    margin: 4px 0 0 0 !important;
+    padding-top: 10px !important;
+    border-top: 1px dashed #ebd9cc !important;
+    letter-spacing: 0.01em !important;
+}
+.etb-sidebar-pax-notice strong {
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    font-weight: 800 !important;
+}
+
+/* ==========================================================================
+   WIZARD — Barre de progression (Étape 1/2/3)
+   ========================================================================== */
+.etb-booking-widget .etb-progress-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin: 20px 0 24px 0 !important;
+    padding: 0 4px !important;
+}
+
+.etb-booking-widget .etb-progress-step {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+    opacity: 0.4 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.etb-booking-widget .etb-progress-step.is-active,
+.etb-booking-widget .etb-progress-step.is-complete {
+    opacity: 1 !important;
+}
+
+.etb-booking-widget .etb-progress-num {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    border-radius: 50% !important;
+    background: #e5e5e5 !important;
+    color: #797979 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease !important;
+}
+
+.etb-booking-widget .etb-progress-step.is-active .etb-progress-num {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 3px 10px rgba(186, 104, 39, 0.28) !important;
+}
+
+.etb-booking-widget .etb-progress-step.is-complete .etb-progress-num {
+    background: var(--etb-theme-secondary, #5b3516) !important;
+    color: #ffffff !important;
+}
+
+.etb-booking-widget .etb-progress-label {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    white-space: nowrap !important;
+}
+
+.etb-booking-widget .etb-progress-divider {
+    flex: 1 !important;
+    height: 1px !important;
+    background: #e5e5e5 !important;
+    min-width: 12px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Segment rempli : animation fluide à chaque étape franchie */
+.etb-booking-widget .etb-progress-divider::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100% !important;
+    width: 0% !important;
+    background: var(--etb-theme-primary, #ba6827) !important;
+    transition: width 0.45s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* Remplissage progressif basé sur les étapes complétées */
+.etb-booking-widget .etb-progress-step.is-complete + .etb-progress-divider::after {
+    width: 100% !important;
+}
+
+/* Étapes (wrappers) — espacement visuel discret */
+.etb-booking-widget .etb-step {
+    display: block !important;
+    width: 100% !important;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Étape masquée : fondu + glissement vertical */
+.etb-booking-widget .etb-step.is-hidden {
+    display: none !important;
+}
+
+.etb-booking-widget .etb-step.is-entering {
+    opacity: 0;
+    transform: translateY(16px);
+}
+
+/* ==========================================================================
+   WIZARD — Boutons de navigation (Continue / Back)
+   ========================================================================== */
+.etb-booking-widget .etb-step-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 22px !important;
+    padding-top: 18px !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+.etb-booking-widget .etb-step-nav-split {
+    justify-content: space-between !important;
+}
+
+.etb-booking-widget .etb-btn-next,
+.etb-booking-widget .etb-btn-back {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    padding: 14px 26px !important;
+    border-radius: 50px !important; /* Forme pilule premium */
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: none !important; /* Plus de majuscules agressives */
+    letter-spacing: 0 !important;
+    cursor: pointer !important;
+    border: none !important;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    min-width: 140px !important;
+}
+
+.etb-booking-widget .etb-btn-next {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+    margin-left: auto !important;
+    box-shadow: 0 4px 14px rgba(186, 104, 39, 0.25) !important;
+}
+
+.etb-booking-widget .etb-btn-next:hover {
+    background: #a3591f !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(186, 104, 39, 0.35) !important;
+}
+
+.etb-booking-widget .etb-btn-next:active {
+    transform: translateY(0) !important;
+}
+
+.etb-booking-widget .etb-btn-back {
+    background: #f8f5f1 !important; /* Fond crème très léger au repos */
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    padding: 14px 24px !important;
+    min-width: auto !important;
+}
+
+.etb-booking-widget .etb-btn-back:hover {
+    background: #ebd9cc !important; /* S'assombrit légèrement au survol */
+    color: var(--etb-theme-secondary, #5b3516) !important;
+}
+
+.etb-booking-widget .etb-btn-back svg {
+    transition: transform 0.2s ease !important;
+}
+
+.etb-booking-widget .etb-btn-back:hover svg {
+    transform: translateX(-3px) !important;
+}
+
+.etb-booking-widget .etb-btn-next svg {
+    transition: transform 0.2s ease !important;
+}
+
+.etb-booking-widget .etb-btn-next:hover svg {
+    transform: translateX(3px) !important;
+}
+
+/* Message d'erreur au niveau du nav d'étape */
+.etb-booking-widget .etb-step-nav-error {
+    flex-basis: 100% !important;
+    order: -1 !important;
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fecaca !important;
+    border-radius: var(--etb-radius-sm, 8px) !important;
+    padding: 10px 14px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+    line-height: 1.4 !important;
+}
+
+@media (max-width: 480px) {
+    .etb-booking-widget .etb-step-nav-split {
+        flex-direction: column-reverse !important;
+        gap: 10px !important;
+    }
+    .etb-booking-widget .etb-btn-next,
+    .etb-booking-widget .etb-btn-back {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* ==========================================================================
+   PHASE 3 — BANDEAU VÉHICULE SÉLECTIONNÉ
+   ========================================================================== */
+.etb-booking-widget .etb-vehicle-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 14px 16px !important;
+    background: linear-gradient(135deg, #fdf8f3 0%, #f8f0e6 100%) !important;
+    border: 1px solid #ebd9cc !important;
+    border-radius: var(--etb-radius-md, 12px) !important;
+    margin: 16px 0 4px 0 !important;
+    box-shadow: 0 2px 10px rgba(91, 53, 22, 0.05) !important;
+    transition: opacity 0.35s ease, transform 0.35s ease !important;
+}
+
+.etb-booking-widget .etb-vehicle-header[style*="display: none"] {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.etb-booking-widget .etb-vehicle-header-thumb {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    border: 1px solid #ebd9cc !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-thumb img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-name {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-meta {
+    font-size: 11.5px !important;
+    color: var(--etb-theme-text, #797979) !important;
+    font-weight: 600 !important;
+    margin-top: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-meta svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    margin-right: 3px !important;
+    vertical-align: -2px !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-price {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 2px !important;
+    flex-shrink: 0 !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-amount {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1 !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-currency {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-change {
+    appearance: none !important;
+    background: #ffffff !important;
+    border: 1px solid #ebd9cc !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.etb-booking-widget .etb-vehicle-header-change:hover {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+    transform: rotate(180deg) !important;
+}
+
+/* ==========================================================================
+   PHASE 3 — TITRES DE SECTIONS ADOUCIS
+   ========================================================================== */
+.etb-booking-widget .etb-section-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    margin: 0 0 16px 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.etb-booking-widget .etb-section-title .dashicons {
+    color: var(--etb-theme-primary, #ba6827) !important;
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 0.9 !important;
+}
+
+/* ==========================================================================
+   PHASE 3 — BOUTON FINAL AVEC PRIX INTÉGRÉ
+   ========================================================================== */
+.etb-booking-widget .etb-submit-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: linear-gradient(135deg, var(--etb-theme-primary, #ba6827) 0%, #a3591f 100%) !important;
+    box-shadow: 0 6px 18px rgba(186, 104, 39, 0.28) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.etb-booking-widget .etb-submit-button .etb-submit-price {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-weight: 800 !important;
+    font-size: 17px !important;
+    letter-spacing: 0.02em !important;
+    color: #ffffff !important;
+}
+
+.etb-booking-widget .etb-submit-button .etb-submit-label {
+    color: #ffffff !important;
+}
+
+.etb-booking-widget .etb-submit-button .etb-submit-label {
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    opacity: 0.9 !important;
+}
+
+
+
+.etb-booking-widget .etb-submit-button:hover {
+    background: linear-gradient(135deg, #a3591f 0%, #8a471a 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 24px rgba(186, 104, 39, 0.35) !important;
+    animation: none !important;
+}
+
+
+/* Responsive : labels masqués sur petits écrans */
+@media (max-width: 600px) {
+    .etb-booking-widget .etb-progress-label {
+        display: none !important;
+    }
+    .etb-booking-widget .etb-progress-bar {
+        justify-content: center !important;
+        gap: 6px !important;
+    }
+}
+
+/* Grille Passagers */
+.etb-pax-grid,
+.etb-grid-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.etb-pax-card {
+    background: var(--etb-white) !important;
+    border: 1px solid #ecebeb !important;
+    padding: 10px 14px !important;
+    border-radius: var(--etb-radius-md) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.etb-pax-info strong {
+    display: block !important;
+    font-size: 14px !important;
+    color: var(--etb-primary) !important;
+    font-weight: 600 !important;
+}
+
+.etb-pax-info span {
+    font-size: 12px !important;
+    color: var(--etb-muted) !important;
+    font-weight: 600 !important;
+}
+
+/* Contrôles quantité Passagers & Options (Sidebar Circuit [tour_booking]) */
+.co-circuit-wrapper .etb-qty-control,
+.etb-booking-widget .etb-qty-control {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #ababab1c !important; /* Orange doux pêche */
+    padding: 2px 4px !important;
+    border-radius: 50px !important;
+    height: 32px !important;
+    min-width: 90px !important;
+    box-sizing: border-box !important;
+}
+
+.co-circuit-wrapper .etb-qty-control .etb-qty-btn,
+.etb-booking-widget .etb-qty-control .etb-qty-btn {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    background: transparent !important;
+    color: #0a0a0a !important; /* Orange vif foncé pour boutons nets */
+    font-weight: 900 !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 0 2px 0 !important;
+    transition: all 0.15s ease !important;
+}
+
+.co-circuit-wrapper .etb-qty-control .etb-qty-btn:hover,
+.etb-booking-widget .etb-qty-control .etb-qty-btn:hover {
+    background: #ea580c !important;
+    color: #ffffff !important;
+}
+
+/* LE CHIFFRE (Forcé en noir/anthracite net, visible à 100%) */
+.co-circuit-wrapper .etb-qty-control input,
+.etb-booking-widget .etb-qty-control input {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 26px !important;
+    text-align: center !important;
+    border: none !important;
+    background: transparent !important;
+    font-weight: 900 !important;
+    font-size: 15px !important;
+    color: #0f172a !important; /* Noir anthracite net */
+    opacity: 1 !important;
+    display: inline-block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 26px !important;
+    box-shadow: none !important;
+}
+/* Champs de formulaire */
+.etb-field {
+    margin-bottom: 14px !important;
+}
+
+.etb-field-full {
+    grid-column: 1 / -1 !important;
+}
+
+.etb-field label {
+    display: block !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+.etb-field-icon-wrapper {
+    position: relative !important;
+    width: 100% !important;
+}
+
+.etb-field-icon-wrapper .dashicons {
+    position: absolute !important;
+    left: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: var(--etb-muted) !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    pointer-events: none !important;
+    z-index: 3 !important;
+}
+
+
+.etb-field input,
+.etb-field textarea {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border: 1.5px solid #e8e8e8 !important;
+    background: #fafafa !important;
+    color: var(--etb-primary) !important;
+    transition: all 0.2s ease !important;
+}
+.etb-field input{
+     max-height: 43px !important;
+}
+
+.etb-field .etb-field-icon-wrapper input {
+    padding-left: 42px !important;
+    max-height: 43px !important;
+}
+
+.etb-field input:focus,
+.etb-field textarea:focus {
+    outline: none !important;
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(186, 104, 39, 0.12) !important;
+}
+
+#etb-time-field , 
+#etb-date-field{
+    padding-left: 10px !important;
+}
+
+
+/* Drop-off personnalisé */
+.etb-dropoff-toggle-wrapper {
+    margin-top: 15px !important;
+    margin-bottom: 8px !important;
+}
+
+#etb-dropoff-label.etb-toggle-dropoff-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    gap: 10px !important;
+    padding-left: 20px;
+}
+
+.etb-toggle-dropoff-label input.hidden-input[type="checkbox"] {
+    display: none !important;
+}
+
+#etb-dropoff-info{
+    min-height: 30px !important;
+}
+.etb-custom-box {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    border: 2px solid var(--etb-border) !important;
+    border-radius: 6px !important;
+    background: var(--etb-white) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.etb-custom-box .dashicons {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: var(--etb-white) !important;
+    opacity: 0 !important;
+    transform: scale(0.5) !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.etb-dropoff-label-text {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--etb-primary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+.etb-toggle-dropoff-label input[type="checkbox"]:checked + .etb-custom-box {
+    background: var(--etb-accent) !important;
+    border-color: var(--etb-accent) !important;
+}
+
+.etb-toggle-dropoff-label input[type="checkbox"]:checked + .etb-custom-box .dashicons {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+}
+
+#etb-dropoff-container {
+    margin-top: 12px !important;
+    border-left: 3px solid var(--etb-accent) !important;
+    padding-left: 14px !important;
+}
+
+/* Options supplémentaires (Extras) */
+.etb-pax-card.etb-extra-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-height: 92px !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    border: 1.5px solid #e8e8e8 !important;
+    background: #fafafa !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    box-shadow: none !important;
+}
+
+.etb-pax-card.etb-extra-item:hover {
+    border-color: #d1d5db !important;
+    background: #ffffff !important;
+}
+
+/* État sélectionné : fond blanc pur + ombre douce */
+.etb-extra-item.etb-selected {
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.08) !important;
+}
+
+.etb-option-row-top {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.etb-option-row-top strong {
+    font-size: 14px !important;
+    color: var(--etb-primary) !important;
+    font-weight: 600 !important;
+}
+
+.etb-option-row-bottom {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.etb-icon-badge {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    border-radius: var(--etb-radius-sm) !important;
+    background: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.etb-icon-badge .dashicons {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: var(--etb-primary) !important;
+}
+
+.etb-price-tag {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+}
+
+.etb-selected .etb-price-tag {
+    color: var(--etb-accent) !important;
+}
+
+.etb-toggle-check {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    border: 1.5px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: transparent !important;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* Coche animée quand sélectionné */
+.etb-selected .etb-toggle-check {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+    transform: scale(1.05) !important;
+}
+
+/* Code promo */
+.etb-promo-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+#etb-promo-input {
+    flex: 1 !important;
+    height: 44px !important;
+    padding: 0 14px 0 38px !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+}
+
+#etb-apply-promo-btn {
+    height: 44px !important;
+    padding: 0 18px !important;
+    background: var(--etb-primary) !important;
+    color: var(--etb-white) !important;
+    border: none !important;
+    border-radius: var(--etb-radius-sm) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+
+#etb-apply-promo-btn:hover {
+    background: var(--etb-accent) !important;
+}
+
+/* État de chargement du bouton */
+#etb-apply-promo-btn:disabled,
+#etb-apply-promo-btn.etb-loading {
+    opacity: 0.7 !important;
+    cursor: wait !important;
+    background: var(--etb-primary) !important;
+}
+
+/* Message de feedback stylisé (Succès & Erreur) */
+.etb-field-feedback {
+    margin-top: 8px !important;
+    padding: 8px 12px !important;
+    border-radius: var(--etb-radius-sm) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    display: block !important;
+}
+
+.etb-field-feedback.etb-success {
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+.etb-field-feedback.etb-error {
+    background: var(--etb-danger-bg) !important;
+    color: var(--etb-danger) !important;
+    border: 1px solid var(--etb-danger-border) !important;
+}
+
+/* Alertes & Erreurs */
+.etb-error-message {
+    color: var(--etb-danger) !important;
+    background: var(--etb-danger-bg) !important;
+    border: 1px solid var(--etb-danger-border) !important;
+    border-radius: var(--etb-radius-sm) !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-top: 10px !important;
+}
+
+/* Récapitulatif Sombre */
+.etb-summary-card {
+    background: var(--etb-primary) !important;
+    color: var(--etb-white) !important;
+    padding: 24px !important;
+    border-radius: var(--etb-radius-md) !important;
+    margin-top: 15px !important;
+}
+
+.etb-summary-card #etb-summary-title{
+    color: var(--etb-white) !important;
+}
+
+.etb-summary-details {
+    border-bottom: 1px dashed rgba(255,255,255,0.2) !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.etb-summary-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-bottom: 8px !important;
+    font-size: 13px !important;
+    opacity: 0.9 !important;
+}
+
+
+.etb-summary-row strong {
+    color: var(--etb-accent) !important;
+}
+
+#promo-line.etb-promo-row strong{
+    color: var(--etb-success) !important;
+}
+.etb-summary-total {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.etb-summary-total span:first-child {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    opacity: 0.7 !important;
+}
+
+.etb-total-amount, #etb-total-val{
+    font-size: 38px !important;
+    font-weight: 900 !important;
+    color: var(--etb-accent) !important;
+    letter-spacing: -1px !important;
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 5px !important;
+    opacity: 1 !important;
+}
+
+.etb-submit-button {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 100% !important;
+    background: var(--etb-accent) !important;
+    color: var(--etb-white) !important;
+    border: none !important;
+    padding: 16px !important;
+    border-radius: var(--etb-radius-md) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-top: 18px !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+}
+
+.etb-submit-button:hover {
+    background: var(--etb-accent-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(230, 90, 21, 0.3) !important;
+}
+
+.etb-submit-button:disabled,
+.etb-submit-button.etb-disabled {
+    background: #B0B8B7 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Suppression flèches input number */
+.co-circuit-wrapper input[type="number"]::-webkit-outer-spin-button,
+.co-circuit-wrapper input[type="number"]::-webkit-inner-spin-button,
+.etb-checkout-wrapper input[type="number"]::-webkit-outer-spin-button,
+.etb-checkout-wrapper input[type="number"]::-webkit-inner-spin-button,
+.etb-booking-widget input[type="number"]::-webkit-outer-spin-button,
+.etb-booking-widget input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+.co-circuit-wrapper input[type="number"],
+.etb-booking-widget input[type="number"], 
+.etb-checkout-wrapper input[type="number"]{
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+
+
+/* ── RESPONSIVE CIRCUITS ── */
+@media (max-width: 992px) {
+    .co-circuit-wrapper {
+        padding: 0 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 10px auto !important;
+    }
+    .co-main-layout {
+        grid-template-columns: 1fr !important;
+        gap: 30px !important;
+    }
+    .co-highlights-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .co-inclusions-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* Animation au défilement mobile/tablette */
+    .co-vehicles-grid .etb-vehicle-card.etb-in-viewport .etb-vehicle-image-wrapper .etb-img-hover {
+        opacity: 1 !important;
+    }
+    .co-vehicles-grid .etb-vehicle-card.etb-in-viewport .etb-vehicle-image-wrapper .etb-img-static {
+        opacity: 0 !important;
+    }
+}
+
+/* 3. SMARTPHONES & PETITS ÉCRANS (<= 600px) */
+@media (max-width: 600px) {
+    .co-circuit-wrapper {
+        padding: 0 8px !important;
+    }
+
+    .etb-booking-widget {
+        padding: 18px 12px !important;
+        border-radius: var(--etb-radius-md) !important;
+    }
+
+    /* Passage en 1 seule colonne propre pour éliminer tout débordement */
+    .etb-pax-grid,
+    .etb-grid-2 {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    /* Chaque passager occupe toute la largeur de façon aérée */
+    .etb-pax-card {
+        padding: 10px 14px !important;
+    }
+
+    /* Les options supplémentaires s'affichent sans écraser le titre */
+    .etb-pax-card.etb-extra-item {
+        min-height: auto !important;
+        padding: 12px 14px !important;
+    }
+
+    /* Taille de texte optimale pour éviter le zoom automatique sur iPhone */
+    .etb-field input,
+    .etb-field textarea {
+        font-size: 15px !important;
+    }
+}
+
+/* 2. TABLETTE EN PORTRAIT (641px à 768px) — hauteur adaptative */
+@media (min-width: 641px) and (max-width: 768px) {
+    .co-vehicles-grid .etb-vehicle-card {
+        height: auto !important;
+        min-height: 240px !important;
+        padding: 12px !important;
+    }
+}
+
+
+/* ==========================================================================
+   HARMONISATION ÉCOSYSTÈME ELEMENTOR (DYNAMIC TOKENS)
+   ========================================================================== */
+.co-circuit-wrapper {
+    /* Mapping direct sur votre Kit Elementor 5931 avec fallbacks */
+    --etb-theme-primary: var(--e-global-color-primary, #BA6827);
+    --etb-theme-secondary: var(--e-global-color-secondary, #5B3516);
+    --etb-theme-text: var(--e-global-color-text, #797979);
+    --etb-theme-font-head: var(--e-global-typography-secondary-font-family, "Sunsive-SemiBold", sans-serif);
+    --etb-theme-font-body: var(--e-global-typography-text-font-family, "Sunsive-Medium", sans-serif);
+    
+    font-family: var(--etb-theme-font-body);
+    color: var(--etb-theme-text);
+}
+
+/* Titres de sections (Overview, Itinerary, Includes...) */
+.co-vip-title,
+.co-hero-header h1,
+.co-hero-header h2 {
+    font-family: var(--etb-theme-font-head) !important;
+    color: var(--etb-theme-secondary) !important;
+    line-height: 1.25 !important; /* Rétablit un interlignage aéré */
+    letter-spacing: -0.02em;
+}
+
+/* Textes de paragraphes */
+.co-vip-text,
+.co-hero-header p,
+.co-vip-step-body {
+    color: var(--etb-theme-text) !important;
+    font-size: 15.5px;
+    line-height: 1.65;
+    font-weight: 600;
+}
+
+/* Points forts (Highlights) - Disposition en ligne fluide */
+.co-vip-highlights {
+    margin: 20px 0 35px 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 12px 28px !important;
+}
+
+.co-vip-highlights li {
+    color: var(--etb-theme-text) !important;
+    font-family: var(--etb-theme-font-body);
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+}
+
+.co-vip-highlights svg {
+    stroke: var(--etb-theme-primary) !important;
+    flex-shrink: 0 !important;
+}
+
+.co-vip-highlights-card{
+    margin-top: 30px;
+}
+
+/* ==========================================================================
+   ALIGNEMENT DE L'ITINÉRAIRE (ACCORDÉON VIP)
+   ========================================================================== */
+
+/* Commande "Expand all / Collapse all" */
+.co-timeline-head-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 35px !important;
+    margin-bottom: 20px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-bottom: 12px !important;
+}
+
+.co-expand-all-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+}
+
+.co-expand-all-label {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+}
+
+.co-expand-toggle-switch {
+    position: relative !important;
+    width: 40px !important;
+    height: 22px !important;
+    background: #cbd5e1;
+    border-radius: 50px !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 2px !important;
+    transition: background 0.25s ease !important;
+}
+
+.co-expand-switch-thumb {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+    transition: transform 0.25s ease !important;
+}
+
+
+.co-vip-timeline {
+    position: relative;
+    padding-left: 24px;
+    margin-top: 25px;
+    border-left: 1.5px dashed #cbd5e1; /* Ligne de temps verticale */
+}
+
+.co-vip-step {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+/* Point rond sur la ligne */
+.co-vip-step-marker {
+    position: absolute;
+    left: -32px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    border: 2.5px solid var(--etb-theme-primary);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.co-vip-step-marker.filled {
+    background: var(--etb-theme-primary);
+}
+
+/* Ligne d'en-tête de l'étape : Titre à gauche, Flèche à droite */
+.co-vip-step-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.co-vip-step-title {
+    font-family: var(--etb-theme-font-head) !important;
+    color: var(--etb-theme-secondary) !important;
+    font-size: 19px !important; /* Taille ajustée pour ne pas saturer */
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    padding-right: 15px;
+    flex: 1;
+}
+
+.co-vip-step-icon {
+    color: var(--etb-theme-primary);
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+}
+
+.co-vip-step.is-open .co-vip-step-icon {
+    transform: rotate(180deg);
+}
+
+/* Par défaut : contenu masqué */
+.co-vip-step-body {
+    display: none;
+    padding-top: 14px;
+}
+
+/* Affiché uniquement lorsque l'étape a la classe .is-open */
+.co-vip-step.is-open .co-vip-step-body {
+    display: block !important;
+}
+
+
+/* Rotation fluide de la flèche chevron (doublon supprimé) */
+.co-vip-step.is-open .co-vip-step-icon {
+    transform: rotate(180deg);
+}
+
+/* Sous-sections détaillées (Sous-titre + Paragraphe) */
+.co-vip-step-subblocks {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-top: 15px !important;
+    padding-top: 15px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+}
+
+.co-vip-subblock-item h5 {
+    font-family: var(--etb-theme-font-head) !important;
+    color: var(--etb-theme-secondary) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.35 !important;
+}
+
+.co-vip-subblock-item p {
+    color: var(--etb-theme-text) !important;
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+    margin-bottom: 15px !important;
+}
+
+/* Inclus / Non Inclus (Design aligné Photo 2) */
+.co-vip-inclusions-section {
+    width: 100% !important;
+    border-top: 1px solid #f1f5f9 !important;
+    padding-top: 35px !important;
+    margin-top: 35px !important;
+}
+
+.co-vip-inclusions-wrap {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    align-items: start !important;
+}
+
+/* Cartes Inclus / Non Inclus — style "duel visuel" */
+.co-vip-inclusions-wrap > div {
+    background: #ffffff !important;
+    border: 1px solid #f1e9e0 !important;
+    border-radius: 14px !important;
+    padding: 24px 26px !important;
+    box-shadow: 0 2px 12px rgba(91, 53, 22, 0.04) !important;
+    transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1),
+                box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+
+
+
+@media (max-width: 768px) {
+
+    .co-vip-highlights-card{
+    margin-top: 0;
+    }
+    .co-vip-inclusions-wrap {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+    }
+
+    .co-circuit-wrapper {
+        padding: 0!important;
+    }
+
+    .co-vip-timeline {
+        padding-left: 25px;
+        margin-top: 25px;
+        width: 95vw;
+    }
+
+    .co-vip-step-body {
+        padding-right: 20px;
+    }
+
+
+}
+
+@media (max-width: 768px) {
+
+    .co-timeline-head-bar {
+        width: 90vw;
+    }
+
+    .co-timeline-block {
+
+        width: 80%;
+    }
+
+}
+
+.co-vip-inc-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.co-vip-inc-list li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    color: var(--etb-theme-text) !important;
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+
+
+
+/* Responsive 2 colonnes Overview & Highlights */
+@media (max-width: 860px) {
+    .co-hero-overview-grid {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+    }
+}
+
+
+/* ==========================================================================
+   MOSAÏQUE PHOTO VIP (BENTO GRID - CALIBRAGE STRICT 360PX)
+   ========================================================================== */
+.co-vip-bento-gallery {
+    width: 100% !important;
+    margin-bottom: 35px !important;
+    display: block !important;
+    clear: both !important;
+}
+
+/* Cadre parent de chaque image avec masquage STRICT pour le zoom */
+.co-bento-item {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    background: #f1f5f9 !important;
+    display: block !important;
+}
+
+/* Image parfaitement centrée, en absolu pour ne jamais déformer la grille */
+.co-bento-item img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transition: transform 0.45s ease-in-out !important;
+}
+
+.co-bento-item:hover img {
+    transform: scale(1.1) !important;
+}
+
+/* Cas 1 image */
+.co-bento-single {
+    height: 552px !important;
+}
+
+/* Cas 2 images */
+.co-bento-duo {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    height: 552px !important;
+}
+
+/* Grille Mosaïque Principale (1 gauche / 3 droite) */
+.co-bento-grid {
+    display: grid !important;
+    grid-template-columns: 1.25fr 1fr !important;
+    gap: 12px !important;
+    height: 552px !important;
+    width: 100% !important;
+}
+
+.co-bento-main {
+    height: 552px !important;
+    width: 100% !important;
+}
+
+/* 🔴 CORRECTION : Forcer la division 50/50 stricte de la colonne droite */
+.co-bento-side {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    height: 552px !important;
+    width: 100% !important;
+}
+
+.co-bento-sub-top {
+    height: calc(50% - 6px) !important; /* Moitié exacte moins le gap */
+    width: 100% !important;
+}
+
+.co-bento-sub-bottom {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; 
+    gap: 12px !important;
+    height: calc(50% - 6px) !important; /* Moitié exacte moins le gap */
+    width: 100% !important;
+}
+
+.co-bento-thumb {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* Badge flottant "Gallery" */
+.co-bento-badge {
+    position: absolute !important;
+    bottom: 12px !important;
+    right: 12px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1e293b !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 50px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+    backdrop-filter: blur(4px) !important;
+    user-select: none !important;
+}
+
+/* Responsive Mosaïque sur Mobile */
+@media (max-width: 768px) {
+    .co-bento-grid {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+    .co-bento-main {
+        height: 280px !important;
+    }
+    .co-bento-side {
+        display: none !important; /* Sur mobile, seule la grande photo reste visible */
+    }
+}
+
+
+/* ==========================================================================
+   LIGHTBOX (GALERIE PHOTO VIP)
+   ========================================================================== */
+.etb-lightbox-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(15, 23, 42, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease !important;
+}
+
+.etb-lightbox-overlay.etb-lightbox-active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.etb-lightbox-img {
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+    object-fit: contain !important;
+    border-radius: 6px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+    transform: scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease !important;
+}
+
+.etb-lightbox-overlay.etb-lightbox-active .etb-lightbox-img {
+    transform: scale(1);
+}
+
+/* Contrôles de la Lightbox */
+.etb-lightbox-close,
+.etb-lightbox-nav {
+    position: absolute !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+    z-index: 10 !important;
+}
+
+.etb-lightbox-close:hover,
+.etb-lightbox-nav:hover {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    transform: scale(1.08) !important;
+}
+
+.etb-lightbox-close {
+    top: 25px !important;
+    right: 30px !important;
+    width: 44px !important;
+    height: 44px !important;
+}
+
+.etb-lightbox-nav {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 54px !important;
+    height: 54px !important;
+}
+
+.etb-lightbox-nav:hover {
+    transform: translateY(-50%) scale(1.08) !important;
+}
+
+.etb-lightbox-prev {
+    left: 30px !important;
+}
+
+.etb-lightbox-next {
+    right: 30px !important;
+}
+
+.etb-lightbox-counter {
+    position: absolute !important;
+    bottom: 25px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    color: #ffffff !important;
+    font-family: var(--etb-theme-font-head, sans-serif) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    padding: 6px 16px !important;
+    border-radius: 50px !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+@media (max-width: 768px) {
+
+    .co-vip-inclusions-wrap {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .etb-lightbox-img {
+        max-width: 100vw !important;
+        max-height: 70vh !important;
+        border-radius: 0 !important;
+    }
+    .etb-lightbox-nav {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    .etb-lightbox-prev { left: 10px !important; }
+    .etb-lightbox-next { right: 10px !important; }
+    .etb-lightbox-close { top: 15px !important; right: 15px !important; width: 36px !important; height: 36px !important; }
+}
+
+
+/* ===== AUTRES CIRCUITS (cartes) ===== */
+.etb-related { margin: 56px 0 24px; width: 100%; clear: both; }
+.etb-related__header { margin-bottom: 24px; }
+.etb-related__title {
+    margin: 0 0 6px; font-size: 26px; line-height: 1.25; font-weight: 600;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif);
+    color: var(--etb-theme-secondary, #5b3516);
+}
+.etb-related__subtitle { margin: 0; font-size: 14.5px; color: var(--etb-theme-text, #797979); }
+
+.etb-related__grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px; list-style: none; margin: 0; padding: 0;
+}
+.etb-related__card {
+    position: relative; display: flex; flex-direction: column; overflow: hidden;
+    background: #fff; border: 1px solid #f1e9e0; border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+.etb-related__card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(91, 53, 22, .14); }
+
+.etb-related__media {
+    aspect-ratio: 4 / 3; overflow: hidden;
+    background: linear-gradient(135deg, #f3ebe2, #e6d6c4);
+}
+.etb-related__media img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    transition: transform .5s ease;
+}
+.etb-related__card:hover .etb-related__media img { transform: scale(1.06); }
+
+.etb-related__body { display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 18px 20px 20px; }
+.etb-related__cities {
+    font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--etb-theme-primary, #ba6827);
+}
+.etb-related__name {
+    margin: 0; font-size: 19px; line-height: 1.3; font-weight: 600;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif);
+}
+.etb-related__link { color: var(--etb-theme-secondary, #5b3516); text-decoration: none; }
+/* Toute la carte est cliquable, avec un seul lien pour les lecteurs d'écran */
+.etb-related__link::after { content: ""; position: absolute; inset: 0; border-radius: 16px; }
+.etb-related__link:focus-visible { outline: none; }
+.etb-related__link:focus-visible::after { outline: 3px solid var(--etb-theme-primary, #ba6827); outline-offset: 2px; }
+
+.etb-related__meta { font-size: 13.5px; color: var(--etb-theme-text, #797979); }
+.etb-related__cta {
+    margin-top: auto; padding-top: 6px; font-size: 14px; font-weight: 600;
+    color: var(--etb-theme-primary, #ba6827); transition: letter-spacing .25s ease;
+}
+.etb-related__card:hover .etb-related__cta { letter-spacing: .03em; }
+
+/* Mobile : carrousel horizontal avec accroche (swipe) */
+@media (max-width: 600px) {
+    .etb-related__grid {
+        display: flex; overflow-x: auto; gap: 16px; padding-bottom: 14px;
+        scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    }
+    .etb-related__card { flex: 0 0 82%; scroll-snap-align: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .etb-related__card, .etb-related__media img, .etb-related__cta { transition: none; }
+    .etb-related__card:hover { transform: none; }
+    .etb-related__card:hover .etb-related__media img { transform: none; }
+}
+
+/* ==========================================================================
+   TIMELINE PLEINE LARGEUR — DESIGN "CARTE POSTALE" (ÉTAPE 1a)
+   ========================================================================== */
+.co-itinerary-section .co-timeline-block {
+    width: 100% !important;
+}
+
+.co-itinerary-section .co-vip-timeline {
+    padding-left: 32px !important;
+    margin-top: 30px !important;
+    max-width: 100% !important;
+}
+
+.co-itinerary-section .co-vip-step {
+    margin-bottom: 32px !important;
+}
+
+.co-itinerary-section .co-vip-step-header {
+    padding-bottom: 12px !important;
+}
+
+.co-itinerary-section .co-vip-step-title {
+    font-size: 21px !important;
+    letter-spacing: -0.01em !important;
+}
+
+.co-itinerary-section .co-vip-step-marker {
+    left: -41px !important;
+    top: 8px !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.co-itinerary-section .co-vip-step-body {
+    padding-top: 5px !important;
+    padding-right: 40px !important;
+}
+
+/* Force le conteneur à englober le post Instagram flottant */
+.co-vip-step.is-open .co-vip-step-body {
+    display: flow-root !important; 
+}
+
+
+/* RESPONSIVE — Retour propre en mobile */
+@media (max-width: 768px) {
+    .co-itinerary-section .co-vip-timeline {
+        width: 100% !important;
+        padding-left: 24px !important;
+    }
+    .co-itinerary-section .co-vip-step-marker {
+        left: -30px !important;
+    }
+    .co-itinerary-section .co-vip-step-body {
+        padding-right: 0 !important;
+    }
+}
+
+/* ==========================================================================
+   ICÔNES SVG INLINE — Remplacement des emojis
+   ========================================================================== */
+.etb-ico {
+    display: inline-block !important;
+    width: 1em !important;
+    height: 1em !important;
+    vertical-align: -0.125em !important;
+    flex-shrink: 0 !important;
+    color: currentColor !important;
+    stroke: currentColor !important;
+    fill: none !important;
+    margin-right: 4px !important;
+}
+
+.etb-ico-alert {
+    color: #dc2626 !important;
+    width: 1.1em !important;
+    height: 1.1em !important;
+    margin-right: 6px !important;
+}
+
+.etb-vehicle-specs .etb-ico {
+    color: var(--etb-theme-primary, #ba6827) !important;
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 5px !important;
+}
+
+.etb-error-message .etb-ico,
+.etb-global-error .etb-ico {
+    color: #dc2626 !important;
+}
+
+/* ==========================================================================
+   VÉHICULE SIGNATURE — Badge + mise en valeur
+   ========================================================================== */
+.co-vehicles-grid .etb-vehicle-card.etb-featured {
+    border: 1.5px solid var(--etb-theme-primary, #ba6827) !important;
+    box-shadow: 0 6px 22px rgba(186, 104, 39, 0.14) !important;
+}
+
+.co-vehicles-grid .etb-vehicle-card.etb-featured:hover {
+    box-shadow: 0 10px 30px rgba(186, 104, 39, 0.22) !important;
+}
+
+.etb-featured-badge {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 5 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 4px 10px !important;
+    border-radius: 50px !important;
+    background: linear-gradient(135deg, var(--etb-theme-primary, #ba6827), #8f4f1c) !important;
+    color: #ffffff !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    box-shadow: 0 2px 8px rgba(186, 104, 39, 0.35) !important;
+    pointer-events: none !important;
+}
+
+.etb-featured-badge svg {
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+
+/* ==========================================================================
+   CARTE UNIFIÉE — Véhicule + Total (Étape 3 uniquement)
+   ========================================================================== */
+.etb-booking-widget .etb-mission-card {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    background: linear-gradient(135deg, #fdf8f3 0%, #f8f0e6 100%) !important;
+    border: 1px solid #ebd9cc !important;
+    border-radius: var(--etb-radius-md, 12px) !important;
+    padding: 16px 18px !important;
+    margin: 0 0 20px 0 !important;
+    box-shadow: 0 2px 10px rgba(91, 53, 22, 0.05) !important;
+}
+
+.etb-booking-widget .etb-mission-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+}
+
+.etb-booking-widget .etb-mission-thumb {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    border: 1px solid #ebd9cc !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.etb-booking-widget .etb-mission-thumb img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+.etb-booking-widget .etb-mission-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.etb-booking-widget .etb-mission-name {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.etb-booking-widget .etb-mission-meta {
+    font-size: 11.5px !important;
+    color: var(--etb-theme-text, #797979) !important;
+    font-weight: 600 !important;
+    margin-top: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.etb-booking-widget .etb-mission-meta svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    margin-right: 3px !important;
+    vertical-align: -2px !important;
+}
+
+.etb-booking-widget .etb-mission-change {
+    appearance: none !important;
+    background: #ffffff !important;
+    border: 1px solid #ebd9cc !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.etb-booking-widget .etb-mission-change:hover {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    border-color: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+}
+
+.etb-booking-widget .etb-mission-total {
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    padding-top: 14px !important;
+    border-top: 1px dashed #ebd9cc !important;
+}
+
+.etb-booking-widget .etb-mission-total-label {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: var(--etb-theme-secondary, #5b3516) !important;
+    letter-spacing: 0.02em !important;
+}
+
+.etb-booking-widget .etb-mission-total-amount {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    letter-spacing: -0.8px !important;
+    line-height: 1 !important;
+}
+
+/* ==========================================================================
+   STICKY DOCK UNIVERSELLE (Desktop & Mobile)
+   ========================================================================== */
+.etb-mobile-sticky-bar {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(150%) !important;
+    background: #ffffff !important;
+    border: 1px solid #ebd9cc !important;
+    border-radius: 50px !important;
+    padding: 8px 8px 8px 24px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+    z-index: 99999 !important;
+    box-shadow: 0 10px 40px rgba(91, 53, 22, 0.15) !important;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important;
+    width: calc(100% - 32px) !important;
+    max-width: 480px !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.etb-mobile-sticky-bar.is-visible {
+    transform: translateX(-50%) translateY(0) !important;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+
+
+.etb-msb-price {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.etb-msb-label {
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #797979 !important;
+    font-weight: 700 !important;
+    max-width: 180px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.etb-msb-amount {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    line-height: 1.1 !important;
+}
+
+.etb-msb-btn {
+    background: var(--etb-theme-primary, #ba6827) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 14px 28px !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.25) !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+
+.etb-msb-btn:hover {
+    background: #a3591f !important;
+    transform: scale(1.02) !important;
+}
+
+
+/* ===== Téléphone international (intl-tel-input) ===== */
+.etb-field .iti {
+    width: 100% !important;
+    display: block !important;
+}
+.etb-field .iti input.etb-phone-input {
+    padding-left: 100px !important;
+}
+.iti__country-list {
+    z-index: 99999;
+    max-width: 90vw;
+}
+
+/* Liste de suggestions Google Places toujours au-dessus du formulaire */
+.pac-container {
+    z-index: 99999 !important;
+}
+
+
+
+/* ==========================================================================
+   PHOTOS D'ÉTAPE (TIMELINE)
+   Affichées AU-DESSUS du titre, uniquement quand l'étape est dépliée (.is-open).
+   Grille 2 colonnes. Nombre impair : la 1re photo passe en grand format 16/9.
+   ========================================================================== */
+
+/* Ligne « point + titre » : repère du point rond, pour qu'il reste aligné sur le titre
+   même quand des photos sont affichées au-dessus. */
+.co-vip-step-row {
+    position: relative;
+}
+
+/* Étape repliée : rien n'est affiché (les images lazy ne sont donc pas téléchargées) */
+.co-vip-step > .etb-step-photos {
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.co-vip-step.is-open > .etb-step-photos {
+    display: grid;
+    animation: etb-step-photos-in 0.35s ease both;
+}
+
+.co-vip-step .etb-step-photos--lead .etb-step-photo:first-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+}
+
+.co-vip-step .etb-step-photo {
+    margin: 0;
+    aspect-ratio: 4 / 3; /* réserve la place avant le chargement : pas de saut de page */
+    overflow: hidden;
+    border-radius: var(--etb-radius-md, 14px);
+    background: var(--etb-bg-light, #f8f9fa);
+    box-shadow: var(--etb-shadow-sm, 0 4px 15px rgba(0, 0, 0, 0.04));
+}
+
+.co-vip-step .etb-step-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    object-fit: cover;
+}
+
+@keyframes etb-step-photos-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 768px) {
+    .co-vip-step > .etb-step-photos {
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .co-vip-step .etb-step-photo {
+        border-radius: var(--etb-radius-sm, 8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .co-vip-step.is-open > .etb-step-photos {
+        animation: none;
+    }
+}
+
+/* ==========================================================================
+   MÉDIAS D'ÉTAPE (PHOTOS & EMBEDS) — STYLE ÉDITORIAL PREMIUM
+   ========================================================================== */
+
+.co-vip-step-media-container {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+/* --- 1. PHOTO UNIQUE (Style Capture 2) --- */
+.etb-step-media-grid.etb-single-media {
+    display: block !important;
+}
+
+.etb-step-media-grid.etb-single-media .etb-step-photo-premium {
+    margin: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 16 / 4 !important; /* Format cinéma/blog */
+    border-radius: var(--etb-radius-md, 16px) !important;
+    overflow: hidden !important;
+    background: #f1f5f9;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* --- 2. GALERIE DE PHOTOS (Grille fluide) --- */
+.etb-step-media-grid.etb-gallery-media {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+.etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
+    margin: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    border-radius: var(--etb-radius-sm, 12px) !important;
+    overflow: hidden !important;
+    background: #f1f5f9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* --- 3. EMBEDS (Instagram / Facebook / X) --- */
+.etb-social-embed-card {
+    max-width: 450px !important; /* Largeur idéale pour un post */
+    margin: 30px auto !important; /* Centré avec de l'espace */
+    background: #ffffff;
+    border-radius: var(--etb-radius-md, 16px);
+    border: 1px solid #f1e9e0;
+    box-shadow: 0 10px 30px rgba(91, 53, 22, 0.08) !important; /* Ombre premium */
+    overflow: hidden;
+    padding: 0; /* L'iframe gérera ses propres marges */
+}
+
+/* On force les iframes à être responsives */
+.etb-social-embed-card iframe {
+    width: 100% !important;
+    min-height: 480px; /* Ajuste selon le réseau social */
+    border: none !important;
+    display: block;
+}
+
+/* Images dans les grilles */
+.etb-step-photo-premium img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    transition: transform 0.4s ease;
+}
+
+.etb-step-photo-premium:hover img {
+    transform: scale(1.03); /* Léger zoom premium au survol */
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .etb-step-media-grid.etb-gallery-media {
+        grid-template-columns: 1fr !important; /* 1 colonne sur mobile */
+    }
+    .etb-social-embed-card {
+        max-width: 100% !important;
+    }
+}
+
+/* Légende de photo (Style Éditorial) */
+.etb-step-caption {
+    margin: 12px auto 0 auto !important;
+    text-align: center !important;
+    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
+    font-size: 13.5px !important;
+    color: #64748b !important; /* Gris ardoise doux */
+    font-style: italic !important;
+    line-height: 1.5 !important;
+    max-width: 90% !important;
+}/* Légende de photo (Style Éditorial) */
+.etb-step-caption {
+    margin: 12px auto 0 auto !important;
+    text-align: center !important;
+    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
+    font-size: 13.5px !important;
+    color: #64748b !important; /* Gris ardoise doux */
+    font-style: italic !important;
+    line-height: 1.5 !important;
+    max-width: 90% !important;
+}
+
+/* Ajustement pour les iframes Instagram générées par embed.js */
+.etb-social-embed-card iframe {
+    width: 100% !important;
+    min-height: 500px !important;
+    border: none !important;
+    border-radius: var(--etb-radius-md, 16px) !important;
+}
+
+/* ==========================================================================
+   STYLE MAGAZINE : EMBED FLOTTANT À DROITE (WRAPPED PAR LE TEXTE)
+   ========================================================================== */
+
+.etb-social-embed-float {
+    float: right !important;
+    width: 340px !important; /* Largeur parfaite pour Instagram */
+    max-width: 100% !important;
+    margin: 0 0 24px 32px !important; /* Marge en bas et à gauche pour le texte */
+    background: #ffffff;
+    border-radius: var(--etb-radius-md, 16px);
+    box-shadow: 0 2px 10px rgba(91, 53, 22, 0.08) !important;
+    overflow: hidden;
+}
+
+/* On force l'iframe Instagram à respecter la largeur du conteneur */
+.etb-social-embed-float iframe {
+    width: 100% !important;
+    min-width: 0 !important;
+    border: none !important;
+    display: block;
+}
+
+/* Légende de la photo / de l'embed */
+.etb-step-caption {
+    margin: 12px 0 0 0 !important;
+    text-align: center !important;
+    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    font-style: italic !important;
+    line-height: 1.5 !important;
+    padding: 0 10px 10px 10px;
+}
+
+/* --- PHOTOS EN PLEINE LARGEUR (Rappel) --- */
+.etb-step-media-grid.etb-single-media {
+    display: block !important;
+    margin-top: 24px;
+}
+.etb-step-media-grid.etb-single-media .etb-step-photo-premium {
+    margin: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 16 / 4 !important;
+    border-radius: var(--etb-radius-md, 16px) !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+.etb-step-media-grid.etb-gallery-media {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 24px;
+}
+.etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
+    margin: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    border-radius: var(--etb-radius-sm, 12px) !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+.etb-step-photo-premium img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    /* Sur mobile, le post ne flotte plus, il prend toute la largeur */
+    .etb-social-embed-float {
+        float: none !important;
+        width: 100% !important;
+        margin: 0 0 24px 0 !important;
+    }
+    .etb-step-media-grid.etb-gallery-media {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+
+/* ==========================================================================
+   GESTION DES PHOTOS DANS LA TIMELINE (STYLE ÉDITORIAL)
+   ========================================================================== */
+
+/* --- 1. PHOTO UNIQUE : Format Cinéma 16:9 --- */
+.etb-step-media-grid.etb-single-media {
+    display: block !important;
+    margin-top: 24px; /* Espace sous le titre */
+    margin-bottom: 8px;
+}
+
+.etb-step-media-grid.etb-single-media .etb-step-photo-premium {
+    margin: 0 !important;
+    width: 100% !important;
+    aspect-ratio: 16 / 6 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: #f1f5f9;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- 2. GALERIE MULTIPLE : Carrousel Horizontal Compact --- */
+.etb-step-media-grid.etb-gallery-media {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 16px !important;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    padding-bottom: 16px !important;
+    scroll-snap-type: x mandatory;
+}
+
+/* Barre de défilement ultra-fine */
+.etb-step-media-grid.etb-gallery-media::-webkit-scrollbar { height: 6px; }
+.etb-step-media-grid.etb-gallery-media::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.etb-step-media-grid.etb-gallery-media::-webkit-scrollbar-track { background: transparent; }
+
+.etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
+    flex: 0 0 320px !important;
+    height: 200px !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    background: #f1f5f9;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* --- 3. EFFET COMMUN AUX IMAGES --- */
+.etb-step-photo-premium img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.etb-step-photo-premium:hover img {
+    transform: scale(1.04) !important;
+}
+
+/* --- 4. LÉGENDE DE LA PHOTO --- */
+.etb-step-caption {
+    margin: 0 0 24px 0 !important; /* Marge sous la légende pour séparer du texte */
+    text-align: center !important;
+    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
+    font-size: 13.5px !important;
+    color: #64748b !important;
+    font-style: italic !important;
+    line-height: 1.5 !important;
+}
+
+/* Le reste de tes styles (Embed Float, Responsive) reste inchangé */
+
+
+
+/* --- RESPONSIVE (MOBILE) --- */
+@media (max-width: 768px) {
+    .etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
+        flex: 0 0 85% !important; /* Sur mobile, l'image prend 85% de la largeur */
+        height: 220px !important;
+    }
+    .etb-step-media-grid.etb-single-media .etb-step-photo-premium {
+        border-radius: 16px !important;
+    }
+}
+
+
+
+/* ==========================================================================
+   MICRO-INTERACTIONS PREMIUM (STYLE APPLE)
+   ========================================================================== */
+
+/* --- 1. ANIMATION D'OUVERTURE DE LA TIMELINE --- */
+/* Le contenu glisse doucement vers le bas avec un léger fondu */
+@keyframes etbSlideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.co-vip-step.is-open .co-vip-step-body {
+    display: flow-root !important;
+    animation: etbSlideDownFade 0.45s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+}
+
+/* On adoucit la rotation de la flèche (chevron) de l'accordéon */
+.co-vip-step-icon {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease !important;
+}
+.co-vip-step:hover .co-vip-step-icon {
+    color: var(--etb-theme-secondary, #5b3516); /* La flèche prend la couleur du texte au survol */
+}
+
+/* --- 2. EFFET SKELETON (CHARGEMENT) POUR L'INSTAGRAM --- */
+/* Un dégradé animé qui tourne en boucle pendant que l'iframe charge */
+@keyframes etbSkeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.etb-social-embed-float {
+    position: relative !important;
+    background: #f1f5f9 !important;
+    /* Le dégradé fait la largeur du bloc */
+    background-image: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 40px, #f1f5f9 80px) !important;
+    background-size: 200% 100% !important;
+    animation: etbSkeletonShimmer 1.5s infinite linear !important;
+    min-height: 480px !important; /* Garde la place pour éviter que la page "saute" */
+}
+
+/* Quand Instagram a chargé, l'iframe recouvre le fond animé. 
+   On retire l'animation une fois chargé (via CSS si l'iframe est enfant) */
+.etb-social-embed-float:has(iframe) {
+    background: #ffffff !important;
+    animation: none !important;
+    min-height: auto !important;
+}
+
+/* --- 3. FONDU DES IMAGES (PHOTOS) --- */
+/* L'image apparaît en douceur au lieu de "flasher" */
+@keyframes etbImageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.etb-step-photo-premium img {
+    animation: etbImageFadeIn 0.6s ease-out both;
+}

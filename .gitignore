@@ -1,0 +1,23 @@
+# ==========================================
+# FICHIERS SYSTÈME & ÉDITEURS
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.sublime-workspace
+
+# ==========================================
+# SCRIPTS LOCAUX (NE PAS PARTAGER)
+# ==========================================
+# On ignore tous les scripts Python locaux
+*.py
+update_tunnel.py
+
+# ==========================================
+# LOGS & TEMP
+# ==========================================
+*.log
+*.tmp
+.env

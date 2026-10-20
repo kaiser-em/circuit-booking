@@ -1,0 +1,233 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+class ETB_Pricing_Engine {
+
+    public function __construct() {}
+
+    /**
+     * Recherche native et autonome des données de l'option de circuit
+     */
+    public static function find_circuit_option_data( $option_id, $circuit_id = 0 ) {
+        if ( empty( $option_id ) ) {
+            return null;
+        }
+
+        if ( ! empty( $circuit_id ) ) {
+            $options = get_post_meta( $circuit_id, '_circuit_options_data', true );
+            if ( is_array( $options ) && isset( $options[ $option_id ] ) ) {
+                $data = $options[ $option_id ];
+                $data['circuit_id']    = $circuit_id;
+                $data['circuit_title'] = get_the_title( $circuit_id );
+                return $data;
+            }
+        }
+
+        global $wpdb;
+        $meta_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s",
+            '_circuit_options_data'
+        ) );
+
+        if ( ! empty( $meta_rows ) ) {
+            foreach ( $meta_rows as $row ) {
+                $options = maybe_unserialize( $row->meta_value );
+                if ( is_array( $options ) && isset( $options[ $option_id ] ) ) {
+                    $data = $options[ $option_id ];
+                    $data['circuit_id']    = $row->post_id;
+                    $data['circuit_title'] = get_the_title( $row->post_id );
+                    return $data;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Formate le libellé clair de la prestation
+     */
+    public static function get_circuit_option_label( $option_id, $circuit_id = 0, $default_fallback = '' ) {
+        $option = self::find_circuit_option_data( $option_id, $circuit_id );
+        if ( $option ) {
+            $circuit_name = ! empty( $option['circuit_title'] ) ? $option['circuit_title'] : 'Circuit';
+            $city_name    = ! empty( $option['city_name'] ) ? $option['city_name'] : 'Départ';
+            $duration     = ! empty( $option['duration_hours'] ) ? $option['duration_hours'] : 1;
+
+            $label = sprintf( '%s — Départ : %s (%sh)', $circuit_name, $city_name, $duration );
+            return apply_filters( 'etb_circuit_option_label', $label, $option_id, $circuit_id );
+        }
+
+        return $default_fallback ?: apply_filters( 'etb_circuit_option_label', 'Transfert standard', $option_id, $circuit_id );
+    }
+
+    /**
+     * Calcule le tarif total à partir des données validées du formulaire.
+     */
+    public function calculate_total( array $data ) {
+        $vehicles_total   = 0;
+        $pickup_surcharge = 0;
+        $extras_total     = 0;
+
+        $option_id  = ! empty( $data['option_id'] ) ? sanitize_text_field( $data['option_id'] ) : '';
+        $circuit_id = ! empty( $data['circuit_id'] ) ? absint( $data['circuit_id'] ) : 0;
+
+        $circuit_data      = self::find_circuit_option_data( $option_id, $circuit_id );
+        $default_duration  = ( $circuit_data && isset( $circuit_data['duration_hours'] ) ) ? floatval( $circuit_data['duration_hours'] ) : 1.0;
+        $default_add_price = ( $circuit_data && isset( $circuit_data['additional_price'] ) ) ? floatval( $circuit_data['additional_price'] ) : 0.0;
+
+        $duration_hours           = apply_filters( 'etb_circuit_duration_hours', $default_duration, $option_id, $circuit_id );
+        $circuit_additional_price = apply_filters( 'etb_circuit_additional_price', $default_add_price, $option_id, $circuit_id );
+
+        // 1. Calcul des véhicules avec support des paliers (Forfait 10h & heures sup.)
+        if ( ! empty( $data['vehicles'] ) && is_array( $data['vehicles'] ) ) {
+            foreach ( $data['vehicles'] as $vehicle_id => $qty ) {
+                $qty = min( 50, max( 0, (int) $qty ) );
+                if ( $qty > 0 ) {
+                    $vehicle_unit_price = self::calculate_vehicle_price( $vehicle_id, $duration_hours );
+                    $vehicles_total    += ( $vehicle_unit_price * $qty );
+                }
+            }
+        }
+
+        // 2. Supplément pickup
+        if ( ! empty( $data['pickup_id'] ) ) {
+            $pickup_surcharge = (float) get_post_meta( $data['pickup_id'], '_etb_surcharge', true );
+        }
+
+        // 3. Calcul des extras (plafonné à 20)
+        if ( ! empty( $data['extras'] ) && is_array( $data['extras'] ) ) {
+            foreach ( $data['extras'] as $extra_id => $qty ) {
+                $qty = min( 20, max( 0, (int) $qty ) );
+                if ( $qty > 0 ) {
+                    $extra_price = (float) get_post_meta( $extra_id, '_etb_price', true );
+                    $price_type  = get_post_meta( $extra_id, '_etb_price_type', true );
+
+                    if ( 'fixed' === $price_type ) {
+                        $extras_total += $extra_price;
+                    } else {
+                        $extras_total += ( $extra_price * $qty );
+                    }
+                }
+            }
+        }
+
+        $subtotal = $vehicles_total + $pickup_surcharge + $extras_total + $circuit_additional_price;
+        $discount_amount = 0;
+        $promo_code = ! empty( $data['promo'] ) ? strtoupper( trim( sanitize_text_field( $data['promo'] ) ) ) : '';
+
+        // 4. Application du code promo avec contrôle d'activation
+        if ( ! empty( $promo_code ) ) {
+            $promo_query = new WP_Query( array(
+                'post_type'      => 'tour_promo',
+                'post_status'    => 'publish',
+                'title'          => $promo_code,
+                'posts_per_page' => 1,
+            ) );
+
+            if ( ! $promo_query->have_posts() ) {
+                $promo_query = new WP_Query( array(
+                    'post_type'      => 'tour_promo',
+                    'post_status'    => 'publish',
+                    'posts_per_page' => 1,
+                    'meta_query'     => array(
+                        array( 'key' => '_etb_promo_code', 'value' => $promo_code, 'compare' => '=' ),
+                    ),
+                ) );
+            }
+
+            if ( $promo_query->have_posts() ) {
+                $promo_query->the_post();
+                $promo_id = get_the_ID();
+
+                // 1. Contrôle du statut actif
+                $is_active = get_post_meta( $promo_id, '_etb_promo_active', true );
+
+                // 2. Contrôle strict des dates de validité
+                $today      = current_time( 'Y-m-d' );
+                $valid_from = get_post_meta( $promo_id, '_etb_promo_valid_from', true );
+                $valid_to   = get_post_meta( $promo_id, '_etb_promo_valid_to', true );
+                $is_date_ok = ( empty( $valid_from ) || $today >= $valid_from ) && ( empty( $valid_to ) || $today <= $valid_to );
+
+                // 3. Contrôle strict du quota d'utilisations
+                $usage_limit = get_post_meta( $promo_id, '_etb_promo_usage_limit', true );
+                $remaining   = get_post_meta( $promo_id, '_etb_promo_remaining', true );
+                $is_quota_ok = true;
+
+                if ( '' !== $usage_limit && (int) $usage_limit === 0 ) {
+                    $is_quota_ok = false; // Désactivé si quota total = 0
+                } elseif ( '' !== $remaining && is_numeric( $remaining ) && (int) $remaining <= 0 ) {
+                    $is_quota_ok = false; // Épuisé si restant <= 0
+                }
+
+                // Application de la réduction UNIQUEMENT si toutes les conditions sont réunies
+                if ( '0' !== $is_active && $is_date_ok && $is_quota_ok ) {
+                    $discount_type = get_post_meta( $promo_id, '_etb_discount_type', true );
+                    if ( empty( $discount_type ) ) {
+                        $discount_type = get_post_meta( $promo_id, '_etb_promo_type', true ) ?: 'fixed';
+                    }
+
+                    $raw_value = get_post_meta( $promo_id, '_etb_discount_value', true );
+                    if ( '' === $raw_value || false === $raw_value ) {
+                        $raw_value = get_post_meta( $promo_id, '_etb_promo_value', true );
+                    }
+                    if ( '' === $raw_value || false === $raw_value ) {
+                        $raw_value = get_post_meta( $promo_id, '_etb_value', true );
+                    }
+                    $discount_val = floatval( $raw_value );
+
+                    if ( in_array( strtolower( $discount_type ), array( 'percentage', 'percent', 'pourcentage', '%' ), true ) ) {
+                        $discount_amount = $subtotal * ( $discount_val / 100 );
+                    } else {
+                        $discount_amount = $discount_val;
+                    }
+                } else {
+                    // Si le code est expiré ou épuisé : annulation complète de la remise et du code
+                    $promo_code      = '';
+                    $discount_amount = 0;
+                }
+                wp_reset_postdata();
+            }
+        }
+
+        $grand_total = max( 0, $subtotal - $discount_amount );
+
+        return array(
+            'vehicles_total'           => $vehicles_total,
+            'pickup_surcharge'         => $pickup_surcharge,
+            'extras_total'             => $extras_total,
+            'circuit_additional_price' => $circuit_additional_price,
+            'duration_hours'           => $duration_hours,
+            'discount_amount'          => $discount_amount,
+            'promo_code'               => $promo_code,
+            'grand_total'              => $grand_total,
+        );
+    }
+
+    /**
+     * Calcule le prix unitaire d'un véhicule selon la durée et les paliers tarifaires (10h / heures sup.)
+     */
+    public static function calculate_vehicle_price( $vehicle_id, $duration_hours ) {
+        $duration      = max( 0.25, floatval( $duration_hours ) );
+        $hourly_rate   = floatval( get_post_meta( $vehicle_id, '_etb_hourly_rate', true ) );
+        $base_price    = floatval( get_post_meta( $vehicle_id, '_etb_base_price', true ) );
+        $pack_10h      = floatval( get_post_meta( $vehicle_id, '_etb_pack_10h', true ) );
+        $sup_hour_rate = floatval( get_post_meta( $vehicle_id, '_etb_sup_hour_rate', true ) );
+
+        $standard_hourly = $hourly_rate > 0 ? $hourly_rate : $base_price;
+
+        // Si un forfait 10h est défini et que la durée atteint ou dépasse 10 heures
+        if ( $pack_10h > 0 ) {
+            if ( $duration == 10.0 ) {
+                return $pack_10h;
+            } elseif ( $duration > 10.0 ) {
+                $extra_hours = $duration - 10.0;
+                $extra_rate  = $sup_hour_rate > 0 ? $sup_hour_rate : $standard_hourly;
+                return $pack_10h + ( $extra_hours * $extra_rate );
+            }
+        }
+
+        // Tarification standard horaire (< 10h ou si pas de forfait 10h)
+        return $standard_hourly * $duration;
+    }
+}
