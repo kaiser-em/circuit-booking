@@ -11,6 +11,19 @@ $sec_token     = class_exists( 'ETB_Security' ) ? ETB_Security::generate_timesta
 $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ) );
 ?>
 
+<?php
+// Instagram embed : ne charge le SDK que si au moins une étape du circuit
+// contient un embed. Évite une requête tierce sur toutes les pages circuit.
+$etb_has_embed = false;
+if ( ! empty( $options ) && is_array( $options ) ) {
+    foreach ( $options as $opt_data ) {
+        if ( empty( $opt_data['timeline'] ) || ! is_array( $opt_data['timeline'] ) ) continue;
+        foreach ( $opt_data['timeline'] as $step ) {
+            if ( ! empty( $step['embed_code'] ) ) { $etb_has_embed = true; break 2; }
+        }
+    }
+}
+?>
 <div class="co-circuit-wrapper" id="co-circuit-app" data-circuit-id="<?php echo esc_attr( $circuit_id ); ?>" data-circuit-title="<?php echo esc_attr( get_the_title( $circuit_id ) ); ?>" style="position: relative; width: 100%; clear: both; display: block;">
    <!-- ============================================================
         SPRITE SVG — Icônes vectorielles (remplace les emojis)
@@ -834,7 +847,7 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
 
                 <div class="etb-mission-card" id="etb-mission-card">
                     <div class="etb-mission-row">
-                        <div class="etb-mission-thumb"><img id="etb-mc-img" src="" alt=""></div>
+                        <div class="etb-mission-thumb"><img id="etb-mc-img" alt=""></div>
                         <div class="etb-mission-info">
                             <div class="etb-mission-name" id="etb-mc-name">—</div>
                             <div class="etb-mission-meta" id="etb-mc-meta"></div>
@@ -888,6 +901,8 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
         <div class="etb-lightbox-counter"><span id="etb-lb-current">1</span> / <span id="etb-lb-total">1</span></div>
     </div>
 
-    <script async src="//www.instagram.com/embed.js"></script>
+    <?php if ( $etb_has_embed ) : ?>
+        <script async src="//www.instagram.com/embed.js"></script>
+    <?php endif; ?>
 
 </div>
