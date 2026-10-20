@@ -3405,3 +3405,588 @@
     border-color: var(--etb-theme-primary, #ba6827) !important;
     color: #ffffff !important;
 }
+
+/* Ajustement pour que le champ texte du stepper soit bien centré */
+.nexora-stepper input {
+    width: 40px !important;
+    text-align: center !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    box-shadow: none !important;
+    -moz-appearance: textfield !important;
+}
+.nexora-stepper input::-webkit-outer-spin-button,
+.nexora-stepper input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Fond gris clair pour le formulaire (pour faire ressortir les cartes blanches) */
+.etb-booking-main .etb-step {
+    background: #f8fafc !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Style des cartes individuelles */
+.nexora-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+}
+
+/* On remet un peu d'espace pour la barre de progression */
+.etb-booking-main .etb-progress-bar {
+    background: #ffffff !important; 
+    padding: 16px 20px !important; 
+    border-radius: 12px !important; 
+    margin-bottom: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Titre des cartes (Itinerary, Date...) */
+.nexora-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.nexora-card-header .dashicons {
+    color: #ba6827 !important;
+    background: #fdf8f3 !important;
+    padding: 6px !important;
+    border-radius: 6px !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.nexora-card-header h3 {
+    margin: 0 !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+/* --- CHAMPS DE SAISIE (NEXORA STYLE) --- */
+.nexora-input-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 4px 12px !important;
+    transition: all 0.2s ease !important;
+    height: 48px !important;
+    width: 100% !important;
+}
+
+.nexora-input-wrapper:focus-within {
+    border-color: #ba6827 !important;
+    box-shadow: 0 0 0 3px rgba(186, 104, 39, 0.1) !important;
+}
+
+.nexora-input-wrapper .dashicons {
+    color: #94a3b8 !important;
+    font-size: 18px !important;
+    margin-right: 10px !important;
+}
+
+.nexora-input-wrapper input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 8px 0 !important;
+    width: 100% !important;
+    font-size: 15px !important;
+    color: #1e293b !important;
+    font-family: inherit !important;
+    height: auto !important;
+}
+
+/* --- STEPPERS (BOUTONS + / -) --- */
+.nexora-stepper {
+    display: flex !important;
+    align-items: center !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    background: #fff !important;
+    width: fit-content !important;
+}
+
+.nexora-stepper button {
+    width: 28px !important;
+    height: 28px !important;
+    border: none !important;
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    padding: 0 !important;
+}
+
+.nexora-stepper button:hover {
+    background: #e2e8f0 !important;
+}
+
+.nexora-stepper input {
+    width: 40px !important;
+    border: none !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+}
+
+/* --- BOUTON CONFIRM (Caché par défaut) --- */
+#etb-submit-button {
+    display: none !important;
+}
+
+/* ==========================================================================
+   STICKY SIDEBAR - APPLE LIKE UI
+   ========================================================================== */
+
+/* Conteneur principal */
+.etb-sidebar-sticky {
+    background: #ffffff !important;
+    border-radius: 24px !important; /* Angles très arrondis */
+    padding: 32px 28px !important;
+    border: 1px solid #e5e5ea !important; /* Bordure grise subtile */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06) !important; /* Ombre diffuse "Apple" */
+}
+
+/* Titre "Your Selection" */
+.etb-sidebar-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #1d1d1f !important; /* Noir profond Apple */
+    margin: 0 0 24px 0 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Carte du véhicule (Image + Nom + Specs) */
+.etb-sidebar-sticky .etb-mission-card {
+    background: #f5f5f7 !important; /* Gris très clair Apple */
+    border-radius: 16px !important;
+    padding: 20px !important;
+    margin: 0 0 24px 0 !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.etb-sidebar-sticky .etb-mission-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+/* Image de la voiture - On la réduit pour qu'elle soit élégante */
+.etb-sidebar-sticky .etb-mission-thumb {
+    width: 100% !important;
+    height: 120px !important;
+    background: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.etb-sidebar-sticky .etb-mission-thumb img {
+    max-height: 100% !important;
+    max-width: 90% !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)) !important; /* Ombre portée sous la voiture */
+}
+
+/* Nom et specs */
+.etb-sidebar-sticky .etb-mission-name {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #1d1d1f !important;
+    margin: 0 !important;
+}
+
+.etb-sidebar-sticky .etb-mission-meta {
+    font-size: 13px !important;
+    color: #86868b !important; /* Gris Apple */
+    display: flex !important;
+    justify-content: center !important;
+    gap: 16px !important;
+    margin-top: 4px !important;
+}
+
+/* --- RÉCAPITULATIF DES PRIX --- */
+.etb-summary-receipt {
+    margin-bottom: 24px !important;
+}
+
+.etb-summary-receipt #etb-summary-text {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* Ligne de prix (Ex: 1x Mercedes (5h) 750€) */
+.etb-summary-receipt .etb-summary-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    font-size: 14px !important;
+    color: #1d1d1f !important;
+    margin: 0 !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px dashed #e5e5ea !important;
+}
+
+.etb-summary-receipt .etb-summary-row:last-child {
+    border-bottom: none !important;
+}
+
+.etb-summary-receipt .etb-summary-row strong {
+    color: #1d1d1f !important;
+    font-weight: 600 !important;
+}
+
+.etb-summary-receipt .etb-summary-row span {
+    color: #86868b !important;
+}
+
+/* Ligne du total (En bas) */
+.etb-summary-receipt .etb-summary-row.etb-total-row {
+    font-size: 16px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid #e5e5ea !important;
+    border-bottom: none !important;
+    margin-top: 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.etb-summary-receipt .etb-summary-row.etb-total-row strong {
+    font-size: 24px !important;
+    color: var(--etb-theme-primary, #ba6827) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+}
+
+/* Bouton Confirm Booking (Style Apple) */
+.etb-submit-button {
+    background: #1d1d1f !important; /* Noir ou Orange ? Mettons l'orange de ta charte */
+    background: var(--etb-theme-primary, #ba6827) !important; 
+    border-radius: 14px !important;
+    padding: 16px 24px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    border: none !important;
+    color: white !important;
+}
+
+.etb-submit-button:hover {
+    transform: scale(0.98) !important; /* Effet de clic Apple */
+    opacity: 0.9 !important;
+}
+
+/* --- LES BOUTONS + / - DU FORMULAIRE (Nettoyage) --- */
+.nexora-pax-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+.nexora-pax-row:last-child {
+    border-bottom: none !important;
+}
+
+/* ==========================================================================
+   ALIGNEMENT PARFAIT - LAYOUT 2 COLONNES (STYLE APPLE / NEXORA)
+   ========================================================================== */
+
+/* 1. Le conteneur principal */
+.etb-booking-layout {
+    display: grid !important;
+    grid-template-columns: 1.2fr 0.8fr !important;
+    gap: 40px !important;
+    align-items: start !important; /* Aligne le haut des deux colonnes */
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding-top: 40px !important;
+    padding-bottom: 60px !important;
+}
+
+/* 2. Les titres (Gauche et Droite) */
+.nexora-section-header,
+.etb-sidebar-header {
+    margin: 0 0 24px 0 !important; /* Même marge en bas pour les deux */
+    padding: 0 !important;
+    min-height: 60px; /* Force une hauteur mini pour que les cartes s'alignent même si le sous-titre manque */
+}
+
+.nexora-main-title,
+.etb-sidebar-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #1d1d1f !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+    padding: 0 !important;
+}
+
+.nexora-sub-title {
+    font-size: 15px !important;
+    color: #86868b !important;
+    margin: 0 !important;
+}
+
+/* 3. La colonne de gauche (Formulaire) */
+.etb-booking-main {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.etb-booking-main .co-booking-form-reveal {
+    margin-top: 0 !important; /* On retire la marge du haut */
+}
+
+.etb-booking-main .etb-booking-widget {
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    border: 1px solid #e5e5ea !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+    padding: 30px !important;
+    margin-top: 0 !important;
+}
+
+/* 4. La colonne de droite (Sticky) */
+.etb-booking-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.etb-sidebar-sticky {
+    position: sticky !important;
+    top: 40px !important;
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    padding: 30px !important;
+    border: 1px solid #e5e5ea !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+    margin-top: 0 !important;
+}
+
+/* ==========================================================================
+   VERROUILLAGE DU LAYOUT (PAR DÉFAUT)
+   ========================================================================== */
+
+/* Le layout est en 1 colonne (la grille prend toute la place) */
+.etb-booking-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important; 
+    gap: 40px !important;
+    align-items: start !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding-top: 40px !important;
+}
+
+/* Le panier est STRICTEMENT caché au début */
+.etb-booking-sidebar {
+    display: none !important;
+}
+
+/* La grille est en 3 colonnes */
+.co-vehicles-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* ==========================================================================
+   ÉTAT ACTIVÉ (Ajouté par le bouton Continue)
+   ========================================================================== */
+.etb-booking-layout.has-selection {
+    grid-template-columns: 1.2fr 0.8fr !important;
+}
+
+.etb-booking-layout.has-selection .etb-booking-sidebar {
+    display: block !important; /* Le panier apparaît */
+}
+
+.etb-booking-layout.has-selection .co-vehicles-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+
+@media (max-width: 992px) {
+    .etb-booking-layout.has-selection {
+        grid-template-columns: 1fr !important;
+    }
+    .etb-booking-layout.has-selection .etb-booking-sidebar {
+        order: -1 !important;
+    }
+    .co-vehicles-grid,
+    .etb-booking-layout.has-selection .co-vehicles-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   POLISSAGE FINAL - APPLE / GOOGLE STYLE
+   ========================================================================== */
+
+/* 1. Adoucir la case à cocher Drop-off */
+.etb-dropoff-label-text {
+    text-transform: none !important; /* Retire les majuscules agressives */
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    letter-spacing: 0 !important;
+}
+
+/* 2. Resserrer les lignes des passagers (Passengers & Luggage) */
+.nexora-pax-row {
+    padding: 10px 0 !important; /* Moins haut qu'avant */
+}
+.nexora-pax-row .etb-pax-info strong {
+    font-size: 14px !important;
+    color: #1d1d1f !important;
+}
+.nexora-pax-row .etb-pax-info span {
+    font-size: 12px !important;
+    color: #86868b !important;
+}
+
+/* 3. Améliorer le conteneur de l'image dans le panier */
+.etb-sidebar-sticky .etb-mission-thumb {
+    background: #f5f5f7 !important;
+    border-radius: 12px !important;
+    height: 140px !important;
+    margin-bottom: 16px !important;
+}
+.etb-sidebar-sticky .etb-mission-thumb img {
+    max-height: 90px !important; /* Garde l'image à taille humaine */
+    transform: scale(1.1) !important; /* Zoom léger pour un effet showroom */
+}
+
+/* 4. Améliorer la lisibilité du récapitulatif du panier */
+.etb-summary-receipt .etb-summary-row {
+    font-size: 14px !important;
+    color: #1d1d1f !important;
+    padding-bottom: 10px !important;
+}
+.etb-summary-receipt .etb-summary-row span {
+    color: #86868b !important;
+}
+.etb-summary-receipt .etb-summary-row strong {
+    color: #1d1d1f !important;
+    font-weight: 600 !important;
+}
+
+/* 5. Cacher la barre flottante sur Desktop */
+@media (min-width: 993px) {
+    .etb-mobile-sticky-bar {
+        display: none !important;
+    }
+}
+
+/* 6. Uniformiser la barre de progression */
+.etb-progress-bar {
+    margin-bottom: 30px !important;
+    padding: 0 10px !important;
+}
+
+/* ==========================================================================
+   FIX ESPACEMENT TITRES & CARTES (STYLE APPLE)
+   ========================================================================== */
+
+/* 1. On enlève la hauteur forcée et on réduit la marge sous les titres */
+.nexora-section-header,
+.etb-sidebar-header {
+    min-height: 0 !important; /* Plus de hauteur forcée */
+    margin-bottom: 16px !important; /* Espace réduit (16px au lieu de 24px) */
+    padding: 0 !important;
+}
+
+/* 2. On resserre les marges des titres eux-mêmes */
+.nexora-main-title,
+.etb-sidebar-title {
+    margin-top: 0 !important;
+    margin-bottom: 4px !important; /* Le sous-titre est juste en dessous */
+}
+
+/* 3. On s'assure que les conteneurs ne rajoutent pas d'espace */
+.etb-booking-main,
+.etb-booking-sidebar {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.co-booking-form-reveal {
+    margin-top: 0 !important;
+}
+
+/* 4. Optionnel : On réduit l'espacement global entre les deux colonnes pour un rendu plus compact */
+.etb-booking-layout {
+    padding-top: 20px !important; /* Un peu moins d'air en haut de page */
+}
+
+/* ==========================================================================
+   TITRE DISCRET DANS LE PANNEAU STICKY
+   ========================================================================== */
+
+/* Le conteneur du titre à l'intérieur de la carte */
+.etb-sidebar-sticky .etb-sidebar-header {
+    margin: 0 0 20px 0 !important;
+    padding: 0 0 16px 0 !important;
+    border-bottom: 1px solid #f1f5f9 !important; /* Ligne de séparation subtile */
+}
+
+/* Le titre lui-même : plus petit, plus sobre */
+.etb-sidebar-sticky .etb-sidebar-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 14px !important; /* Taille réduite */
+    font-weight: 600 !important;
+    text-transform: uppercase !important; /* Style "Label" */
+    letter-spacing: 0.05em !important;
+    color: #86868b !important; /* Gris Apple */
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}
+
+/* Ajustement de l'alignement avec la carte de gauche */
+/* On retire un peu de padding au sommet de la carte sticky pour compenser le titre qui est dedans */
+.etb-sidebar-sticky {
+    padding-top: 24px !important; 
+    margin-top: 70px !important;
+}

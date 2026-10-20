@@ -563,6 +563,12 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
 
             <!-- FORMULAIRE (Caché au début, apparaît après sélection) -->
             <div class="co-booking-form-reveal is-hidden" id="etb-booking-form-wrapper" style="margin-top: 30px;">
+                 <!-- 🔧 NOUVEAU : Titre de la section -->
+                <div class="nexora-section-header">
+                    <h2 class="nexora-main-title">Configure your trip</h2>
+                    <p class="nexora-sub-title">Please enter your trip details below.</p>
+                </div>
+
                 <form class="etb-booking-widget" id="etb-booking-app" onsubmit="return false;">
                     
                     <div style="position: absolute !important; left: -9999px !important; opacity: 0 !important;" aria-hidden="true">
@@ -585,12 +591,130 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
                         </div>
                     </div>
 
-                    <!-- ÉTAPE 1 -->
+                                        <!-- ÉTAPE 1 : TRIP DETAILS -->
                     <div class="etb-step etb-step-1" data-step="1">
-                        <!-- (Garde tout le contenu de l'étape 1 actuel : Carte Passagers, Carte Itinéraire, bouton Next) -->
-                        <!-- ... INSÈRE ICI TON CODE DE L'ÉTAPE 1 (celui qu'on a fait avec les .nexora-card) ... -->
-                    </div>
+                        
+                        <!-- CARTE 1 : ITINÉRAIRE -->
+                        <?php if ( ( $form_settings['show_pickup'] ?? '1' ) !== '0' ) : ?>
+                        <div class="nexora-card">
+                            <div class="nexora-card-header">
+                                <span class="dashicons dashicons-location"></span>
+                                <h3>Itinerary</h3>
+                            </div>
+                            <div class="nexora-field-group">
+                                <label style="font-size:13px; color:#64748b;">Pickup location</label>
+                                <div class="nexora-input-wrapper">
+                                    <span class="dashicons dashicons-location"></span>
+                                    <input type="text" name="etb_pickup_address" id="etb-pickup-address" placeholder="Airport, Hotel..." autocomplete="off">
+                                </div>
+                                <p class="etb-error-message" id="etb-pickup-error" style="display:none; margin: 0;">⚠ Please provide the pickup address.</p>
+                                
+                                <div class="etb-field etb-field-full etb-dropoff-toggle-wrapper" style="margin-top: 10px; margin-bottom: 10px;">
+                                    <label id="etb-dropoff-label" class="etb-toggle-dropoff-label" for="etb-diff-dropoff-cb">
+                                        <input type="checkbox" id="etb-diff-dropoff-cb" class="hidden-input">
+                                        <span class="etb-custom-box"><span class="dashicons dashicons-yes"></span></span>
+                                        <span class="etb-dropoff-label-text">Different drop-off location</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="etb-field etb-field-full" id="etb-dropoff-container" style="display: none;">
+                                    <label style="font-size:13px; color:#64748b;">Destination</label>
+                                    <div class="nexora-input-wrapper">
+                                        <span class="dashicons dashicons-location"></span>
+                                        <input type="text" name="etb_dropoff_info" id="etb-dropoff-info" placeholder="Destination..." autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
 
+                        <!-- CARTE 2 : DATE & TIME -->
+                        <div class="nexora-card">
+                            <div class="nexora-card-header">
+                                <span class="dashicons dashicons-calendar-alt"></span>
+                                <h3>Date & Time</h3>
+                            </div>
+                            <div class="etb-grid-2" style="gap: 16px;">
+                                <?php if ( ( $form_settings['show_date'] ?? '1' ) !== '0' ) : ?>
+                                    <div class="etb-field">
+                                        <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Date *</label>
+                                        <div class="nexora-input-wrapper">
+                                            <span class="dashicons dashicons-calendar-alt"></span>
+                                            <input type="date" name="etb_date" lang="en">
+                                        </div>
+                                        <p class="etb-error-message" id="etb-date-error" style="display:none;">⚠ Please select a date.</p>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ( ( $form_settings['show_time'] ?? '1' ) !== '0' ) : ?>
+                                    <div class="etb-field">
+                                        <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Time *</label>
+                                        <div class="nexora-input-wrapper">
+                                            <span class="dashicons dashicons-clock"></span>
+                                            <input type="time" name="etb_time">
+                                        </div>
+                                        <p class="etb-error-message" id="etb-time-error" style="display:none;">⚠ Please select a time.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- CARTE 3 : PASSAGERS & BAGAGES -->
+                        <div class="nexora-card">
+                            <div class="nexora-card-header">
+                                <span class="dashicons dashicons-groups"></span>
+                                <h3>Passengers & Luggage</h3>
+                            </div>
+                            <p class="etb-error-message" id="etb-vehicle-selection-error" style="display:none; margin-top: 0; margin-bottom: 16px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" class="etb-ico etb-ico-alert" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-alert" xlink:href="#etb-ico-alert"/></svg>Please select at least one vehicle.
+                            </p>
+                            
+                            <div class="nexora-field-group">
+                                <?php if ( ( $form_settings['show_adults'] ?? '1' ) !== '0' ) : ?>
+                                    <div class="nexora-pax-row">
+                                        <div class="etb-pax-info"><strong>Adults</strong><span>12+ years</span></div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                            <input type="number" name="etb_adults" value="1" min="1" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ( ( $form_settings['show_children'] ?? '1' ) !== '0' ) : ?>
+                                    <div class="nexora-pax-row">
+                                        <div class="etb-pax-info"><strong>Children</strong><span>2-11 years</span></div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                            <input type="number" name="etb_children" value="0" min="0" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ( ( $form_settings['show_total_bag'] ?? '1' ) !== '0' ) : ?>
+                                    <div class="nexora-pax-row">
+                                        <div class="etb-pax-info"><strong>Luggage</strong><span>Bagages</span></div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus" onclick="let i=document.querySelector('input[name=\'etb_total_luggage\']'); if(i.value>0)i.value--; i.dispatchEvent(new Event('input'));">-</button>
+                                            <input type="number" name="etb_total_luggage" value="0" min="0" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus" onclick="let i=document.querySelector('input[name=\'etb_total_luggage\']'); i.value++; i.dispatchEvent(new Event('input'));">+</button>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <p class="etb-error-message" id="etb-pax-capacity-error" style="display:none; margin-top: 16px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" class="etb-ico etb-ico-alert" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-alert" xlink:href="#etb-ico-alert"/></svg> Passenger capacity exceeded
+                            </p>
+                        </div>
+
+                        <div class="etb-step-nav" style="margin-top: 30px; border-top: none;">
+                            <div class="etb-step-nav-error" data-nav-error="1" style="display:none;"></div>
+                            <button type="button" class="etb-btn-next" data-next="2" style="width: 100%; justify-content: center; border-radius: 12px; padding: 18px;">
+                                <span>Continue to Your Info</span>
+                            </button>
+                        </div>
+                    </div>
                     <!-- ÉTAPE 2 -->
                     <div class="etb-step etb-step-2 is-hidden" data-step="2">
                         <!-- (Garde tout le contenu de l'étape 2 actuel) -->
@@ -608,9 +732,14 @@ $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' =>
 
         <!-- COLONNE DROITE : LE SIDEBAR STICKY -->
         <div class="etb-booking-sidebar">
+            
             <div class="etb-sidebar-sticky">
-                <h3 class="etb-sidebar-title">Your Selection</h3>
                 
+                <!-- Titre déplacé à l'intérieur de la carte -->
+                <div class="etb-sidebar-header">
+                    <h3 class="etb-sidebar-title">Your Selection</h3>
+                </div>
+
                 <div class="etb-mission-card" id="etb-mission-card">
                     <div class="etb-mission-row">
                         <div class="etb-mission-thumb"><img id="etb-mc-img" src="" alt=""></div>

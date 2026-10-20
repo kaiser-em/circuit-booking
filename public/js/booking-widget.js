@@ -101,11 +101,10 @@
 
         const vehicleInput = root.querySelector('#etb-vehicle-input');
         const pickupInput = root.querySelector('input[name="etb_pickup_address"]');
-        const totalValEl = root.querySelector('#etb-total-val');
-        const summaryTextEl = root.querySelector('#etb-summary-text');
+        const totalValEl = document.querySelector('#etb-total-val');
+        const summaryTextEl = document.querySelector('#etb-summary-text');
         const paxCapacityErrorEl = root.querySelector('#etb-pax-capacity-error');
-        const submitButton = root.querySelector('.etb-submit-button');
-        const capacityDisplayEl = root.querySelector('#etb-capacity-display');
+        const submitButton = document.querySelector('.etb-submit-button');        const capacityDisplayEl = root.querySelector('#etb-capacity-display');
         const baggageCapacityErrorEl = root.querySelector('#etb-baggage-capacity-error');
         const nameInput = root.querySelector('input[name="etb_name"]');
         const emailInput = root.querySelector('input[name="etb_email"]');
@@ -155,13 +154,13 @@
 
 
            // Carte unifiée Véhicule + Total (Étape 3)
-        const missionCardEl   = root.querySelector('#etb-mission-card');
-        const missionImg      = root.querySelector('#etb-mc-img');
-        const missionName     = root.querySelector('#etb-mc-name');
-        const missionMeta     = root.querySelector('#etb-mc-meta');
-        const missionTotal    = root.querySelector('#etb-mc-total');
-        const missionChange   = root.querySelector('#etb-mc-change');
-        const submitPriceVal  = root.querySelector('#etb-submit-price-val');
+                const missionCardEl   = document.querySelector('#etb-mission-card');
+        const missionImg      = document.querySelector('#etb-mc-img');
+        const missionName     = document.querySelector('#etb-mc-name');
+        const missionMeta     = document.querySelector('#etb-mc-meta');
+        const missionTotal    = document.querySelector('#etb-mc-total');
+        const missionChange   = document.querySelector('#etb-mc-change');
+        const submitPriceVal  = document.querySelector('#etb-submit-price-val');
         const mobileStickyBar = document.getElementById('etb-mobile-sticky-bar');
         const mobileStickyTotal = document.getElementById('etb-msb-total');
         const mobileStickyBtn = document.getElementById('etb-msb-btn');
@@ -397,11 +396,15 @@
                 summaryTextEl.innerHTML = `
                     <div class="etb-summary-details">
                         ${vehiclesHtml}
-                        <div class="etb-summary-row"><span> ${root.querySelector('input[name="etb_adults"]')?.value || 1} Adult(s), ${root.querySelector('input[name="etb_children"]')?.value || 0} Child(ren)</span></div>
+                        <div class="etb-summary-row"><span>${root.querySelector('input[name="etb_adults"]')?.value || 1} Adult(s), ${root.querySelector('input[name="etb_children"]')?.value || 0} Child(ren)</span></div>
                         ${state.pickup.name ? `<div class="etb-summary-row"><span>Pickup: ${state.pickup.name}</span></div>` : ''}
                         ${circuitPriceHtml}
                         ${extrasHtml}
                         ${promoHtml}
+                    </div>
+                    <div class="etb-summary-row etb-total-row">
+                        <span>Total</span>
+                        <strong>${total.toFixed(0)} ${state.currency}</strong>
                     </div>
                 `;
             }
@@ -427,26 +430,9 @@
                 continueWrap.classList.toggle('is-visible', hasSelectedVehicle);
             }
 
+            
+
             // ────────────────────────────────────────────────────────────────
-            // RÉVÉLATION DU FORMULAIRE — Apparaît après sélection d'un véhicule
-            // ────────────────────────────────────────────────────────────────
-            const formWrapper = document.getElementById('etb-booking-form-wrapper');
-            if (formWrapper) {
-                const shouldHide = !hasSelectedVehicle;
-                const isCurrentlyHidden = formWrapper.classList.contains('is-hidden');
-
-                if (shouldHide !== isCurrentlyHidden) {
-                    formWrapper.classList.toggle('is-hidden', shouldHide);
-                }
-            }
-
-            // 🔧 NOUVEAU : Afficher/Cacher le layout 2 colonnes
-            //const bookingLayout = document.querySelector('.etb-booking-layout');
-            //if (bookingLayout) {
-             //   bookingLayout.classList.toggle('has-selection', hasSelectedVehicle);
-            //}
-
-                        // ────────────────────────────────────────────────────────────────
             // CARTE UNIFIÉE — Véhicule + Total (Étape 3)
             // ────────────────────────────────────────────────────────────────
             if (missionCardEl) {
@@ -458,8 +444,8 @@
 
                     if (activeCard) {
                         const name    = activeCard.querySelector('h3')?.textContent.trim() || 'Vehicle';
-                        const imgEl   = activeCard.querySelector('.etb-img-static');
-                        const imgSrc  = imgEl ? imgEl.src : '';
+                        const imgEl   = activeCard.querySelector('.etb-vehicle-image-wrapper img'); // Cible toutes les images
+                        const imgSrc  = imgEl && imgEl.src ? imgEl.src : '';
                         const maxPax  = activeCard.dataset.maxPax || '0';
                         const maxBag  = activeCard.dataset.maxBaggage || '0';
 
@@ -1243,38 +1229,61 @@
             });
         }
         // ────────────────────────────────────────────────────────────────
-        // BOUTON "CHANGE VEHICLE" — Scroll vers la grille
+        // BOUTON "CHANGE VEHICLE" — Retour à la grille
         // ────────────────────────────────────────────────────────────────
         if (missionChange) {
             missionChange.addEventListener('click', (e) => {
                 e.preventDefault();
-                const grid = document.querySelector('.co-top-vehicles-section');
-                if (grid) {
-                    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // 1. Cacher le formulaire
+                const formWrapper = document.getElementById('etb-booking-form-wrapper');
+                if (formWrapper) {
+                    formWrapper.classList.add('is-hidden');
+                }
+
+                // 2. Retirer le layout 2 colonnes (cache le sticky)
+                const bookingLayout = document.querySelector('.etb-booking-layout');
+                if (bookingLayout) {
+                    bookingLayout.classList.remove('has-selection');
+                }
+
+                // 3. Réafficher la grille de véhicules
+                const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                if (vehiclesSection) {
+                    vehiclesSection.style.display = ''; // Réinitialise l'affichage
+                    setTimeout(() => {
+                        vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 50);
                 }
             });
         }
 
-        // 🔧 NOUVEAU : Clic sur le bouton "Continue" sous la grille de véhicules
+        // 🔧 Clic sur le bouton "Continue" sous la grille de véhicules
         const btnContinueVehicle = document.getElementById('etb-btn-continue-vehicle');
         if (btnContinueVehicle) {
             btnContinueVehicle.addEventListener('click', function() {
-                                // 1. Cacher le bouton
+                // 1. Cacher le bouton
                 document.getElementById('etb-vehicle-continue-wrap').classList.remove('is-visible');
                 
-                // 2. Afficher le formulaire
+                // 2. Cacher la grille de véhicules
+                const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                if (vehiclesSection) {
+                    vehiclesSection.style.display = 'none';
+                }
+
+                // 3. Afficher le formulaire
                 const formWrapper = document.getElementById('etb-booking-form-wrapper');
                 if (formWrapper) {
                     formWrapper.classList.remove('is-hidden');
                 }
                 
-                // 3. Activer le layout 2 colonnes avec le Sidebar
+                // 4. Activer le layout 2 colonnes avec le Sidebar
                 const bookingLayout = document.querySelector('.etb-booking-layout');
                 if (bookingLayout) {
                     bookingLayout.classList.add('has-selection');
                 }
 
-                // 4. Scroll doux vers le formulaire
+                // 5. Scroll doux vers le formulaire
                 setTimeout(() => {
                     if (formWrapper) {
                         formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1384,6 +1393,12 @@
                             formWrapperEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
                     }, 80);
+                }
+
+                                // 🔧 Afficher le bouton de confirmation uniquement à l'étape 3
+                const finalSubmitBtn = document.getElementById('etb-submit-button');
+                if (finalSubmitBtn) {
+                    finalSubmitBtn.style.display = (stepNum === 3) ? 'flex' : 'none';
                 }
             };
 
