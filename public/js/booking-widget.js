@@ -47,7 +47,9 @@
 
             // Déclenche un événement global pour avertir tous les modules (y compris Stripe) du changement de thème
             document.dispatchEvent(new CustomEvent('etb_theme_changed', { detail: { theme: themeName } }));
-                console.log("🌟 Thème appliqué :", themeName);
+                if ( window.etbDebug ) {
+                    console.log( '[ETB] Theme applied:', themeName );
+                }
  
         };
 
@@ -78,14 +80,35 @@
         bindToggleButtons();
 
         // 5. RADAR (MutationObserver) si le thème charge le widget en décalé
-        const themeObserver = new MutationObserver(() => {
-            bindToggleButtons();
-            const unstyledWidgets = document.querySelectorAll('#etb-quick-widget-app:not([data-etb-theme]), #etb-checkout-app:not([data-etb-theme])');
-            if (unstyledWidgets.length > 0) {
-                applyTheme(detectOptimalTheme());
-            }
-        });
-        themeObserver.observe(document.body, { childList: true, subtree: true });
+                // Observateur scopé : n'agit que si le widget est présent sur la page.
+        // Debounce via requestAnimationFrame pour coalescer les mutations
+        // déclenchées par nos propres innerHTML (updateSummary).
+        const widgetRoot = document.querySelector(
+            '#etb-booking-app, #etb-quick-widget-app, #etb-checkout-app'
+        );
+
+        if ( widgetRoot ) {
+            let observerScheduled = false;
+            const themeObserver = new MutationObserver( () => {
+                if ( observerScheduled ) return;
+                observerScheduled = true;
+                window.requestAnimationFrame( () => {
+                    observerScheduled = false;
+                    bindToggleButtons();
+                    const unstyledWidgets = document.querySelectorAll(
+                        '#etb-quick-widget-app:not([data-etb-theme]), ' +
+                        '#etb-checkout-app:not([data-etb-theme])'
+                    );
+                    if ( unstyledWidgets.length > 0 ) {
+                        applyTheme( detectOptimalTheme() );
+                    }
+                } );
+            } );
+            themeObserver.observe( widgetRoot.parentElement || document.body, {
+                childList: true,
+                subtree: true
+            } );
+        }
     };
 
 
@@ -1515,7 +1538,7 @@
             });
         }
         // Lancement initial
-        
+
         refreshAll();
         initBookingWizard();
     };
