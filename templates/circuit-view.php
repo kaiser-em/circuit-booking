@@ -603,6 +603,8 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                         </div>
                     </div>
 
+                    <div id="etb-global-submit-error" class="etb-global-error" role="alert" aria-live="assertive" style="display:none; margin: 0 0 20px 0; padding: 14px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px; line-height: 1.5;"></div>
+
                                         <!-- ÉTAPE 1 : TRIP DETAILS -->
                     <div class="etb-step etb-step-1" data-step="1">
                         

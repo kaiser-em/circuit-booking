@@ -110,7 +110,14 @@
             } );
         }
     };
-
+    const escapeHtml = function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
 
     const init = function () {
         // 1. Recherche du conteneur racine ETB
@@ -1159,8 +1166,8 @@
                                 <p style="color: #15803d; font-size: 16px; margin: 10px 0;">
                                     Numéro de dossier : <strong>#${result.data.booking_id}</strong>
                                 </p>
-                                <p style="color: #374151; font-size: 14px; margin-bottom: 0;">
-                                    Un accusé de réception avec les détails de votre prestation a été envoyé à l'adresse <strong>${result.data.email}</strong>.
+                                 <p style="color: #374151; font-size: 14px; margin-bottom: 0;">
+                                    Un accusé de réception avec les détails de votre prestation a été envoyé à l'adresse <strong>${escapeHtml(result.data.email)}</strong>.
                                 </p>
                             </div>
                         `;
@@ -1186,14 +1193,22 @@
                     } else {
                         submitButton.disabled = false;
                         submitButton.textContent = originalBtnText;
-                        alert(result.data.message || 'Une erreur est survenue lors de la réservation.');
+                        if (globalSubmitErrorEl) {
+                            globalSubmitErrorEl.textContent = (result.data && result.data.message) || 'Une erreur est survenue lors de la réservation.';
+                            globalSubmitErrorEl.style.display = 'block';
+                            globalSubmitErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
                     }
                 })
                 .catch((error) => {
                     console.error('ETB AJAX error:', error);
                     submitButton.disabled = false;
                     submitButton.textContent = originalBtnText;
-                    alert('Une erreur réseau est survenue. Veuillez vérifier votre connexion et réessayer.');
+                    if (globalSubmitErrorEl) {
+                        globalSubmitErrorEl.textContent = 'Une erreur réseau est survenue. Veuillez vérifier votre connexion et réessayer.';
+                        globalSubmitErrorEl.style.display = 'block';
+                        globalSubmitErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 });
             });
         }
