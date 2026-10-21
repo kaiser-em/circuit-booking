@@ -214,7 +214,8 @@
         let hasRequiredFieldsMissing = false;
 
         // Date minimum : aujourd'hui (bloque les dates passées)
-        const todayStr = new Date().toISOString().split('T')[0];
+        const _today = new Date();
+        const todayStr = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
         if (dateInput) {
             dateInput.setAttribute('min', todayStr);
         }
@@ -367,8 +368,7 @@
             const isPickupMissing = !!pickupInput && pickupInput.value.trim() === '';
             if (pickupErrorEl) pickupErrorEl.style.display = (hasAttemptedSubmit && isPickupMissing) ? 'block' : 'none';
 
-            hasRequiredFieldsMissing = isNameMissing || isEmailMissing || isDateMissing || isDatePast || isTimeMissing || isVehicleMissing || isPickupMissing;
-
+            hasRequiredFieldsMissing = isNameMissing || isEmailMissing || isPhoneInvalid || isDateMissing || isDatePast || isTimeMissing || isVehicleMissing || isPickupMissing || isBaggageCapacityExceeded;
             // Alerte globale au-dessus du récapitulatif
             if (globalSubmitErrorEl) {
                 globalSubmitErrorEl.style.display = (hasAttemptedSubmit && hasRequiredFieldsMissing) ? 'block' : 'none';
@@ -638,29 +638,70 @@
             updateSummary();
         };
 
-        // Écouteurs d'onglets de ville
+                // Écouteurs d'onglets de ville (pattern WAI-ARIA Tabs + clavier)
         if (tabButtons.length > 0) {
+            const tabArray = Array.from(tabButtons);
+
+            const activateTab = function (btn) {
+                tabButtons.forEach(b => {
+                    const isActive = (b === btn);
+                    b.classList.toggle('active', isActive);
+                    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    b.setAttribute('tabindex', isActive ? '0' : '-1');
+                });
+
+                panes.forEach(pane => {
+                    const isTarget = (pane.id === 'co-pane-' + btn.dataset.target);
+                    pane.classList.toggle('active', isTarget);
+                    pane.setAttribute('aria-hidden', isTarget ? 'false' : 'true');
+                });
+
+                syncCircuitOption(btn);
+            };
+
             tabButtons.forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
+                    activateTab(this);
+                });
 
-                    tabButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+                btn.addEventListener('keydown', function (e) {
+                    const currentIdx = tabArray.indexOf(this);
+                    let nextIdx = -1;
 
-                    panes.forEach(pane => pane.classList.remove('active'));
-                    const targetPane = document.querySelector('#co-pane-' + this.dataset.target);
-                    if (targetPane) {
-                        targetPane.classList.add('active');
+                    switch (e.key) {
+                        case 'ArrowRight':
+                            nextIdx = (currentIdx + 1) % tabArray.length;
+                            break;
+                        case 'ArrowLeft':
+                            nextIdx = (currentIdx - 1 + tabArray.length) % tabArray.length;
+                            break;
+                        case 'Home':
+                            nextIdx = 0;
+                            break;
+                        case 'End':
+                            nextIdx = tabArray.length - 1;
+                            break;
+                        case 'Enter':
+                        case ' ':
+                            e.preventDefault();
+                            activateTab(this);
+                            return;
+                        default:
+                            return;
                     }
 
-                    syncCircuitOption(this);
+                    if (nextIdx >= 0 && nextIdx !== currentIdx) {
+                        e.preventDefault();
+                        tabArray[nextIdx].focus();
+                        activateTab(tabArray[nextIdx]);
+                    }
                 });
             });
 
-            // Initialisation de la première ville active au chargement
             const initialActiveBtn = document.querySelector('.co-pub-tab-btn.active') || tabButtons[0];
             if (initialActiveBtn) {
-                syncCircuitOption(initialActiveBtn);
+                activateTab(initialActiveBtn);
             }
         }
 
@@ -675,7 +716,8 @@
 
             const step = header.closest('.co-vip-step');
             if (step) {
-                step.classList.toggle('is-open');
+                const isOpen = step.classList.toggle('is-open');
+                header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
                 // Met à jour l'état visuel du bouton global "Expand all"
                 const activePane = header.closest('.co-option-pane');
@@ -696,28 +738,34 @@
 
             const steps = activePane.querySelectorAll('.co-vip-step');
             const switchBtn = wrap.querySelector('.co-expand-toggle-switch');
-            const thumb = wrap.querySelector('.co-expand-switch-thumb');
+           // const thumb = wrap.querySelector('.co-expand-switch-thumb');
             const label = wrap.querySelector('.co-expand-all-label');
 
             const isCurrentlyExpanded = switchBtn && switchBtn.classList.contains('is-active');
 
             if (isCurrentlyExpanded) {
                 // Tout fermer
-                steps.forEach(s => s.classList.remove('is-open'));
+                steps.forEach(s => {
+                    s.classList.remove('is-open');
+                    const stepBtn = s.querySelector('.co-vip-step-header');
+                    if (stepBtn) stepBtn.setAttribute('aria-expanded', 'false');
+                });
                 if (switchBtn) {
                     switchBtn.classList.remove('is-active');
-                    switchBtn.style.background = '#cbd5e1';
+                    switchBtn.setAttribute('aria-expanded', 'false');
                 }
-                if (thumb) thumb.style.transform = 'translateX(0)';
                 if (label) label.textContent = 'Expand all';
             } else {
                 // Tout ouvrir
-                steps.forEach(s => s.classList.add('is-open'));
+                steps.forEach(s => {
+                    s.classList.add('is-open');
+                    const stepBtn = s.querySelector('.co-vip-step-header');
+                    if (stepBtn) stepBtn.setAttribute('aria-expanded', 'true');
+                });
                 if (switchBtn) {
                     switchBtn.classList.add('is-active');
-                    switchBtn.style.background = 'var(--etb-theme-primary, #ba6827)';
+                    switchBtn.setAttribute('aria-expanded', 'true');
                 }
-                if (thumb) thumb.style.transform = 'translateX(18px)';
                 if (label) label.textContent = 'Collapse all';
             }
         });
@@ -730,7 +778,7 @@
             const steps = pane.querySelectorAll('.co-vip-step');
             const openSteps = pane.querySelectorAll('.co-vip-step.is-open');
             const switchBtn = wrap.querySelector('.co-expand-toggle-switch');
-            const thumb = wrap.querySelector('.co-expand-switch-thumb');
+            //const thumb = wrap.querySelector('.co-expand-switch-thumb');
             const label = wrap.querySelector('.co-expand-all-label');
 
             const allAreOpen = (steps.length > 0 && steps.length === openSteps.length);
@@ -738,16 +786,14 @@
             if (allAreOpen) {
                 if (switchBtn) {
                     switchBtn.classList.add('is-active');
-                    switchBtn.style.background = 'var(--etb-theme-primary, #ba6827)';
+                    switchBtn.setAttribute('aria-expanded', 'true');
                 }
-                if (thumb) thumb.style.transform = 'translateX(18px)';
                 if (label) label.textContent = 'Collapse all';
             } else {
                 if (switchBtn) {
                     switchBtn.classList.remove('is-active');
-                    switchBtn.style.background = '#cbd5e1';
+                    switchBtn.setAttribute('aria-expanded', 'false');
                 }
-                if (thumb) thumb.style.transform = 'translateX(0)';
                 if (label) label.textContent = 'Expand all';
             }
         }
@@ -1459,6 +1505,16 @@
                     if (pickupInput && pickupInput.offsetParent !== null && pickupInput.value.trim() === '') {
                         return false;
                     }
+
+                    // Date obligatoire et non passée si le champ est visible
+                    if (dateInput && dateInput.offsetParent !== null) {
+                        if (dateInput.value.trim() === '') return false;
+                        if (dateInput.value < todayStr) return false;
+                    }
+
+                    // Heure obligatoire si le champ est visible
+                    if (timeInput && timeInput.offsetParent !== null && timeInput.value.trim() === '') return false;
+
                     return true;
                 }
 
@@ -1469,24 +1525,13 @@
                     // Email obligatoire si visible
                     if (emailInput && emailInput.offsetParent !== null) {
                         if (emailInput.value.trim() === '' || !emailInput.validity.valid) return false;
-
                     }
 
                     // Téléphone valide si visible
                     if (phoneInput && phoneInput.offsetParent !== null && !isPhoneValid()) return false;
 
-                    // Date obligatoire si visible
-                    if (dateInput && dateInput.offsetParent !== null) {
-                        if (dateInput.value.trim() === '') return false;
-                        if (dateInput.value < todayStr) return false;
-                    }
-
-                    // Heure obligatoire si visible
-                    if (timeInput && timeInput.offsetParent !== null && timeInput.value.trim() === '') return false;
-
                     return true;
                 }
-
                 return true;
             };
 
@@ -1521,6 +1566,9 @@
                         refreshAll();
                         return;
                     }
+
+                    // Réinitialise le flag d'erreur pour que l'étape suivante démarre propre
+                    hasAttemptedSubmit = false;
 
                     // Rafraîchit le récap et le prix avant de passer à l'étape suivante
                     refreshAll();
@@ -1625,19 +1673,27 @@
             }
         }
 
+        var previouslyFocused = null;
+
         function openLightbox(index) {
             if (!galleryImages || galleryImages.length === 0) return;
             if (index < 0) index = 0;
             if (index >= galleryImages.length) index = galleryImages.length - 1;
+            previouslyFocused = document.activeElement;
             currentIndex = index;
             updateLightboxContent();
             lightbox.classList.add('etb-lightbox-active');
-            document.body.style.overflow = 'hidden'; 
+            document.body.style.overflow = 'hidden';
+            if (lbClose) lbClose.focus();
         }
 
         function closeLightbox() {
             lightbox.classList.remove('etb-lightbox-active');
             document.body.style.overflow = '';
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+                previouslyFocused.focus();
+            }
+            previouslyFocused = null;
         }
 
         function updateLightboxContent() {
@@ -1673,7 +1729,7 @@
             if (e.target === lightbox) closeLightbox();
         });
 
-        document.addEventListener('keydown', function(e) {
+                document.addEventListener('keydown', function(e) {
             if (!lightbox.classList.contains('etb-lightbox-active')) return;
             if (e.key === 'Escape') closeLightbox();
             if (e.key === 'ArrowRight' && currentIndex < galleryImages.length - 1) { 
@@ -1683,6 +1739,24 @@
             if (e.key === 'ArrowLeft' && currentIndex > 0) { 
                 currentIndex--; 
                 updateLightboxContent(); 
+            }
+
+            // Focus trap : Tab reste cyclé dans la lightbox
+            if (e.key === 'Tab') {
+                var focusables = Array.from(lightbox.querySelectorAll('button')).filter(function (el) {
+                    return el.offsetParent !== null;
+                });
+                if (focusables.length === 0) return;
+                var first = focusables[0];
+                var last = focusables[focusables.length - 1];
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         });
     }

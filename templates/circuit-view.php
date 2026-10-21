@@ -254,8 +254,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
             <!-- 1. ONGLETS DES VILLES DE DÉPART (DANS LA COLONNE GAUCHE) -->
             <div class="co-departure-nav">
                 <span class="co-nav-label">Departure city:</span>
-                <div class="co-nav-buttons">
-                    <?php 
+                <div class="co-nav-buttons" role="tablist" aria-label="Departure city">                    <?php 
                     $is_first = true;
                     foreach ( $options as $opt_id => $opt_data ) : 
                         $city = ! empty( $opt_data['city_name'] ) ? esc_html( $opt_data['city_name'] ) : 'Departure';
@@ -264,11 +263,16 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                     ?>
                     <button type="button" 
                             class="co-pub-tab-btn <?php echo $is_first ? 'active' : ''; ?>" 
+                            id="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
+                            role="tab"
+                            aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>"
+                            aria-controls="co-pane-<?php echo esc_attr( $opt_id ); ?>"
+                            tabindex="<?php echo $is_first ? '0' : '-1'; ?>"
                             data-target="<?php echo esc_attr( $opt_id ); ?>"
                             data-duration="<?php echo esc_attr( $opt_data['duration_hours'] ?? 1 ); ?>"
                             data-price="<?php echo esc_attr( $add_price ); ?>"
                             data-time="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
-                        <span class="dashicons dashicons-location"></span>
+                        <span class="dashicons dashicons-location" aria-hidden="true"></span>
                         <?php echo $city . esc_html( $price_suffix ); ?>
                     </button>
                     <?php 
@@ -302,8 +306,10 @@ if ( ! empty( $options ) && is_array( $options ) ) {
             ?>
                 <div class="co-option-pane <?php echo $is_first ? 'active' : ''; ?>" 
                      id="co-pane-<?php echo esc_attr( $opt_id ); ?>" 
+                     role="tabpanel"
+                     aria-labelledby="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
+                     aria-hidden="<?php echo $is_first ? 'false' : 'true'; ?>"
                      data-base-departure="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
-
                    <!-- PROGRAMME / TIMELINE (ACCORDÉON AVEC COMMANDE GLOBALE) -->
                     <?php if ( ! empty( $timeline ) ) : ?>
                         <div class="co-timeline-block">
@@ -314,8 +320,8 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                 
                                 <div class="co-expand-all-wrap" style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
                                     <span class="co-expand-all-label" style="font-size: 13.5px; font-weight: 600; color: #5b3516;">Expand all</span>
-                                    <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" style="position: relative; width: 40px; height: 22px; background: #cbd5e1; border-radius: 50px; border: none; cursor: pointer; padding: 2px; transition: background 0.25s ease;">
-                                        <span class="co-expand-switch-thumb" style="display: block; width: 18px; height: 18px; background: #ffffff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.25s ease;"></span>
+                                    <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" aria-expanded="false">
+                                        <span class="co-expand-switch-thumb"></span>
                                     </button>
                                 </div>
                             </div>
@@ -339,19 +345,21 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                         <div class="co-vip-step-row">
                                             <div class="co-vip-step-marker <?php echo $is_first_step ? 'filled' : ''; ?>"></div>
                                             
-                                            <div class="co-vip-step-header">
-                                                <h4 class="co-vip-step-title" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
+                                            <h4 class="co-vip-step-title" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
+                                                <button type="button"
+                                                        class="co-vip-step-header"
+                                                        aria-expanded="<?php echo $is_first_step ? 'true' : 'false'; ?>"
+                                                        aria-controls="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
                                                     <span class="co-timeline-time-display"><?php echo esc_html( $time_label ); ?></span><?php echo esc_html( $step['title'] ?? '' ); ?>
-                                                </h4>
-                                                <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                                </svg>
-                                            </div>
+                                                    <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                                    </svg>
+                                                </button>
+                                            </h4>
                                         </div><!-- /.co-vip-step-row -->
 
                                                                                 <!-- 2. LE BODY : Contient les photos, le texte et le post -->
-                                        <div class="co-vip-step-body">
-
+                                        <div class="co-vip-step-body" id="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
                                             <!-- A. LES PHOTOS : Tout en haut du body pour qu'elles soient masquées avec l'accordéon -->
                                             <?php if ( ! empty( $step_photos ) ) : 
                                                 $media_class = ( count( $step_photos ) === 1 ) ? 'etb-single-media' : 'etb-gallery-media';
@@ -888,19 +896,20 @@ if ( ! empty( $options ) && is_array( $options ) ) {
     </div>
 
      <!-- CONTENEUR HTML DE LA LIGHTBOX (GALERIE PHOTO VIP) -->
-    <div id="etb-vip-lightbox" class="etb-lightbox-overlay">
-        <div class="etb-lightbox-close" title="Close (Esc)">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </div>
-        <div class="etb-lightbox-nav etb-lightbox-prev" title="Previous">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </div>
-        <div class="etb-lightbox-nav etb-lightbox-next" title="Next">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
+    <div id="etb-vip-lightbox" class="etb-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Photo gallery">
+        <button type="button" class="etb-lightbox-close" aria-label="Close gallery (Escape)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <button type="button" class="etb-lightbox-nav etb-lightbox-prev" aria-label="Previous photo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button type="button" class="etb-lightbox-nav etb-lightbox-next" aria-label="Next photo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
         <img src="" alt="Gallery Zoom" class="etb-lightbox-img">
-        <div class="etb-lightbox-counter"><span id="etb-lb-current">1</span> / <span id="etb-lb-total">1</span></div>
+        <div class="etb-lightbox-counter" aria-live="polite"><span id="etb-lb-current">1</span> / <span id="etb-lb-total">1</span></div>
     </div>
+
 
     <?php if ( $etb_has_embed ) : ?>
         <script async src="//www.instagram.com/embed.js"></script>
