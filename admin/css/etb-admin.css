@@ -45,10 +45,10 @@
 }
 
 .co-tab-btn.active {
-    background: #052021;
+    background: #ba6827;
     color: #ffffff;
-    border-color: #052021;
-    border-bottom: 2px solid #052021;
+    border-color: #ba6827;
+    border-bottom: 2px solid #ba6827;
 }
 
 .co-add-tab-btn {
@@ -788,3 +788,308 @@
 .etb-sp-thumbs .ui-sortable-placeholder { visibility: visible !important; width: 84px; height: 84px; border: 2px dashed #94a3b8; border-radius: 8px; background: #f1f5f9; }
 
 
+/* ==========================================================================
+   APPLE LIKE UI POUR LE METABOX (ADMIN)
+   ========================================================================== */
+
+/* 1. Le conteneur principal (Fond blanc, ombre douce) */
+.etb-engine-container {
+    display: flex !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+    overflow: hidden !important;
+    margin-top: 15px !important;
+}
+
+/* 2. La barre latérale (Gris très clair, style macOS) */
+.etb-engine-sidebar {
+    width: 220px !important;
+    background: #f8fafc !important;
+    padding: 40px 15px !important;
+    border-right: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+/* Les boutons de la sidebar */
+.etb-engine-tab-btn {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #475569 !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    text-align: left !important;
+}
+
+.etb-engine-tab-btn .dashicons {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #94a3b8 !important;
+    transition: color 0.2s ease !important;
+}
+
+.etb-engine-tab-btn:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+}
+
+/* État Actif (Couleur de la marque avec ombre) */
+.etb-engine-tab-btn.active {
+    background: #ba6827 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.25) !important;
+}
+
+.etb-engine-tab-btn.active .dashicons {
+    color: #ffffff !important;
+}
+
+/* 3. La zone de contenu principale */
+.etb-engine-content {
+    flex: 1 !important;
+    padding: 30px !important;
+    background: #ffffff !important;
+}
+
+/* Titres des sections */
+.etb-engine-pane-title {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    margin: 0 0 24px 0 !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* 4. Les champs de formulaire (Inputs, Textarea, Select) */
+.etb-engine-content input[type="text"],
+.etb-engine-content input[type="number"],
+.etb-engine-content input[type="time"],
+.etb-engine-content input[type="date"],
+.etb-engine-content textarea,
+.etb-engine-content select {
+    width: 100% !important;
+    padding: 10px 14px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-size: 14px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.2s ease !important;
+    height: auto !important;
+    min-height: 40px !important;
+}
+
+/* Focus (Effet "Ring" Apple) */
+.etb-engine-content input:focus,
+.etb-engine-content textarea:focus,
+.etb-engine-content select:focus {
+    outline: none !important;
+    border-color: #ba6827 !important;
+    box-shadow: 0 0 0 4px rgba(186, 104, 39, 0.15) !important;
+}
+
+/* Labels */
+.etb-engine-row label,
+.etb-engine-content label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+}
+
+/* 5. On nettoie les blocs avec styles inline (Les div grises dans le PHP) */
+.etb-engine-pane > div[style*="background: #f8fafc"],
+.etb-engine-pane > div[style*="background: #ffffff"] {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 24px !important;
+    box-shadow: none !important;
+}
+
+/* Titres dans ces blocs (H4) */
+.etb-engine-pane h4 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+}
+
+/* 6. Boutons (Bouton Ajouter, Supprimer, Média) */
+.etb-engine-content .button,
+.etb-engine-content .button-primary,
+.etb-engine-content .etb-btn-secondary {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+}
+
+.etb-engine-content .button:hover,
+.etb-engine-content .button-primary:hover,
+.etb-engine-content .etb-btn-secondary:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+}
+
+.etb-engine-content .button-primary {
+    background: #ba6827 !important;
+    border-color: #ba6827 !important;
+    color: #ffffff !important;
+}
+
+.etb-engine-content .button-primary:hover {
+    background: #a3591f !important;
+    border-color: #a3591f !important;
+    color: #ffffff !important;
+}
+
+/* Boutons d'action destructifs (Supprimer / Trash) */
+.etb-engine-content .etb-btn-danger-icon {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.etb-engine-content .etb-btn-danger-icon:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+}
+
+/* 7. Grille (Les champs côte à côte) */
+.etb-engine-grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+}
+
+.etb-engine-row {
+    margin-bottom: 20px !important;
+}
+
+/* 8. Le séparateur dans la liste des Trip Facts */
+.etb-tripinfo-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 10px !important;
+    transition: box-shadow 0.2s ease !important;
+}
+
+.etb-tripinfo-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+/* ==========================================================================
+   METABOX : SIDEBAR RÉTRACTABLE (COLLAPSIBLE)
+   ========================================================================== */
+
+/* On prépare la transition douce sur la sidebar */
+.etb-engine-sidebar {
+    position: relative !important;
+    transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), padding 0.3s ease !important;
+}
+
+/* Le bouton flottant sur le bord droit de la sidebar */
+.etb-toggle-sidebar-btn {
+    position: absolute !important;
+    top: 20px !important;
+    right: -14px !important; /* Dépasse à moitié sur le contenu */
+    width: 28px !important;
+    height: 28px !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    color: #64748b !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    transition: all 0.2s ease !important;
+    padding: 0 !important;
+}
+
+.etb-toggle-sidebar-btn .dashicons {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    transition: transform 0.3s ease !important;
+}
+
+.etb-toggle-sidebar-btn:hover {
+    color: #ba6827 !important;
+    border-color: #ba6827 !important;
+    background: #fdf8f3 !important;
+}
+
+/* --- ÉTAT RÉDUIT (IS-COLLAPSED) --- */
+
+/* On réduit la largeur de la sidebar */
+.etb-engine-container.is-collapsed .etb-engine-sidebar {
+    width: 60px !important;
+    padding: 50px 8px !important;
+}
+
+/* On cache les textes */
+.etb-engine-container.is-collapsed .etb-tab-text {
+    display: none !important;
+}
+
+/* On centre les icônes dans les boutons */
+.etb-engine-container.is-collapsed .etb-engine-tab-btn {
+    justify-content: center !important;
+    padding: 12px 0 !important;
+}
+
+.etb-engine-container.is-collapsed .etb-engine-tab-btn .dashicons {
+    margin: 0 !important;
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* On fait pivoter la flèche pour indiquer qu'on peut rouvrir */
+.etb-engine-container.is-collapsed .etb-toggle-sidebar-btn .dashicons {
+    transform: rotate(180deg) !important;
+}
+
+/* On agrandit le contenu principal pour combler le vide */
+.etb-engine-content {
+    transition: padding 0.3s ease !important;
+}

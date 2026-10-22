@@ -657,3 +657,103 @@ jQuery(document).ready(function ($) {
     // État initial (bouton désactivé si la limite est déjà atteinte)
     $('.etb-sp-wrapper').each(function () { etbSpSyncIds($(this)); });
 });
+
+jQuery(document).ready(function($) {
+    // Bouton d'ajout d'image pour l'Aside
+    $(document).on('click', '.etb-upload-aside-image-btn', function(e) {
+        e.preventDefault();
+        var button = $(this);
+        var customUploader = wp.media({
+            title: 'Choisir une image secondaire',
+            button: { text: 'Utiliser cette image' },
+            multiple: false
+        }).on('select', function() {
+            var attachment = customUploader.state().get('selection').first().toJSON();
+            button.siblings('.etb-aside-image-id').val(attachment.id);
+            button.siblings('.etb-aside-image-preview').html('<img src="' + attachment.url + '" style="max-width: 100%; border-radius: 6px; display: block;">');
+            button.siblings('.etb-remove-aside-image-btn').show();
+        }).open();
+    });
+
+    // Bouton de suppression d'image
+    $(document).on('click', '.etb-remove-aside-image-btn', function(e) {
+        e.preventDefault();
+        var button = $(this);
+        button.siblings('.etb-aside-image-id').val('');
+        button.siblings('.etb-aside-image-preview').html('');
+        button.hide();
+    });
+});
+
+jQuery(document).ready(function($) {
+    // Gestion du repliement / dépliement de la sidebar du Metabox
+    $(document).on('click', '.etb-toggle-sidebar-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $container = $btn.closest('.etb-engine-container');
+        
+        // On toggle la classe
+        $container.toggleClass('is-collapsed');
+        
+        // On change le title pour l'accessibilité
+        if ( $container.hasClass('is-collapsed') ) {
+            $btn.attr('title', 'Agrandir le menu');
+        } else {
+            $btn.attr('title', 'Réduire le menu');
+        }
+    });
+});
+
+jQuery(document).ready(function($) {
+    // 1. AJOUT DE PHOTOS POUR LES SOUS-BLOCS
+    $(document).on('click', '.etb-upload-sub-photos', function(e) {
+        e.preventDefault();
+        var button = $(this);
+        var container = button.closest('.etb-subblock-media');
+        var input = container.find('.etb-sub-photo-ids');
+        var preview = container.find('.etb-sub-photo-preview');
+        
+        var frame = wp.media({
+            title: 'Choisir des photos pour ce sous-titre',
+            button: { text: 'Ajouter' },
+            multiple: true 
+        });
+        
+        frame.on('select', function() {
+            var attachments = frame.state().get('selection').map(function(att) { return att.toJSON(); });
+            var currentIds = input.val() ? input.val().split(',') : [];
+            
+            attachments.forEach(function(att) {
+                if (currentIds.indexOf(att.id.toString()) === -1) {
+                    currentIds.push(att.id);
+                    // Ajouter la miniature AVEC la classe et le data-id
+                    preview.append('<div class="etb-sub-photo-item" data-id="' + att.id + '" style="position: relative; width: 50px; height: 50px; border-radius: 4px; overflow: hidden;"><img src="' + att.url + '" style="width: 100%; height: 100%; object-fit: cover;"><button type="button" class="etb-remove-sub-photo" style="position: absolute; top: 0; right: 0; background: red; color: white; border: none; cursor: pointer; font-size: 10px; padding: 0 4px;">&times;</button></div>');
+                }
+            });
+            input.val(currentIds.join(','));
+        });
+        
+        frame.open();
+    });
+
+    // 2. SUPPRESSION D'UNE PHOTO DE SOUS-BLOC
+    $(document).on('click', '.etb-remove-sub-photo', function(e) {
+        e.preventDefault();
+        var btn = $(this);
+        var item = btn.closest('.etb-sub-photo-item'); // La div de la miniature
+        var container = btn.closest('.etb-subblock-media');
+        var input = container.find('.etb-sub-photo-ids');
+        
+        var photoId = item.attr('data-id'); // On récupère l'ID de l'image
+        
+        // A. On retire l'ID du champ caché
+        var currentIds = input.val() ? input.val().split(',') : [];
+        var newIds = currentIds.filter(function(id) {
+            return id !== photoId;
+        });
+        input.val(newIds.join(','));
+        
+        // B. On retire l'image visuellement
+        item.remove();
+    });
+});

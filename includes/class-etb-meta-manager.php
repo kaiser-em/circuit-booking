@@ -182,23 +182,31 @@ class ETB_Meta_Manager {
                 
                 <!-- NAVIGATION VERTICALE GAUCHE -->
                 <div class="etb-engine-sidebar">
+                    <!-- Bouton Toggle (Réduire / Agrandir) -->
+                    <button type="button" class="etb-toggle-sidebar-btn" title="Réduire / Agrandir le menu">
+                        <span class="dashicons dashicons-arrow-left-alt2"></span>
+                    </button>
+
                     <button type="button" class="etb-engine-tab-btn active" data-target="engine-overview-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-welcome-write-blog"></span> Présentation
+                        <span class="dashicons dashicons-welcome-write-blog"></span> <span class="etb-tab-text">Présentation</span>
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-general-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-admin-settings"></span> Général & Tarifs
+                        <span class="dashicons dashicons-admin-settings"></span> <span class="etb-tab-text">Général & Tarifs</span>
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-tripinfo-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-info"></span> Trip Info
+                        <span class="dashicons dashicons-info"></span> <span class="etb-tab-text">Trip Info</span>
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-itinerary-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-location-alt"></span> Itinéraire
+                        <span class="dashicons dashicons-location-alt"></span> <span class="etb-tab-text">Itinéraire</span>
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-mapgallery-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-format-gallery"></span> Map & Gallery
+                        <span class="dashicons dashicons-format-gallery"></span> <span class="etb-tab-text">Map & Gallery</span>
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-includes-<?php echo esc_attr( $opt_id ); ?>">
-                        <span class="dashicons dashicons-yes-alt"></span> Inclus / Exclus
+                        <span class="dashicons dashicons-yes-alt"></span> <span class="etb-tab-text">Inclus / Exclus</span>
+                    </button>
+                    <button type="button" class="etb-engine-tab-btn" data-target="engine-aside-<?php echo esc_attr( $opt_id ); ?>">
+                        <span class="dashicons dashicons-align-right"></span> <span class="etb-tab-text">Aside / Sidebar</span>
                     </button>
                 </div>
                 <!-- CONTENU DROIT -->
@@ -294,6 +302,17 @@ class ETB_Meta_Manager {
                                 <label>Prix additionnel de départ (€) :</label>
                                 <input type="number" step="0.01" min="0" name="co_options[<?php echo esc_attr( $opt_id ); ?>][additional_price]" value="<?php echo esc_attr( $additional_price ); ?>" class="widefat" placeholder="0">
                             </div>
+                            <!-- NOUVEAUX CHAMPS POUR L'ITINÉRAIRE -->
+                            <div class="etb-engine-row" style="grid-column: 1 / -1; margin-top: 10px; padding-top: 15px; border-top: 1px dashed #cbd5e1;">
+                                <label>Titre de l'itinéraire :</label>
+                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][itinerary_title]" value="<?php echo esc_attr( $data['itinerary_title'] ?? 'Itinerary' ); ?>" class="widefat" placeholder="Itinerary">
+                            </div>
+
+                            <div class="etb-engine-row" style="grid-column: 1 / -1;">
+                                <label>Description de l'itinéraire :</label>
+                                <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][itinerary_intro]" rows="2" class="widefat" placeholder="Discover the emblematic places of this circuit..."><?php echo esc_textarea( $data['itinerary_intro'] ?? '' ); ?></textarea>
+                            </div>
+
                         </div>
                     </div>
 
@@ -456,8 +475,31 @@ class ETB_Meta_Manager {
                                                 Sous-sections détaillées (Sous-titre + Texte) :
                                             </label>
                                             <div class="etb-subblocks-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
-                                                <?php if ( ! empty( $subblocks ) ) : foreach ( $subblocks as $sub ) : ?>
-                                                    <div class="etb-subblock-item" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; position: relative;">
+                                                 <?php if ( ! empty( $subblocks ) ) : foreach ( $subblocks as $sub ) : 
+                                                    $sub_photos = $sub['photo_ids'] ?? array();
+                                                ?>
+                                                    <div class="etb-subblock-item" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; position: relative; margin-bottom: 15px;">
+                                                        
+                                                        <!-- NOUVEAU : Images du sous-bloc -->
+                                                        <div class="etb-subblock-media" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1;">
+                                                            <input type="hidden" class="etb-sub-photo-ids" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_sub_photos][<?php echo esc_attr( $step_key ); ?>][]" value="<?php echo esc_attr( implode( ',', $sub_photos ) ); ?>">
+                                                            <div class="etb-sub-photo-preview" style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px;">
+                                                                <?php foreach ( $sub_photos as $pid ) : 
+                                                                    $img_url = wp_get_attachment_image_url( $pid, 'thumbnail' );
+                                                                    if ( $img_url ) : ?>
+                                                                        <!-- CLASSE ET DATA-ID AJOUTÉS ICI -->
+                                                                        <div class="etb-sub-photo-item" data-id="<?php echo esc_attr( $pid ); ?>" style="position: relative; width: 50px; height: 50px; border-radius: 4px; overflow: hidden;">
+                                                                            <img src="<?php echo esc_url( $img_url ); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                                                            <button type="button" class="etb-remove-sub-photo" style="position: absolute; top: 0; right: 0; background: red; color: white; border: none; cursor: pointer; font-size: 10px; padding: 0 4px;">&times;</button>
+                                                                        </div>
+                                                                    <?php endif; 
+                                                                endforeach; ?>
+                                                            </div>
+                                                        
+                                                            <button type="button" class="button button-small etb-upload-sub-photos">+ Ajouter des photos</button>
+                                                        </div>
+
+                                                        <!-- Titre et Description -->
                                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                                             <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_sub_title][<?php echo esc_attr( $step_key ); ?>][]" value="<?php echo esc_attr( $sub['title'] ?? '' ); ?>" placeholder="Sous-titre (ex: La Rue Saint-Antoine)" class="widefat" style="font-weight: 600;">
                                                             <button type="button" class="etb-btn-danger-icon etb-remove-subblock-btn" style="margin-left: 8px; flex-shrink: 0;" title="Supprimer ce sous-titre">
@@ -608,6 +650,60 @@ class ETB_Meta_Manager {
                         </div>
                     </div>
 
+                                        <!-- ONGLET 5 : ASIDE / SIDEBAR -->
+                    <div class="etb-engine-pane" id="engine-aside-<?php echo esc_attr( $opt_id ); ?>">
+                        <h3 class="etb-engine-pane-title">Configuration de l'Aside (Barre latérale)</h3>
+                        
+                        <!-- 1. Hero (Titre / Desc) -->
+                        <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 10px 0;">📝 Texte de présentation (Hero)</h4>
+                            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Description de la ville :</label>
+                            <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_hero_desc]" rows="3" class="widefat" placeholder="La ville du cinéma et de l'élégance..."><?php echo esc_textarea( $data['aside_hero_desc'] ?? '' ); ?></textarea>
+                        </div>
+
+                        <!-- 2. Avis Client -->
+                        <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                            <h4 style="margin: 0 0 10px 0;">⭐ Avis Client</h4>
+                            <p style="margin-top:0;">
+                                <label><input type="checkbox" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_enabled]" value="1" <?php checked( $data['aside_review_enabled'] ?? '1', '1' ); ?>> Afficher l'avis client</label>
+                            </p>
+                            <div class="etb-engine-grid-2">
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Nom du client :</label>
+                                    <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_name]" value="<?php echo esc_attr( $data['aside_review_name'] ?? 'Sophie L.' ); ?>" class="widefat">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Note (sur 5) :</label>
+                                    <input type="number" min="1" max="5" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_rating]" value="<?php echo esc_attr( $data['aside_review_rating'] ?? '5' ); ?>" class="widefat">
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Texte de l'avis :</label>
+                                <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_text]" rows="2" class="widefat"><?php echo esc_textarea( $data['aside_review_text'] ?? '« Une journée parfaite ! Le guide était passionné... »' ); ?></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 3. Image Secondaire -->
+                        <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <h4 style="margin: 0 0 10px 0;">🖼️ Image secondaire (Bas de l'Aside)</h4>
+                            <p style="margin-top:0;">
+                                <label><input type="checkbox" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_image_enabled]" value="1" <?php checked( $data['aside_image_enabled'] ?? '1', '1' ); ?>> Afficher l'image secondaire</label>
+                            </p>
+                            <?php 
+                            $aside_img_id = $data['aside_image_id'] ?? '';
+                            $aside_img_url = $aside_img_id ? wp_get_attachment_image_url( $aside_img_id, 'medium' ) : '';
+                            ?>
+                            <input type="hidden" class="etb-aside-image-id" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_image_id]" value="<?php echo esc_attr( $aside_img_id ); ?>">
+                            <div class="etb-aside-image-preview" style="margin-top: 10px;">
+                                <?php if ( $aside_img_url ) : ?>
+                                    <img src="<?php echo esc_url( $aside_img_url ); ?>" style="max-width: 100%; border-radius: 6px; display: block;">
+                                <?php endif; ?>
+                            </div>
+                            <button type="button" class="button etb-upload-aside-image-btn" style="margin-top: 10px;">Choisir une image</button>
+                            <button type="button" class="button etb-remove-aside-image-btn" style="margin-top: 10px; display: <?php echo $aside_img_id ? 'inline-block' : 'none'; ?>; color: #dc2626;">Retirer</button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -669,21 +765,34 @@ class ETB_Meta_Manager {
                     ) );
                     $t_caption   = sanitize_text_field( $raw_data['timeline_caption'][ $step_key ] ?? '' );
 
-                    // Traitement des sous-sections (Sous-titre + Texte)
+                    // Traitement des sous-sections (Sous-titre + Texte + Photos)
                     $subblocks = array();
                     if ( ! empty( $raw_data['timeline_sub_title'][ $step_key ] ) && is_array( $raw_data['timeline_sub_title'][ $step_key ] ) ) {
                         foreach ( $raw_data['timeline_sub_title'][ $step_key ] as $sub_idx => $sub_title_val ) {
                             $st_title = sanitize_text_field( $sub_title_val );
-                            // Autorise la mise en forme riche sécurisée
                             $st_desc  = wp_kses_post( $raw_data['timeline_sub_desc'][ $step_key ][ $sub_idx ] ?? '' );
-                            if ( ! empty( $st_title ) || ! empty( $st_desc ) ) {
+                            
+                            // NOUVEAU : Récupération des photos du sous-bloc
+                            $st_photos = array();
+                            $raw_sub_photos = $raw_data['timeline_sub_photos'][ $step_key ][ $sub_idx ] ?? '';
+                            if ( ! empty( $raw_sub_photos ) ) {
+                                foreach ( explode( ',', sanitize_text_field( $raw_sub_photos ) ) as $pid ) {
+                                    $pid = absint( $pid );
+                                    if ( $pid && wp_attachment_is_image( $pid ) ) {
+                                        $st_photos[] = $pid;
+                                    }
+                                }
+                            }
+
+                            if ( ! empty( $st_title ) || ! empty( $st_desc ) || ! empty( $st_photos ) ) {
                                 $subblocks[] = array(
-                                    'title' => $st_title,
-                                    'desc'  => $st_desc,
+                                    'title'     => $st_title,
+                                    'desc'      => $st_desc,
+                                    'photo_ids' => $st_photos, // On sauvegarde
                                 );
                             }
-                        }   // <- fin du foreach (rien d'ajouté avant cette ligne)
-                    }       // <- fin du if : le bloc B commence juste après
+                        }
+                    }
 
                     // Photos de l'étape : IDs d'images valides uniquement, sans doublon, limités
                     $photo_ids = array();
@@ -734,6 +843,10 @@ class ETB_Meta_Manager {
                 'duration_hours'   => max( 0.25, floatval( $raw_data['duration_hours'] ?? 1.0 ) ),
                 'departure_time'   => sanitize_text_field( $raw_data['departure_time'] ?? '09:00' ),
                 'additional_price' => max( 0.0, floatval( $raw_data['additional_price'] ?? 0.0 ) ),
+                
+                // NOUVEAUX CHAMPS ITINÉRAIRE
+                'itinerary_title'  => sanitize_text_field( $raw_data['itinerary_title'] ?? 'Itinerary' ),
+                'itinerary_intro'  => sanitize_textarea_field( $raw_data['itinerary_intro'] ?? '' ),
                 
                 // Nouveaux blocs de texte dynamiques (Colonne gauche)
                 'overview_sections'=> $overview_sections,
@@ -794,6 +907,14 @@ class ETB_Meta_Manager {
                 'timeline'         => $timeline,
                 'inclusions'       => sanitize_textarea_field( $raw_data['inclusions'] ?? '' ),
                 'exclusions'       => sanitize_textarea_field( $raw_data['exclusions'] ?? '' ),
+                // NOUVEAUX CHAMPS ASIDE
+                'aside_hero_desc'        => wp_kses_post( $raw_data['aside_hero_desc'] ?? '' ),
+                'aside_review_enabled'   => isset( $raw_data['aside_review_enabled'] ) ? '1' : '0',
+                'aside_review_name'      => sanitize_text_field( $raw_data['aside_review_name'] ?? 'Sophie L.' ),
+                'aside_review_rating'    => min( 5, max( 1, absint( $raw_data['aside_review_rating'] ?? 5 ) ) ),
+                'aside_review_text'      => sanitize_textarea_field( $raw_data['aside_review_text'] ?? '' ),
+                'aside_image_enabled'    => isset( $raw_data['aside_image_enabled'] ) ? '1' : '0',
+                'aside_image_id'         => absint( $raw_data['aside_image_id'] ?? 0 ),
             );
         }
 

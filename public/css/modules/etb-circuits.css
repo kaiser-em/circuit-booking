@@ -85,8 +85,6 @@
 
 .co-circuit-wrapper {
     width: 100% !important;
-    max-width: 1200px !important;
-    margin: 30px auto !important;
 }
 
 /* NOUVEAU LAYOUT VERTICAL — Section Itinéraire pleine largeur */
@@ -165,7 +163,6 @@
 /* Grille responsive — 3 colonnes fixes desktop (6 véhicules = 3×2 propre) */
 .co-vehicles-grid {
     display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     gap: 5px !important;
     width: 100% !important;
     position: relative !important;
@@ -174,7 +171,6 @@
 /* Tablette : 2 colonnes */
 @media (max-width: 992px) {
     .co-vehicles-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 16px !important;
     }
 }
@@ -182,7 +178,6 @@
 /* Mobile : 1 colonne */
 @media (max-width: 600px) {
     .co-vehicles-grid {
-        grid-template-columns: 1fr !important;
         gap: 14px !important;
     }
 }
@@ -221,7 +216,7 @@
 
 /* 2. État carte sélectionnée */
 .co-vehicles-grid .etb-vehicle-card.etb-selected {
-    border: 2px solid var(--etb-accent) !important;
+    border: 1px solid #ba6827 !important;
     box-shadow: var(--etb-shadow-md), 0 0 0 1px var(--etb-accent) !important;
 }
 
@@ -233,7 +228,7 @@
     width: 28px !important;
     height: 28px !important;
     border-radius: var(--etb-radius-pill) !important;
-    background: var(--etb-accent) !important;
+    background: #ba6827 !important;
     color: var(--etb-white) !important;
     display: flex !important;
     align-items: center !important;
@@ -323,10 +318,16 @@
 .co-vehicles-grid .etb-vehicle-price {
     font-size: 14px !important;
     font-weight: 800 !important;
-    color: var(--etb-accent) !important;
-    margin: 0 0 6px 0 !important;
+    color: #ba6827 !important;
+    margin: 5px 0 6px auto !important;
     line-height: 1.2 !important;
+    width: 130px;
+    border: 1px #80808036 solid;
+    text-align: center;
+    border-radius: 10px;
+    padding: 10px 5px;
 }
+
 
 /* 6. Caractéristiques (Passagers / Bagages) */
 .co-vehicles-grid .etb-vehicle-specs {
@@ -337,7 +338,8 @@
     font-weight: 600 !important;
     color: var(--etb-text-specs) !important;
     display: flex !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
+    gap: 20px;
 }
 
 
@@ -457,56 +459,12 @@
    5. COLONNE GAUCHE : DÉTAILS DU CIRCUIT (ONGLETS, BADGES, TIMELINE)
    ========================================================================== */
 
-.co-departure-nav {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px !important;
-    margin-bottom: 25px !important;
-    flex-wrap: wrap !important;
-}
-
-.co-nav-label {
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    color: var(--etb-muted) !important;
-}
-
-.co-nav-buttons {
-    display: flex !important;
-    gap: 10px !important;
-    flex-wrap: wrap !important;
-}
-
-.co-pub-tab-btn {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    background: var(--etb-white) !important;
-    border: 1.5px solid var(--etb-border-input) !important;
-    border-radius: var(--etb-radius-sm) !important;
-    padding: 10px 18px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    color: var(--etb-primary) !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    transition: all 0.2s ease-in-out !important;
-}
 
 .co-pub-tab-btn:hover {
-    border-color: var(--etb-accent) !important;
     color: var(--etb-accent) !important;
 }
 
-.co-pub-tab-btn.active {
-    background: var(--etb-primary) !important;
-    color: var(--etb-white) !important;
-    border-color: var(--etb-primary) !important;
-    box-shadow: 0 4px 12px rgba(5, 32, 33, 0.15) !important;
-}
+
 
 .co-pub-tab-btn.active .dashicons {
     color: var(--etb-accent) !important;
@@ -719,8 +677,6 @@
     max-height: 0 !important;
     opacity: 0 !important;
     margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-    border-bottom: 1px solid transparent !important;
     transform: translateY(-8px) !important;
     overflow: hidden !important;
     pointer-events: none !important;
@@ -1476,14 +1432,6 @@
     transition: all 0.15s ease-in-out !important;
 }
 
-.etb-dropoff-label-text {
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    color: var(--etb-primary) !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-}
-
 .etb-toggle-dropoff-label input[type="checkbox"]:checked + .etb-custom-box {
     background: var(--etb-accent) !important;
     border-color: var(--etb-accent) !important;
@@ -1734,24 +1682,14 @@
 .etb-submit-button {
     appearance: none !important;
     -webkit-appearance: none !important;
-    width: 100% !important;
-    background: var(--etb-accent) !important;
-    color: var(--etb-white) !important;
-    border: none !important;
-    padding: 16px !important;
-    border-radius: var(--etb-radius-md) !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 1px !important;
     margin-top: 18px !important;
     cursor: pointer !important;
-    transition: all 0.3s !important;
 }
 
 .etb-submit-button:hover {
     background: var(--etb-accent-hover) !important;
-    transform: translateY(-2px) !important;
     box-shadow: 0 5px 15px rgba(230, 90, 21, 0.3) !important;
 }
 
@@ -1785,10 +1723,7 @@
 /* ── RESPONSIVE CIRCUITS ── */
 @media (max-width: 992px) {
     .co-circuit-wrapper {
-        padding: 0 12px !important;
         width: 100% !important;
-        max-width: 100% !important;
-        margin: 10px auto !important;
     }
     .co-main-layout {
         grid-template-columns: 1fr !important;
@@ -1811,9 +1746,6 @@
 
 /* 3. SMARTPHONES & PETITS ÉCRANS (<= 600px) */
 @media (max-width: 600px) {
-    .co-circuit-wrapper {
-        padding: 0 8px !important;
-    }
 
     .etb-booking-widget {
         padding: 18px 12px !important;
@@ -1925,35 +1857,11 @@
    ========================================================================== */
 
 /* Commande "Expand all / Collapse all" */
-.co-timeline-head-bar {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    margin-top: 35px !important;
-    margin-bottom: 20px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    padding-bottom: 12px !important;
-}
-
-.co-expand-all-wrap {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    cursor: pointer !important;
-    user-select: none !important;
-}
-
-.co-expand-all-label {
-    font-size: 13.5px !important;
-    font-weight: 600 !important;
-    color: var(--etb-theme-secondary, #5b3516) !important;
-}
 
 .co-expand-toggle-switch {
     position: relative !important;
     width: 40px !important;
     height: 22px !important;
-    background: #cbd5e1;
     border-radius: 50px !important;
     border: none !important;
     cursor: pointer !important;
@@ -1974,27 +1882,14 @@
 
 .co-vip-timeline {
     position: relative;
-    padding-left: 24px;
     margin-top: 25px;
     border-left: 1.5px dashed #cbd5e1; /* Ligne de temps verticale */
 }
 
-.co-vip-step {
-    position: relative;
-    margin-bottom: 22px;
-}
-
 /* Point rond sur la ligne */
 .co-vip-step-marker {
-    position: absolute;
     left: -32px;
     top: 6px;
-    width: 14px;
-    height: 14px;
-    background: #ffffff;
-    border: 2.5px solid var(--etb-theme-primary);
-    border-radius: 50%;
-    z-index: 2;
 }
 
 .co-vip-step-marker.filled {
@@ -2003,14 +1898,8 @@
 
 /* Ligne d'en-tête de l'étape : Titre à gauche, Flèche à droite */
 .co-vip-step-header {
-    display: flex !important;
     justify-content: space-between !important;
-    align-items: center !important;
-    width: 100%;
-    cursor: pointer;
     user-select: none;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f1f5f9;
 }
 
 .co-vip-step-title {
@@ -2026,23 +1915,11 @@
 .co-vip-step-icon {
     color: var(--etb-theme-primary);
     flex-shrink: 0;
-    transition: transform 0.25s ease;
-}
-
-.co-vip-step.is-open .co-vip-step-icon {
-    transform: rotate(180deg);
 }
 
 /* Par défaut : contenu masqué */
-.co-vip-step-body {
-    display: none;
-    padding-top: 14px;
-}
 
 /* Affiché uniquement lorsque l'étape a la classe .is-open */
-.co-vip-step.is-open .co-vip-step-body {
-    display: block !important;
-}
 
 
 /* Rotation fluide de la flèche chevron (doublon supprimé) */
@@ -2051,14 +1928,6 @@
 }
 
 /* Sous-sections détaillées (Sous-titre + Paragraphe) */
-.co-vip-step-subblocks {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    margin-top: 15px !important;
-    padding-top: 15px !important;
-    border-top: 1px dashed #e2e8f0 !important;
-}
 
 .co-vip-subblock-item h5 {
     font-family: var(--etb-theme-font-head) !important;
@@ -2110,23 +1979,10 @@
     .co-vip-highlights-card{
     margin-top: 0;
     }
-    .co-vip-inclusions-wrap {
-        grid-template-columns: 1fr !important;
-        gap: 24px !important;
-    }
-
-    .co-circuit-wrapper {
-        padding: 0!important;
-    }
 
     .co-vip-timeline {
-        padding-left: 25px;
         margin-top: 25px;
         width: 95vw;
-    }
-
-    .co-vip-step-body {
-        padding-right: 20px;
     }
 
 
@@ -2501,8 +2357,6 @@
 }
 
 .co-itinerary-section .co-vip-timeline {
-    padding-left: 32px !important;
-    margin-top: 30px !important;
     max-width: 100% !important;
 }
 
@@ -2522,8 +2376,8 @@
 .co-itinerary-section .co-vip-step-marker {
     left: -41px !important;
     top: 8px !important;
-    width: 16px !important;
-    height: 16px !important;
+    width: 35px !important;
+    height: 35px !important;
 }
 
 .co-itinerary-section .co-vip-step-body {
@@ -2532,16 +2386,12 @@
 }
 
 /* Force le conteneur à englober le post Instagram flottant */
-.co-vip-step.is-open .co-vip-step-body {
-    display: flow-root !important; 
-}
 
 
 /* RESPONSIVE — Retour propre en mobile */
 @media (max-width: 768px) {
     .co-itinerary-section .co-vip-timeline {
         width: 100% !important;
-        padding-left: 24px !important;
     }
     .co-itinerary-section .co-vip-step-marker {
         left: -30px !important;
@@ -2857,9 +2707,6 @@
 
 /* Ligne « point + titre » : repère du point rond, pour qu'il reste aligné sur le titre
    même quand des photos sont affichées au-dessus. */
-.co-vip-step-row {
-    position: relative;
-}
 
 /* Étape repliée : rien n'est affiché (les images lazy ne sont donc pas téléchargées) */
 .co-vip-step > .etb-step-photos {
@@ -2930,75 +2777,17 @@
 }
 
 /* --- 1. PHOTO UNIQUE (Style Capture 2) --- */
-.etb-step-media-grid.etb-single-media {
-    display: block !important;
-}
-
-.etb-step-media-grid.etb-single-media .etb-step-photo-premium {
-    margin: 0 !important;
-    width: 100% !important;
-    aspect-ratio: 16 / 4 !important; /* Format cinéma/blog */
-    border-radius: var(--etb-radius-md, 16px) !important;
-    overflow: hidden !important;
-    background: #f1f5f9;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-}
 
 /* --- 2. GALERIE DE PHOTOS (Grille fluide) --- */
-.etb-step-media-grid.etb-gallery-media {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-    gap: 16px !important;
-}
 
-.etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
-    margin: 0 !important;
-    width: 100% !important;
-    aspect-ratio: 4 / 3 !important;
-    border-radius: var(--etb-radius-sm, 12px) !important;
-    overflow: hidden !important;
-    background: #f1f5f9;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
-}
 
-/* --- 3. EMBEDS (Instagram / Facebook / X) --- */
-.etb-social-embed-card {
-    max-width: 450px !important; /* Largeur idéale pour un post */
-    margin: 30px auto !important; /* Centré avec de l'espace */
-    background: #ffffff;
-    border-radius: var(--etb-radius-md, 16px);
-    border: 1px solid #f1e9e0;
-    box-shadow: 0 10px 30px rgba(91, 53, 22, 0.08) !important; /* Ombre premium */
-    overflow: hidden;
-    padding: 0; /* L'iframe gérera ses propres marges */
-}
 
 /* On force les iframes à être responsives */
-.etb-social-embed-card iframe {
-    width: 100% !important;
-    min-height: 480px; /* Ajuste selon le réseau social */
-    border: none !important;
-    display: block;
-}
 
 /* Images dans les grilles */
-.etb-step-photo-premium img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-    transition: transform 0.4s ease;
-}
-
-.etb-step-photo-premium:hover img {
-    transform: scale(1.03); /* Léger zoom premium au survol */
-}
 
 /* Mobile */
 @media (max-width: 768px) {
-    .etb-step-media-grid.etb-gallery-media {
-        grid-template-columns: 1fr !important; /* 1 colonne sur mobile */
-    }
     .etb-social-embed-card {
         max-width: 100% !important;
     }
@@ -3006,31 +2795,11 @@
 
 /* Légende de photo (Style Éditorial) */
 .etb-step-caption {
-    margin: 12px auto 0 auto !important;
-    text-align: center !important;
-    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
-    font-size: 13.5px !important;
-    color: #64748b !important; /* Gris ardoise doux */
-    font-style: italic !important;
-    line-height: 1.5 !important;
-    max-width: 90% !important;
-}/* Légende de photo (Style Éditorial) */
-.etb-step-caption {
-    margin: 12px auto 0 auto !important;
-    text-align: center !important;
-    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
-    font-size: 13.5px !important;
-    color: #64748b !important; /* Gris ardoise doux */
-    font-style: italic !important;
-    line-height: 1.5 !important;
     max-width: 90% !important;
 }
 
 /* Ajustement pour les iframes Instagram générées par embed.js */
 .etb-social-embed-card iframe {
-    width: 100% !important;
-    min-height: 500px !important;
-    border: none !important;
     border-radius: var(--etb-radius-md, 16px) !important;
 }
 
@@ -3038,16 +2807,6 @@
    STYLE MAGAZINE : EMBED FLOTTANT À DROITE (WRAPPED PAR LE TEXTE)
    ========================================================================== */
 
-.etb-social-embed-float {
-    float: right !important;
-    width: 340px !important; /* Largeur parfaite pour Instagram */
-    max-width: 100% !important;
-    margin: 0 0 24px 32px !important; /* Marge en bas et à gauche pour le texte */
-    background: #ffffff;
-    border-radius: var(--etb-radius-md, 16px);
-    box-shadow: 0 2px 10px rgba(91, 53, 22, 0.08) !important;
-    overflow: hidden;
-}
 
 /* On force l'iframe Instagram à respecter la largeur du conteneur */
 .etb-social-embed-float iframe {
@@ -3059,48 +2818,15 @@
 
 /* Légende de la photo / de l'embed */
 .etb-step-caption {
-    margin: 12px 0 0 0 !important;
-    text-align: center !important;
-    font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
-    font-size: 13px !important;
-    color: #64748b !important;
-    font-style: italic !important;
-    line-height: 1.5 !important;
     padding: 0 10px 10px 10px;
 }
 
 /* --- PHOTOS EN PLEINE LARGEUR (Rappel) --- */
-.etb-step-media-grid.etb-single-media {
-    display: block !important;
-    margin-top: 24px;
-}
-.etb-step-media-grid.etb-single-media .etb-step-photo-premium {
-    margin: 0 !important;
-    width: 100% !important;
-    aspect-ratio: 16 / 4 !important;
-    border-radius: var(--etb-radius-md, 16px) !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-}
 .etb-step-media-grid.etb-gallery-media {
-    display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-    gap: 16px !important;
-    margin-top: 24px;
 }
 .etb-step-media-grid.etb-gallery-media .etb-step-photo-premium {
-    margin: 0 !important;
     width: 100% !important;
-    aspect-ratio: 4 / 3 !important;
-    border-radius: var(--etb-radius-sm, 12px) !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
-}
-.etb-step-photo-premium img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
 }
 
 /* --- RESPONSIVE --- */
@@ -3182,12 +2908,7 @@
 
 /* --- 4. LÉGENDE DE LA PHOTO --- */
 .etb-step-caption {
-    margin: 0 0 24px 0 !important; /* Marge sous la légende pour séparer du texte */
-    text-align: center !important;
     font-family: var(--etb-theme-font-body, 'Inter', sans-serif) !important;
-    font-size: 13.5px !important;
-    color: #64748b !important;
-    font-style: italic !important;
     line-height: 1.5 !important;
 }
 
@@ -3226,7 +2947,6 @@
 }
 
 .co-vip-step.is-open .co-vip-step-body {
-    display: flow-root !important;
     animation: etbSlideDownFade 0.45s cubic-bezier(0.25, 1, 0.5, 1) both !important;
 }
 
@@ -3280,25 +3000,12 @@
 
 /* Par défaut, le layout est sur 1 colonne (grille pleine largeur) */
 .etb-booking-layout {
-    display: grid !important;
-    grid-template-columns: 1fr !important; 
-    gap: 40px !important;
-    align-items: start !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    padding-top: 30px;
     transition: all 0.4s ease !important;
 }
 
 /* Le sidebar est caché au début (tant qu'on ne clique pas sur Continue) */
-.etb-booking-sidebar {
-    display: none !important;
-}
 
 /* La grille fait 3 colonnes par défaut */
-.co-vehicles-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-}
 
 /* Le bouton Continue sous la grille */
 /* Le bouton Continue sous la grille (Caché par défaut) */
@@ -3340,32 +3047,13 @@
 
 
 /* --- ÉTAT 2 : APRÈS CLIC SUR CONTINUE (Ajouté par JS) --- */
-.etb-booking-layout.has-selection {
-    grid-template-columns: 1.2fr 0.8fr !important; /* Passe en 2 colonnes */
-}
 
 /* On affiche la sidebar */
-.etb-booking-layout.has-selection .etb-booking-sidebar {
-    display: block !important;
-}
 
 /* La grille passe à 2 colonnes pour faire de la place à la sidebar */
-.etb-booking-layout.has-selection .co-vehicles-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-}
 
 /* Responsive (Mobile) */
 @media (max-width: 992px) {
-    .etb-booking-layout.has-selection {
-        grid-template-columns: 1fr !important;
-    }
-    .etb-booking-layout.has-selection .etb-booking-sidebar {
-        order: -1 !important;
-    }
-    .co-vehicles-grid,
-    .etb-booking-layout.has-selection .co-vehicles-grid {
-        grid-template-columns: 1fr !important;
-    }
     .etb-vehicle-continue-wrap {
         justify-content: center !important;
     }
@@ -3408,14 +3096,6 @@
 
 /* Ajustement pour que le champ texte du stepper soit bien centré */
 .nexora-stepper input {
-    width: 40px !important;
-    text-align: center !important;
-    border: none !important;
-    background: transparent !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    color: #1e293b !important;
-    box-shadow: none !important;
     -moz-appearance: textfield !important;
 }
 .nexora-stepper input::-webkit-outer-spin-button,
@@ -3426,7 +3106,7 @@
 
 /* Fond gris clair pour le formulaire (pour faire ressortir les cartes blanches) */
 .etb-booking-main .etb-step {
-    background: #f8fafc !important;
+    background: #fbfbfb !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
@@ -3435,7 +3115,7 @@
 /* Style des cartes individuelles */
 .nexora-card {
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
+    /*border: 1px solid #e2e8f0 !important;*/
     border-radius: 12px !important;
     padding: 20px !important;
     margin-bottom: 20px !important;
@@ -3482,7 +3162,6 @@
 /* --- CHAMPS DE SAISIE (NEXORA STYLE) --- */
 .nexora-input-wrapper {
     display: flex !important;
-    align-items: center !important;
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     border-radius: 8px !important;
@@ -3513,7 +3192,6 @@
     font-size: 15px !important;
     color: #1e293b !important;
     font-family: inherit !important;
-    height: auto !important;
 }
 
 /* --- STEPPERS (BOUTONS + / -) --- */
@@ -3568,23 +3246,8 @@
    ========================================================================== */
 
 /* Conteneur principal */
-.etb-sidebar-sticky {
-    background: #ffffff !important;
-    border-radius: 24px !important; /* Angles très arrondis */
-    padding: 32px 28px !important;
-    border: 1px solid #e5e5ea !important; /* Bordure grise subtile */
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06) !important; /* Ombre diffuse "Apple" */
-}
 
 /* Titre "Your Selection" */
-.etb-sidebar-title {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    color: #1d1d1f !important; /* Noir profond Apple */
-    margin: 0 0 24px 0 !important;
-    letter-spacing: -0.02em !important;
-}
 
 /* Carte du véhicule (Image + Nom + Specs) */
 .etb-sidebar-sticky .etb-mission-card {
@@ -3609,15 +3272,12 @@
 /* Image de la voiture - On la réduit pour qu'elle soit élégante */
 .etb-sidebar-sticky .etb-mission-thumb {
     width: 100% !important;
-    height: 120px !important;
-    background: transparent !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 }
 
 .etb-sidebar-sticky .etb-mission-thumb img {
-    max-height: 100% !important;
     max-width: 90% !important;
     object-fit: contain !important;
     filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)) !important; /* Ombre portée sous la voiture */
@@ -3657,24 +3317,12 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: flex-start !important;
-    font-size: 14px !important;
-    color: #1d1d1f !important;
     margin: 0 !important;
-    padding-bottom: 12px !important;
     border-bottom: 1px dashed #e5e5ea !important;
 }
 
 .etb-summary-receipt .etb-summary-row:last-child {
     border-bottom: none !important;
-}
-
-.etb-summary-receipt .etb-summary-row strong {
-    color: #1d1d1f !important;
-    font-weight: 600 !important;
-}
-
-.etb-summary-receipt .etb-summary-row span {
-    color: #86868b !important;
 }
 
 /* Ligne du total (En bas) */
@@ -3698,7 +3346,6 @@
 
 /* Bouton Confirm Booking (Style Apple) */
 .etb-submit-button {
-    background: #1d1d1f !important; /* Noir ou Orange ? Mettons l'orange de ta charte */
     background: var(--etb-theme-primary, #ba6827) !important; 
     border-radius: 14px !important;
     padding: 16px 24px !important;
@@ -3723,7 +3370,6 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 12px 0 !important;
     border-bottom: 1px solid #f1f5f9 !important;
 }
 .nexora-pax-row:last-child {
@@ -3736,13 +3382,6 @@
 
 /* 1. Le conteneur principal */
 .etb-booking-layout {
-    display: grid !important;
-    grid-template-columns: 1.2fr 0.8fr !important;
-    gap: 40px !important;
-    align-items: start !important; /* Aligne le haut des deux colonnes */
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    padding-top: 40px !important;
     padding-bottom: 60px !important;
 }
 
@@ -3750,8 +3389,6 @@
 .nexora-section-header,
 .etb-sidebar-header {
     margin: 0 0 24px 0 !important; /* Même marge en bas pour les deux */
-    padding: 0 !important;
-    min-height: 60px; /* Force une hauteur mini pour que les cartes s'alignent même si le sous-titre manque */
 }
 
 .nexora-main-title,
@@ -3793,7 +3430,6 @@
 
 /* 4. La colonne de droite (Sticky) */
 .etb-booking-sidebar {
-    display: flex !important;
     flex-direction: column !important;
 }
 
@@ -3805,7 +3441,6 @@
     padding: 30px !important;
     border: 1px solid #e5e5ea !important;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
-    margin-top: 0 !important;
 }
 
 /* ==========================================================================
@@ -3820,7 +3455,6 @@
     align-items: start !important;
     max-width: 1200px !important;
     margin: 0 auto !important;
-    padding-top: 40px !important;
 }
 
 /* Le panier est STRICTEMENT caché au début */
@@ -4096,23 +3730,14 @@
 
 /* T07: reset button styles for accordion step headers */
 .co-vip-step-header {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0;
-    border: none;
-    background: transparent;
     font: inherit;
     color: inherit;
-    text-align: left;
-    cursor: pointer;
 }
 .co-vip-step-header:focus-visible {
-    outline: 2px solid var(--etb-theme-primary, #ba6827);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline: transparent !important;
 }
+
 
 /* T08: Expand-all toggle — extracted from inline styles */
 .co-expand-toggle-switch {
@@ -4127,11 +3752,11 @@
     transition: background 0.25s ease;
 }
 .co-expand-toggle-switch:focus-visible {
-    outline: 2px solid var(--etb-theme-primary, #ba6827);
+    outline: 2px solid transparent;
     outline-offset: 3px;
 }
 .co-expand-toggle-switch.is-active {
-    background: var(--etb-theme-primary, #ba6827);
+   /* background: var(--etb-theme-primary, #ba6827);*/
 }
 .co-expand-switch-thumb {
     display: block;
@@ -4160,4 +3785,2101 @@
     outline: 2px solid #ffffff;
     outline-offset: 3px;
     border-radius: 6px;
+}
+
+/* Carte vehicule */
+
+.etb-vehicle-subtitle{
+    display: none !important;
+}
+
+/* ==========================================================================
+   NOUVELLE TIMELINE (CARTES APPLE/MATERIAL STYLE)
+   ========================================================================== */
+
+/* Conteneur principal : on enlève la bordure pointillée globale */
+.co-itinerary-section .co-vip-timeline {
+    padding-left: 0 !important;
+    border-left: none !important;
+    margin-top: 30px !important;
+}
+
+/* La ligne verticale continue, placée au centre de la colonne gauche */
+
+/* Le layout : Flexbox (Gauche = Heure+Numéro | Droite = Carte) */
+
+/* COLONNE GAUCHE */
+.co-timeline-left-col {
+    z-index: 2 !important;
+}
+
+.co-vip-step-marker {
+    border: none !important;
+}
+
+/* COLONNE DROITE : BOUTON CARTE */
+.co-vip-step-header {
+    flex: 1 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+    transition: all 0.2s ease !important;
+}
+
+.co-vip-step-header:hover {
+   /* box-shadow: 0 8px 25px rgba(0,0,0,0.06) !important;
+    border-color: #cbd5e1 !important;*/
+    transform: translateY(-4px) !important;
+}
+
+/* Contenu interne de la carte */
+
+/* Image de la carte (Miniature) */
+
+/* Texte de la carte */
+
+/* Flèche (Chevron) */
+
+.co-vip-step.is-open .co-card-chevron .co-vip-step-icon {
+    transform: rotate(180deg) !important;
+}
+
+/* BODY (Mode Expand) : on l'éloigne de la carte pour qu'il soit lisible */
+
+/* RESPONSIVE MOBILE */
+@media (max-width: 768px) {
+    .co-vip-step-row {
+        flex-direction: column !important;
+    }
+    .co-timeline-left-col {
+        justify-content: flex-start !important;
+        gap: 12px !important;
+    }
+}
+
+
+/* ==========================================================================
+   REFONTE DESIGN : CONTENU EXPAND (MODE MAGAZINE APPLE / GOOGLE)
+   ========================================================================== */
+
+/* 1. Le conteneur principal de l'étape ouverte */
+
+/* 2. L'image HERO (Style Bannière Cinéma) */
+.co-step-hero-image {
+    width: 100% !important;
+    margin-bottom: 28px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    aspect-ratio: 21 / 9 !important; /* Format cinéma élégant */
+    background: #f1f5f9 !important;
+}
+
+.co-step-hero-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.co-step-hero-image:hover img {
+    transform: scale(1.03) !important;
+}
+
+/* 3. La Grille de contenu */
+.co-step-content-grid {
+    display: grid !important;
+    gap: 36px !important;
+    align-items: start !important;
+}
+
+/* Si présence d'un embed (Instagram), on fait 2 colonnes (Texte | Embed) */
+.co-step-content-grid.has-embed {
+    grid-template-columns: 1fr 340px !important;
+}
+
+/* Si pas d'embed, le texte prend toute la place mais limité en largeur */
+.co-step-content-grid.no-embed {
+    grid-template-columns: 1fr !important;
+    max-width: 850px !important; /* Limite la largeur pour la lisibilité (règle Apple) */
+}
+
+/* 4. Le Texte Principal */
+
+/* 5. Les Sous-blocs (Style "Checklist" Capture 1) */
+.co-vip-step-subblocks {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+    margin-top: 28px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    padding-top: 28px !important;
+}
+
+.co-vip-subblock-item {
+    position: relative !important;
+    padding-left: 20px !important;
+}
+
+/* Petite puce orange à gauche du titre */
+.co-vip-subblock-item::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 8px !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    background: #ba6827 !important; /* Couleur de la marque */
+}
+
+.co-subblock-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.3 !important;
+}
+
+.co-subblock-desc {
+    font-size: 15px !important;
+    color: #64748b !important;
+    line-height: 1.65 !important;
+}
+
+.co-subblock-desc p {
+    margin: 0 0 12px 0 !important;
+}
+
+/* 6. L'Embed (Instagram) */
+.co-vip-embed-col {
+    background: #f8fafc !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    position: sticky !important; /* L'embed reste visible pendant la lecture */
+    top: 30px !important;
+}
+
+.etb-social-embed-card {
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+
+.etb-social-embed-card iframe {
+    width: 100% !important;
+    min-height: 480px !important; /* Force la hauteur pour éviter le saut au chargement */
+    border: none !important;
+    display: block !important;
+}
+
+/* Légende de l'image Hero */
+.co-vip-step-body .etb-step-caption {
+    margin: -16px auto 28px auto !important;
+    font-size: 13px !important;
+    color: #94a3b8 !important;
+    text-align: center !important;
+    font-style: italic !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE (TABLETTE & MOBILE)
+   ========================================================================== */
+@media (max-width: 1100px) {
+    /* L'embed passe en dessous pour laisser respirer le texte */
+    .co-step-content-grid.has-embed {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .co-vip-embed-col {
+        max-width: 400px !important;
+        margin: 0 auto !important; /* Centré sur tablette */
+        position: static !important; /* Retire le sticky sur mobile */
+    }
+}
+
+@media (max-width: 768px) {
+    
+    .co-step-hero-image {
+        aspect-ratio: 16 / 9 !important; /* Ratio moins écrasant sur mobile */
+        margin-bottom: 20px !important;
+        border-radius: 8px !important;
+    }
+
+    .co-vip-subblocks {
+        gap: 20px !important;
+        margin-top: 20px !important;
+        padding-top: 20px !important;
+    }
+}
+
+/* ==========================================================================
+   V4 : DESIGN ÉDITORIAL PREMIUM (TEXTE À GAUCHE, IMAGES À DROITE)
+   ========================================================================== */
+
+/* 1. Conteneur principal (On aère au maximum) */
+
+/* 2. La Grille Éditoriale (Texte | Image) */
+.co-step-editorial-grid {
+    gap: 40px !important;
+    align-items: start !important;
+}
+
+.co-step-editorial-grid.no-images {
+    grid-template-columns: 1fr !important;
+}
+
+/* 3. Le Texte Principal */
+.co-step-main-desc {
+    margin-bottom: 32px !important;
+}
+
+/* 4. LES CALLOUTS (Sous-blocs style "Bon à savoir") */
+
+.co-subblock-callout {
+    display: flex !important;
+    gap: 16px !important;
+    background: #fdfaf7 !important; /* Fond beige très doux */
+    border: 1px solid #ebd9cc !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.co-subblock-callout:hover {
+    background: #ffffff !important;
+    box-shadow: 0 8px 20px rgba(91, 53, 22, 0.06) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* 5. COLONNE DROITE : IMAGES */
+.co-step-image-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.co-main-step-image {
+    background: #f8fafc !important;
+}
+
+.co-main-step-image img {
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.co-main-step-image:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* Miniatures sous l'image principale */
+.co-thumbnails-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+}
+
+.co-thumb-img {
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #f8fafc !important;
+    cursor: pointer !important;
+    border: 2px solid transparent !important;
+    transition: all 0.2s ease !important;
+}
+
+.co-thumb-img:hover {
+    border-color: #ba6827 !important;
+    transform: translateY(-2px) !important;
+}
+
+.co-thumb-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* 6. L'EMBED (Instagram/FB) - Sous la grille */
+.co-step-embed-full {
+    margin-top: 40px !important;
+    padding-top: 30px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.co-step-embed-full .etb-social-embed-card {
+    width: 100% !important;
+    max-width: 540px !important; /* Un embed ne doit pas être trop large */
+    margin: 0 auto !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    padding: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+}
+
+.co-step-embed-full iframe {
+    width: 100% !important;
+    min-height: 520px !important;
+    border: none !important;
+    border-radius: 12px !important;
+}
+
+/* Légende de l'image */
+.etb-step-caption {
+    margin: 4px 0 0 0 !important;
+    font-size: 12.5px !important;
+    color: #94a3b8 !important;
+    text-align: center !important;
+    font-style: italic !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE (TABLETTE & MOBILE)
+   ========================================================================== */
+@media (max-width: 992px) {
+    /* On empile le texte et l'image sur tablette */
+    
+    .co-step-image-col {
+        order: -1 !important; /* L'image passe AU-DESSUS du texte sur mobile */
+        margin-bottom: 24px !important;
+    }
+    
+}
+
+@media (max-width: 768px) {
+    
+    .co-subblock-callout {
+        padding: 16px !important;
+        gap: 12px !important;
+    }
+    
+    .co-thumbnails-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* ==========================================================================
+   V4.1 : INTÉGRATION DE L'INSTAGRAM DANS LA COLONNE
+   ========================================================================== */
+
+.co-step-side-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+
+/* Le conteneur de l'embed */
+.co-step-embed-box {
+    width: 100% !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+    /* Centrer l'iframe Instagram qui a tendance à être plus petit */
+    display: flex !important;
+    justify-content: center !important;
+    padding: 8px !important;
+}
+
+/* On écrase les styles par défaut du blockquote Instagram pour qu'il prenne la largeur */
+.co-step-embed-box .instagram-media {
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+.co-step-embed-box iframe {
+    min-height: 450px !important;
+}
+
+/* Ajustement : S'il n'y a pas d'image mais qu'il y a un Instagram, il prend toute la hauteur */
+.co-step-side-col:not(:has(.co-main-step-image)) .co-step-embed-box {
+    margin-top: 0 !important;
+}
+
+/* 1. La Grille Principale (Contenu + Aside) */
+.co-circuit-main-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 340px !important; /* Le contenu prend le reste, l'aside fait 340px */
+    gap: 40px !important;
+    align-items: start !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+}
+
+/* 2. L'Aside (Sticky) */
+
+/* 3. Les Cartes de l'Aside */
+
+/* 4. La Carte Google Maps */
+.co-aside-map iframe {
+    border-radius: 12px !important;
+}
+
+/* 5. Liste des points forts */
+
+.co-aside-list li svg {
+    color: #ba6827 !important; /* Couleur de la coche */
+}
+
+/* 6. Bouton CTA */
+
+/* 7. Responsive : Sur mobile, l'aside passe en dessous ou au-dessus */
+@media (max-width: 992px) {
+    .co-circuit-main-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   LAYOUT 2 COLONNES (TIMELINE + ASIDE) - VERSION STABLE
+   ========================================================================== */
+
+/* On s'assure que la colonne de gauche ne déborde pas */
+.co-main-content-col {
+    min-width: 0 !important;
+}
+
+/* L'Aside Sticky */
+
+/* Style des cartes de l'Aside (Apple/Google style) */
+
+/* Carte Map (sans padding pour que l'image prenne tout) */
+.co-aside-map-card {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.co-aside-map iframe {
+    width: 100% !important;
+    height: 200px !important;
+    border: none !important;
+    display: block !important;
+}
+
+.co-aside-title {
+    letter-spacing: 0.05em !important;
+}
+
+/* Liste à puces */
+.co-aside-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.co-aside-list li {
+    font-size: 14px !important;
+    color: #475569 !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    line-height: 1.5 !important;
+}
+
+.co-aside-list li svg {
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+}
+
+/* Bouton */
+.co-aside-cta {
+    border-color: #ebd9cc !important;
+}
+
+/* RESPONSIVE : Sur tablette/mobile, l'aside passe au-dessus */
+
+/* ==========================================================================
+   CORRECTION V4.2 : ÉQUILIBRAGE DU LAYOUT 2 COLONNES
+   ========================================================================== */
+
+/* 1. On ajuste les proportions : la timeline reprend un peu d'air, l'aside est plus fine */
+.co-page-with-aside {
+    width: 100% !important;
+    margin-bottom: 50px !important;
+}
+
+/* 2. On corrige le bloc Inclus/Non Inclus qui est trop serré */
+.co-page-with-aside .co-vip-inclusions-wrap {
+    display: flex !important;
+    flex-direction: column !important; /* On empile les blocs au lieu de les mettre côte à côte */
+    gap: 24px !important;
+}
+
+/* On redonne un peu d'espace aux cartes incluses pour qu'elles respirent */
+.co-page-with-aside .co-vip-inclusions-wrap > div {
+    width: 100% !important;
+    padding: 24px !important;
+}
+
+/* 3. On adoucit l'Aside pour qu'elle ressemble à un vrai bloc "Sticky" */
+.co-circuit-aside {
+    border-radius: 24px !important;
+}
+
+/* On retire le fond gris des cartes individuelles pour que ce soit le conteneur qui gère */
+
+/* 4. On s'assure que le texte de la timeline ne soit pas trop tassé */
+.co-page-with-aside .co-vip-step-body {
+    padding: 2px 30px 30px 30px !important; /* On réduit un peu le padding interne des étapes */
+}
+
+/* Responsive : on rétablit les inclusions en 2 colonnes sur mobile quand l'aside passe en haut */
+@media (max-width: 992px) {
+    
+    /* Sur mobile, on remet les inclusions côte à côte car on a toute la largeur */
+    .co-page-with-aside .co-vip-inclusions-wrap {
+        flex-direction: row !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .co-page-with-aside .co-vip-inclusions-wrap {
+        flex-direction: column !important; /* On repasse en 1 colonne sur petit mobile */
+    }
+}
+
+/* ==========================================================================
+   FINAL POLISH : CORRECTION INSTAGRAM, GRILLE ET ESPACEMENTS
+   ========================================================================== */
+
+/* 1. Correction de l'Instagram (On force une hauteur max pour éviter les chats géants) */
+.co-step-embed-box {
+    max-height: 480px !important; /* Hauteur max de la boîte */
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    background: #f8fafc !important;
+}
+
+.co-step-embed-box .instagram-media {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+.co-step-embed-box iframe {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 480px !important;
+    border-radius: 12px !important;
+    border: none !important;
+}
+
+/* 2. Rééquilibrage de la grille de l'étape (Plus de place pour le texte) */
+
+/* 3. Nettoyage de l'Aside (On enlève le fond gris global pour faire plus Apple) */
+.co-circuit-aside {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* 4. On s'assure que l'heure dans la timeline n'est pas coupée */
+
+/* 5. Responsive : sur mobile, on remet l'image en dessous pour ne pas écraser le texte */
+
+/* ==========================================================================
+   V5 : LAYOUT GLOBAL AÉRÉ ET ÉTAPE MAGAZINE (CAPTURES 3 & 4)
+   ========================================================================== */
+
+/* 1. Élargir la page principale (plus d'espace pour le texte) */
+.co-circuit-wrapper {
+    max-width: 1400px !important; /* On passe de 1200 à 1400px */
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+}
+
+/* 2. La Grille Principale (Aside de 340px, le reste pour le contenu) */
+
+/* 3. Réduction de l'espace à gauche de la timeline */
+
+/* 4. La Grille de l'Étape (Texte à gauche, Image à droite) */
+
+/* Image Principale */
+
+/* Si l'embed est à la place de l'image */
+.co-step-media-col .co-step-embed-box {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 400px !important; /* Ajusté pour la grille */
+}
+
+/* 5. Les Callouts (Bon à savoir) */
+.co-vip-subblocks-v4 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-bottom: 30px !important;
+}
+
+/* 6. La Galerie d'images en bas (Capture 4) */
+.co-step-extra-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 20px !important;
+    padding-top: 20px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+}
+
+.co-extra-img {
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+.co-extra-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+}
+
+.co-extra-img:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* 7. L'embed en bas si présent avec des images */
+.co-step-embed-bottom {
+    margin-top: 30px !important;
+    padding-top: 30px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.co-step-embed-bottom .instagram-media {
+    max-width: 500px !important;
+    margin: 0 auto !important;
+}
+
+/* 8. Responsive */
+
+@media (max-width: 768px) {
+    .co-circuit-aside {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   CORRECTION FINALE V6 : LAYOUT AÉRÉ ET GRILLE 60/40
+   ========================================================================== */
+
+/* 1. Le conteneur global */
+.co-page-with-aside {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 340px !important;
+    gap: 50px !important; /* Plus d'espace entre le texte et l'aside */
+    align-items: start !important;
+    margin-top: 40px !important;
+}
+
+/* 2. On redonne de la largeur à la timeline (on enlève les marges inutiles) */
+.co-vip-timeline {
+    padding-left: 0 !important;
+}
+
+/* 3. LA CORRECTION DE L'ÉTAPE : 60% Texte / 40% Image */
+.co-step-top-grid {
+    display: grid !important;
+    grid-template-columns: 1.4fr 1fr !important; /* Le texte prend 60% de la place */
+    gap: 30px !important;
+    align-items: start !important;
+    margin-bottom: 30px !important;
+}
+
+/* Le texte principal respire enfin */
+
+/* L'image prend 40% et reste propre */
+
+/* 4. L'Aside (on s'assure qu'elle est propre) */
+.co-circuit-aside {
+    position: sticky !important;
+    top: 30px !important;
+}
+
+/* 5. Responsive */
+@media (max-width: 992px) {
+    .co-page-with-aside {
+        grid-template-columns: 1fr !important;
+    }
+    .co-circuit-aside {
+        order: -1 !important; /* L'aside passe en haut sur mobile */
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .co-aside-cta {
+        grid-column: 1 / -1 !important;
+    }
+    .co-step-top-grid {
+        grid-template-columns: 1fr !important; /* Image au-dessus du texte sur mobile */
+    }
+}
+
+/* ==========================================================================
+   ASIDE PREMIUM : CARTES DÉTAILLÉES (STYLE MAQUETTE)
+   ========================================================================== */
+
+/* Ajustement de l'Aside (plus large pour respirer) */
+.co-circuit-aside {
+    width: 100% !important;
+    max-width: 360px !important; /* Un peu plus large */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important; /* Espace entre les cartes */
+}
+
+/* Style commun des cartes */
+.co-aside-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+    width: 100% !important;
+}
+
+/* 1. Carte Image + Titre */
+.co-aside-hero-card {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+.co-aside-hero-img {
+    width: 100% !important;
+    height: 140px !important;
+    overflow: hidden !important;
+}
+.co-aside-hero-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+.co-aside-hero-content {
+    padding: 20px !important;
+}
+
+/* 2. Titres des cartes */
+
+/* 3. Infos Pratiques */
+.co-aside-facts-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+.co-aside-facts-list li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+}
+
+/* 4. Carte Avis */
+.co-aside-review-card {
+    background: #fdfaf7 !important; /* Fond crème très léger */
+}
+.co-review-header {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+}
+
+/* 5. Image secondaire */
+.co-aside-img-card {
+    padding: 0 !important;
+    overflow: hidden !important;
+    height: 120px !important;
+}
+.co-aside-img-card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* 6. Bouton CTA */
+.co-aside-cta {
+    background: #ffffff !important;
+    text-align: center !important;
+}
+.co-btn-primary {
+    display: block !important;
+    background: #ba6827 !important;
+    color: #ffffff !important;
+    padding: 16px !important;
+    border-radius: 50px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.25) !important;
+}
+.co-btn-primary:hover {
+    background: #a3591f !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(186, 104, 39, 0.35) !important;
+}
+
+/* ==========================================================================
+   MONOBLOC PREMIUM (AVIS + IMAGE + CTA)
+   ========================================================================== */
+
+/* Le conteneur principal ne doit pas avoir de padding pour que l'image touche les bords */
+.co-aside-monobloc {
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
+}
+
+/* A. L'Avis (Haut du bloc) */
+.co-review-inner {
+    padding: 20px !important;
+    display: flex !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+}
+
+.co-review-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+}
+
+.co-review-info {
+    flex: 1 !important;
+}
+
+.co-review-text {
+    font-size: 13px !important;
+    font-style: italic !important;
+    color: #475569 !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.5 !important;
+}
+
+.co-review-name {
+    display: block !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-bottom: 2px !important;
+}
+
+.co-review-stars {
+    font-size: 12px !important;
+    color: #f59e0b !important;
+    letter-spacing: 2px !important;
+}
+
+.co-review-count {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    letter-spacing: normal !important;
+    margin-left: 4px !important;
+}
+
+/* B. L'Image (Milieu du bloc) */
+.co-monobloc-img {
+    width: 100% !important;
+    height: 150px !important;
+    overflow: hidden !important;
+}
+
+.co-monobloc-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+}
+
+.co-aside-monobloc:hover .co-monobloc-img img {
+    transform: scale(1.05) !important;
+}
+
+/* C. Le CTA (Bas du bloc) */
+.co-monobloc-cta {
+    padding: 24px 20px !important;
+    background: #f8fafc !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+.co-cta-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+    margin-bottom: 12px !important;
+}
+
+.co-cta-text {
+    font-size: 13px !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    margin: 0 0 16px 0 !important;
+}
+
+.co-monobloc-cta .co-btn-primary {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   ASIDE : GRAND MONOBLOC INFOS (HERO + HIGHLIGHTS + FACTS)
+   ========================================================================== */
+
+/* Le conteneur principal (La seule et unique carte blanche) */
+.co-aside-master-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+    overflow: hidden !important; /* Pour que l'image en haut respecte les bords arrondis */
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+}
+
+/* Les sections internes */
+.co-am-section {
+    padding: 24px !important;
+    position: relative !important;
+}
+
+/* Séparateur entre les sections (ligne grise fine) */
+.co-am-section:not(:last-child)::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 24px !important; /* Décalage pour ne pas toucher les bords */
+    right: 24px !important;
+    height: 1px !important;
+    background: #f1f5f9 !important;
+}
+
+/* A. Hero (Image + Titre) */
+.co-am-hero {
+    padding: 0 !important; /* On retire le padding pour que l'image colle aux bords */
+}
+
+.co-am-hero .co-aside-hero-img {
+    width: 100% !important;
+    height: 160px !important;
+    overflow: hidden !important;
+}
+
+.co-am-hero .co-aside-hero-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.co-am-hero .co-am-content {
+    padding: 24px !important;
+}
+
+.co-aside-hero-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 8px 0 !important;
+}
+
+.co-aside-hero-desc {
+    font-size: 14px !important;
+    color: #64748b !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+}
+
+/* B. Titres des sections internes */
+.co-aside-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 16px 0 !important;
+    text-transform: none !important; 
+}
+
+/* C. Highlights */
+.co-am-highlights .co-aside-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+}
+
+.co-am-highlights .co-aside-list li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    font-size: 14px !important;
+    color: #475569 !important;
+    line-height: 1.5 !important;
+}
+
+.co-am-highlights .co-aside-list li svg {
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+}
+
+/* D. Infos Pratiques (Trip Facts) */
+.co-am-facts .co-aside-facts-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+
+.co-am-facts .co-aside-facts-list li {
+    display: flex !important;
+    align-items: center !important; /* Aligne l'icône au milieu du texte */
+    gap: 16px !important;
+}
+
+.co-fact-icon {
+    width: 32px !important;
+    height: 32px !important;
+    background: #fdf8f3 !important; /* Petit fond beige */
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.co-fact-icon i {
+    font-size: 15px !important;
+    color: #ba6827 !important;
+}
+
+.co-fact-text {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.co-fact-label {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    margin-bottom: 2px !important;
+}
+
+.co-fact-value {
+    font-size: 14px !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   MAP INTÉGRÉE DANS LE MASTER CARD
+   ========================================================================== */
+
+/* On s'assure que le titre de la Map a le même style que les autres */
+.co-am-map-section .co-aside-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 16px 0 !important;
+}
+
+/* Le conteneur de la Map (hauteur fixe et bords arrondis) */
+.co-am-map-container {
+    width: 100% !important;
+    height: 200px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #f1f5f9 !important;
+    position: relative !important;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05) !important;
+}
+
+.co-am-map-container iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    display: block !important;
+}
+
+/* ==========================================================================
+   TIMELINE HEADER V2 : APPLE LIKE & BADGES
+   ========================================================================== */
+
+/* 1. LE BOUTON DE VILLE (Style Pilule) */
+.co-departure-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin-bottom: 30px !important;
+    flex-wrap: wrap !important;
+}
+
+.co-nav-label {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #94a3b8 !important; /* Gris discret */
+}
+
+.co-nav-buttons {
+    display: flex !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+}
+
+.co-pub-tab-btn {
+    appearance: none !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 50px !important; /* Forme pilule */
+    padding: 10px 22px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.co-pub-tab-btn:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+    transform: translateY(-1px) !important;
+}
+
+.co-pub-tab-btn.active {
+    background: #ba6827 !important; /* Anthracite (comme sur ta capture) */
+    color: #ffffff !important;
+    /*border-color: #1e293b !important;*/
+   
+}
+
+/* 2. L'EN-TÊTE DE L'ITINÉRAIRE */
+.co-timeline-head-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin-top: 20px !important;
+    margin-bottom: 32px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-bottom: 20px !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+}
+
+/* Partie Gauche (Titre + Desc) */
+.co-th-left {
+    flex: 1 !important;
+    min-width: 250px !important;
+}
+
+.co-th-left .co-vip-title {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.2 !important;
+}
+
+.co-th-desc {
+    font-size: 15px !important;
+    color: #64748b !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+    max-width: 550px !important;
+}
+
+/* Partie Droite (Durée + Expand) */
+.co-th-right {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    align-items: center !important;
+    justify-content: flex-end;
+    gap: 12px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Le badge de durée */
+.co-duration-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #fdf8f3 !important; /* Fond crème */
+    border: 1px solid #ebd9cc !important;
+    color: #ba6827 !important;
+    padding: 6px 14px !important;
+    border-radius: 50px !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+}
+
+/* Le bouton Expand all (on garde le même design mais on l'aligne bien) */
+.co-expand-all-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+}
+
+.co-expand-all-label {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+}
+
+/* 3. RESPONSIVE */
+@media (max-width: 768px) {
+    .co-timeline-head-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    .co-th-right {
+        align-items: flex-start !important;
+        width: 100% !important;
+        flex-direction: row !important; /* Les met côte à côte sur mobile */
+        justify-content: space-between !important;
+    }
+}
+
+/* ==========================================================================
+   V7 : TIMELINE ÉDITORIALE PREMIUM (MAGAZINE STYLE)
+   ========================================================================== */
+
+/* 1. Conteneur principal de l'étape */
+.co-vip-step-body {
+    border-radius: 20px !important;
+}
+
+/* 2. Image Hero (Bannière) */
+.co-step-hero {
+    width: 100% !important;
+    aspect-ratio: 21 / 9 !important; /* Format cinéma */
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    margin-bottom: 32px !important;
+    background: #f8fafc !important;
+}
+
+.co-step-hero .co-hero-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.6s ease !important;
+}
+
+.co-step-hero:hover .co-hero-img {
+    transform: scale(1.03) !important;
+}
+
+/* 3. Texte d'introduction (Grand, lisible, centré) */
+.co-step-intro {
+    max-width: 850px !important;
+    margin: 0 auto 40px auto !important;
+    font-size: 17px !important;
+    line-height: 1.8 !important;
+    color: #334155 !important;
+    font-weight: 400 !important;
+}
+
+/* 4. Grille des sous-blocs (Callouts) */
+
+/* Carte Callout */
+
+/* Icône du callout */
+.co-callout-icon {
+    border-radius: 50% !important;
+}
+
+.co-callout-desc p:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 5. Section Médias (Galerie + Instagram) */
+
+/* Galerie d'images */
+
+/* Instagram Embed */
+.co-step-social-embed {
+    /* box-shadow: none !important; */
+    border: 1px #dfdfdf solid;
+}
+
+/* 6. Responsive */
+@media (max-width: 992px) {
+    .co-step-hero {
+        aspect-ratio: 16 / 9 !important;
+    }
+    .co-step-intro {
+        font-size: 16px !important;
+    }
+}
+
+/* ==========================================================================
+   V8 : CORRECTION ÉDITORIALE DES CALLOUTS ET DES MÉDIAS
+   ========================================================================== */
+
+/* 1. LES SOUS-BLOCS (CALLOUTS) : Design Éditorial Premium */
+.co-step-callouts-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important; /* On passe sur une seule colonne pour la lisibilité */
+    gap: 24px !important;
+    margin-bottom: 48px !important;
+    max-width: 850px !important; /* Aligné avec la largeur du texte d'intro */
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.co-callout-card {
+    display: flex !important;
+    gap: 20px !important;
+    background: transparent !important; /* On enlève le fond beige */
+    border: none !important;
+    border-left: 3px solid #ba6827 !important; /* Barre orange à gauche (Style Apple) */
+    border-radius: 0 !important;
+    padding: 4px 0 4px 24px !important; /* Padding uniquement à gauche */
+    transition: none !important;
+    box-shadow: none !important;
+}
+
+.co-callout-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.co-callout-icon {
+    flex-shrink: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    background: transparent !important; /* On enlève le rond blanc */
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    color: #ba6827 !important;
+    box-shadow: none !important;
+    margin-top: 2px !important;
+}
+
+.co-callout-content {
+    flex: 1 !important;
+}
+
+.co-callout-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 10px 0 !important;
+    line-height: 1.3 !important;
+}
+
+.co-callout-desc {
+    font-size: 15px !important;
+    color: #475569 !important;
+    line-height: 1.7 !important;
+    margin: 0 !important;
+}
+
+/* 2. LA SECTION MÉDIAS (Galerie + Instagram) */
+.co-step-media-section {
+    max-width: 850px !important;
+    margin: 40px auto 0 auto !important;
+    padding-top: 32px !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+.co-media-title {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 24px 0 !important;
+}
+
+/* La galerie d'images : On force 2 colonnes pour que ce soit grand */
+.co-step-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 colonnes */
+    gap: 16px !important;
+    margin-bottom: 32px !important;
+}
+
+.co-gallery-item {
+    aspect-ratio: 16 / 9 !important; /* Format paysage large */
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    background: #f8fafc !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+}
+
+.co-gallery-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.co-gallery-item:hover img {
+    transform: scale(1.04) !important;
+}
+
+/* 3. L'INSTAGRAM EMBED : Centré et Taille Maîtrisée */
+.co-step-social-embed {
+    max-width: 400px !important; /* Taille max pour ressembler à un mobile */
+    margin: 0 auto !important; /* Centré */
+    background: transparent !important; /* Plus de fond blanc moche */
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+}
+
+.co-step-social-embed iframe {
+    width: 100% !important;
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important; /* Ombre portée sur l'iframe directement */
+}
+
+/* 4. RESPONSIVE */
+@media (max-width: 768px) {
+    .co-step-callouts-grid,
+    .co-step-media-section {
+        max-width: 100% !important;
+    }
+    
+    .co-step-gallery {
+        grid-template-columns: 1fr !important; /* 1 seule colonne sur mobile */
+    }
+}
+
+/* ==========================================================================
+   GALERIE INTÉGRÉE AUX CALLOUTS (SOUS-BLOCS)
+   ========================================================================== */
+
+/* La grille d'images */
+.co-subblock-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-bottom: 12px !important;
+}
+
+/* L'image individuelle */
+.co-subblock-img {
+    aspect-ratio: 4 / 3 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #f1f5f9 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+.co-subblock-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.3s ease !important;
+}
+
+.co-subblock-img:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* On ajuste le titre et le texte pour qu'ils soient bien alignés */
+.co-callout-text-wrap {
+    align-items: flex-start !important;
+}
+
+.co-callout-title {
+    margin-top: 0 !important;
+}
+
+/* ==========================================================================
+   OPTIMISATION TIMELINE : GAIN DE PLACE À GAUCHE & HEURE DANS LA CARTE
+   ========================================================================== */
+
+/* 1. On réduit la colonne de gauche (juste pour le rond) */
+.co-timeline-left-col {
+    padding-left: 0 !important;
+}
+
+/* La ligne verticale se décale en conséquence */
+
+/* On remonte le contenu de la carte pour qu'il soit aligné avec le rond */
+
+/* 2. Design de l'heure dans la carte */
+.co-card-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important; /* Pousse l'heure et la flèche à droite */
+}
+
+.co-card-meta .co-timeline-time-display {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #64748b !important; /* Gris propre */
+    background: #f8fafc !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+}
+
+/* On ajuste l'alignement de la carte pour que tout soit sur la même ligne */
+
+.co-card-content {
+    padding-right: 16px !important;
+}
+
+/* 3. Responsive : sur mobile, on cache l'heure si c'est trop serré */
+@media (max-width: 480px) {
+    .co-card-meta .co-timeline-time-display {
+        display: none !important; /* Optionnel : on la cache sur très petits écrans */
+    }
+}
+
+/* Sécurité : Empêche le texte de la carte de s'écraser */
+.co-vip-step-card .co-card-content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    /*flex: 1 1 auto !important;*/
+    min-width: 0 !important; /* Force le texte à passer à la ligne au lieu de pousser l'heure */
+    margin-right: 0px !important;
+    width: 100% !important;
+}
+
+/* Ajustement de l'image pour qu'elle garde sa taille */
+.co-vip-step-card .co-card-img {
+    width: 100px !important;
+    height: 70px !important;
+    flex-shrink: 0 !important;
+}
+
+/* ==========================================================================
+   V9 : TIMELINE UNIFIÉE (COLLAPSED / EXPANDED)
+   ========================================================================== */
+
+/* 1. Le conteneur de l'étape (Layout Flex) */
+.co-vip-step-row {
+    position: relative !important;
+}
+
+/* 2. Colonne de gauche (Heure + Numéro + Ligne) */
+.co-timeline-left-col {
+    padding-top: 20px !important;
+}
+
+.co-timeline-time-display {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    margin-bottom: 12px !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+}
+
+/* La ligne verticale */
+.co-vip-step:not(:last-child) .co-timeline-left-col::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 70px !important; /* Commence sous le rond */
+    bottom: -20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 2px !important;
+    background: #e2e8f0 !important;
+    z-index: 1 !important;
+}
+
+/* 3. Le Bloc Unifié (Carte Blanche) */
+.co-vip-step-card-wrapper {
+    transition: all 0.3s ease !important;
+}
+
+
+
+/* 4. Le Header (Bouton cliquable) */
+.co-vip-step-header {
+    align-items: center !important;
+}
+
+/* Quand c'est ouvert, on ajoute une ligne de séparation sous le header */
+
+/* Le contenu du header (Image, Titre, Chevron) */
+
+/* 5. Le Body (Contenu déplié - Unifié) */
+.co-vip-step-body {
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Grille éditoriale (Image à gauche, Texte à droite - Capture 2) */
+.co-step-editorial-grid.has-images {
+    display: grid !important;
+    grid-template-columns: 1fr 1.2fr !important; /* Image à gauche (plus petite), Texte à droite */
+    gap: 30px !important;
+    align-items: start !important;
+    margin-bottom: 30px !important;
+}
+
+/* On inverse l'ordre pour mettre l'image à gauche */
+.co-step-media-col {
+    order: -1 !important; 
+}
+
+.co-main-step-image {
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+
+.co-main-step-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Si pas d'image, le texte prend toute la place */
+.co-step-editorial-grid.no-images {
+    display: block !important;
+    max-width: 800px !important;
+}
+
+.co-step-main-desc {
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+    color: #475569 !important;
+}
+
+/* 6. Responsive */
+@media (max-width: 768px) {
+    .co-vip-step:not(:last-child) .co-timeline-left-col::after {
+        top: 60px !important;
+    }
+    .co-step-editorial-grid.has-images {
+        grid-template-columns: 1fr !important; /* On empile sur mobile */
+    }
+    .co-card-desc {
+        display: none !important; /* On cache la desc sur mobile pour gagner de la place */
+    }
+}
+
+/* ==========================================================================
+   V10 : TIMELINE PRÉCISION SUISSE (HEURE DANS LE BLOC + LIGNE CONTINUE)
+   ========================================================================== */
+
+/* 1. Le conteneur principal de l'étape */
+.co-vip-step {
+    position: relative !important;
+    margin-bottom: 16px !important;
+}
+
+/* 2. La colonne de gauche (Rond + Ligne continue) */
+
+/* Le rond orange */
+.co-vip-step-marker {
+    position: relative !important;
+}
+
+/* La ligne verticale qui relie les étapes */
+.co-vip-step::before {
+    position: absolute !important;
+    top: 52px !important; /* Commence sous le rond */
+    bottom: -16px !important; /* Va jusqu'au prochain rond */
+    left: 15px !important; /* Centre la ligne (32px / 2 - 1px) */
+    width: 2px !important;
+    background: #ebd9cc !important; /* Ligne couleur beige/orange clair */
+    z-index: 1 !important;
+}
+
+/* On cache la ligne pour la dernière étape */
+.co-vip-step:last-child::before {
+    display: none !important;
+}
+
+/* 3. La Carte (Bloc unifié) */
+.co-vip-step-card-wrapper {
+    flex: 1 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+}
+
+/* 4. Le Header de la carte */
+.co-vip-step-header {
+    width: 100% !important;
+    padding:10px 20px !important;
+    background: transparent !important;
+    border: none !important;
+    display: block !important; /* On passe en block pour gérer l'intérieur */
+    cursor: pointer !important;
+    text-align: left !important;
+}
+
+.co-vip-step-card {
+    gap: 20px !important;
+    width: 100% !important;
+}
+
+/* L'heure dans la carte (Précision de l'alignement) */
+.co-card-time {
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #64748b !important;
+    flex-shrink: 0 !important;
+    padding-top: 4px !important; /* Ajustement optique pour aligner avec le texte */
+}
+
+/* L'image de la carte */
+.co-card-img {
+    width: 110px !important;
+    height: 75px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    background: #f1f5f9 !important;
+}
+
+.co-card-img img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Le contenu texte */
+.co-card-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.co-card-title {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 6px 0 !important;
+    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
+}
+
+.co-card-desc {
+    font-size: 13.5px !important;
+    color: #64748b !important;
+    margin: 0 !important;
+    line-height: 1.5 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+}
+
+/* La flèche */
+.co-card-chevron {
+    flex-shrink: 0 !important;
+    color: #94a3b8 !important;
+    padding-top: 4px !important;
+    transition: transform 0.3s ease !important;
+}
+
+.co-vip-step.is-open .co-card-chevron {
+    transform: rotate(180deg) !important;
+}
+
+/* Le body déplié garde ses marges internes */
+.co-vip-step-body {
+    display: none !important;
+    padding: 0 24px 24px 24px !important; /* Padding en bas et sur les côtés */
+    background: transparent !important;
+}
+.co-vip-step.is-open .co-vip-step-body {
+    display: block !important;
+}
+
+/* Ligne de séparation sous le header quand c'est ouvert */
+.co-vip-step.is-open .co-vip-step-header {
+   /* margin-bottom: 20px !important;*/
+}
+
+/* ==========================================================================
+   V11 : EN-TÊTE ÉPURÉ EN MODE DÉPLIÉ (OPEN)
+   ========================================================================== */
+
+/* 1. On cache la miniature */
+.co-vip-step.is-open .co-card-img {
+    display: none !important;
+}
+
+/* 2. On cache le paragraphe d'aperçu */
+.co-vip-step.is-open .co-card-desc {
+    display: none !important;
+}
+
+/* 3. On agrandit le titre et on ajuste son espacement */
+.co-vip-step.is-open .co-card-title {
+    font-size: 22px !important; /* Taille plus imposante */
+    color: #1e293b !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+}
+
+/* 4. On centre verticalement l'heure, le titre et la flèche */
+.co-vip-step.is-open .co-vip-step-card {
+    align-items: flex-start !important;
+    flex-direction: column;
+    gap: 4px !important;
+}
+
+/* 5. On retire le décalage du haut sur l'heure (puisque l'image n'est plus là) */
+.co-vip-step.is-open .co-card-time {
+    padding-top: 0 !important;
+    font-size: 15px !important; /* On peut même l'agrandir très légèrement pour équilibrer */
+}
+
+/* 6. On retire le décalage du haut sur la flèche */
+.co-vip-step.is-open .co-card-chevron {
+    padding-top: 0 !important;
+}
+
+/* 7. Optionnel : On ajuste le padding du header pour qu'il soit un peu plus compact */
+.co-vip-step.is-open .co-vip-step-header {
+    /*background: #f8fafc !important; /* Un fond très léger pour différencier le header du contenu */
+    /*border-bottom: 1px solid #e2e8f0 !important;*/
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* ==========================================================================
+   V12 : CORRECTION HERO IMAGE PLEINE LARGEUR & HEURE SUR UNE LIGNE
+   ========================================================================== */
+
+/* 1. L'image Hero prend toute la largeur */
+.co-step-hero-wrapper {
+    width: 100% !important;
+    aspect-ratio: 21 / 9 !important; /* Format bannière cinéma */
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    margin-bottom: 30px !important;
+    background: #f1f5f9 !important;
+}
+
+.co-step-hero-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+/* 2. Le texte en dessous de l'image */
+.co-step-intro-wrapper {
+    width: 100% !important;
+    max-width: 850px !important; /* Limite la largeur pour la lisibilité */
+    margin-bottom: 30px !important;
+}
+
+/* 3. On annule les anciennes classes de grille pour éviter les conflits */
+.co-step-editorial-grid,
+.co-step-intro-col,
+.co-step-media-col {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 4. Correction de l'heure (Empêche le "AM" de passer à la ligne) */
+.co-card-time {
+    white-space: nowrap !important; /* Force le texte sur une seule ligne */
+    width: auto !important; /* Laisse la largeur s'adapter au texte */
+    min-width: 75px !important; /* Donne un minimum de place */
+    padding-right: 10px !important;
+    padding-left: 5px !important;
+}
+
+/* 5. Ajustement du header pour que tout soit bien aligné */
+.co-vip-step.is-open .co-vip-step-header {
+    padding: 20px 4px 10px 4px !important;
+}
+
+.co-vip-step-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+/* ==========================================================================
+   V14 : TIMELINE ULTIME (LOGIQUE FLEXBOX POUR LA LIGNE)
+   ========================================================================== */
+
+/* 1. On s'assure que la rangée prend toute la hauteur de la carte */
+.co-vip-step-row {
+    display: flex !important;
+    align-items: stretch !important; /* Force la colonne gauche à faire la même hauteur que la carte */
+    gap: 16px !important;
+}
+
+/* 2. La colonne de gauche (Flexbox vertical) */
+.co-timeline-left-col {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 40px !important; /* Largeur fixe pour le centrage */
+    flex-shrink: 0 !important;
+    position: relative !important;
+}
+
+/* 3. Le rond orange */
+.co-vip-step-marker {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: #ba6827 !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    z-index: 2 !important; /* Passe au-dessus de la ligne */
+    margin-top: 20px !important; /* Aligne le rond avec le haut de la carte */
+    box-shadow: 0 0 0 4px #ffffff !important; /* Masque la ligne qui passerait derrière */
+}
+
+/* 4. LA LIGNE VERTICALE (C'est ici que tout se joue) */
+.co-timeline-line {
+    width: 2px !important;
+    background-color: #ebd9cc !important; /* Couleur beige/orange clair */
+    flex: 1 !important; /* 👈 La ligne prend TOUT l'espace restant en hauteur */
+    margin-top: 4px !important; /* Petit espace sous le rond */
+    margin-bottom: -20px !important; /* Tire la ligne vers le rond suivant */
+    z-index: 1 !important;
+}
+
+/* 5. On cache la ligne pour la toute dernière étape */
+.co-vip-step:last-child .co-timeline-line {
+    display: none !important;
+}
+
+/* 6. NETTOYAGE : On supprime toutes les anciennes lignes fantômes */
+.co-vip-step::before,
+.co-vip-step-row::before,
+.co-timeline-left-col::before,
+.co-timeline-left-col::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* === TIMELINE : ligne pointillée alignée sur les ronds === */
+.co-vip-step .co-timeline-left-col {
+    --tl-size: 36px;    /* diamètre du rond */
+    --tl-top: 20px;     /* distance entre le haut de l'étape et le rond */
+    --tl-gap: 32px;     /* espace entre deux étapes (margin-bottom de .co-vip-step) */
+    --tl-space: 6px;    /* petit vide au-dessus/au-dessous des ronds */
+
+    position: relative !important;
+    padding-top: 0 !important;
+    align-items: center !important;
+}
+
+/* On annule le décalage left:-41px / top:8px qui sortait le rond de sa colonne */
+.co-vip-step .co-vip-step-row .co-vip-step-marker {
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: var(--tl-size, 36px) !important;
+    height: var(--tl-size, 36px) !important;
+    margin: var(--tl-top, 20px) 0 0 0 !important;
+    flex-shrink: 0 !important;
+}
+
+/* La ligne : centrée sur le rond, continue jusqu'au rond de l'étape suivante */
+.co-vip-step .co-timeline-left-col .co-timeline-line {
+    display: block !important;
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 2px !important;
+    flex: none !important;
+    margin: 0 !important;
+    top: calc(var(--tl-top) + var(--tl-size) + var(--tl-space)) !important;
+    bottom: calc(-1 * (var(--tl-gap) + var(--tl-top) - var(--tl-space))) !important;
+    z-index: 1 !important;
+    border-radius: 1px !important;
+    background: repeating-linear-gradient(
+        to bottom,
+        #d9b99f 0, #d9b99f 6px,
+        transparent 6px, transparent 12px
+    ) !important;
+}
+
+/* Pas de ligne après la dernière étape */
+.co-vip-step:last-child .co-timeline-left-col .co-timeline-line {
+    display: none !important;
+}
+
+/* Mobile : on garde la timeline en 2 colonnes (une règle plus haut empilait rond et carte) */
+@media (max-width: 768px) {
+    .co-vip-step .co-vip-step-row {
+        flex-direction: row !important;
+    }
+    .co-vip-step .co-timeline-left-col {
+        gap: 0 !important;
+    }
+}
+
+.co-time-wrap{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+
+.co-vip-step.is-open .co-vip-step-card-wrapper{
+    border: none !important;
+    box-shadow: transparent !important;
+    border-bottom: 1px solid #9191912e !important;
+
+}
+
+.co-vip-step.is-open .co-vip-step-body{
+    padding: 4px 4px 20px 4px !important;
 }

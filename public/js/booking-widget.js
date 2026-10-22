@@ -578,17 +578,19 @@
             // Note : le template place `data-base-time` sur <h4 class="co-vip-step-title">
             // et le texte de l'heure dans <span class="co-timeline-time-display">.
             // On préserve le format "HH:MM : " utilisé à l'origine.
-            activePane.querySelectorAll('.co-vip-step-title[data-base-time]').forEach(titleEl => {
-                const originalStepTime = titleEl.dataset.baseTime;
+                        // Cible le nouveau conteneur de l'heure
+            // Dans booking-widget.js
+            activePane.querySelectorAll('.co-card-time[data-base-time]').forEach(timeEl => {
+                const originalStepTime = timeEl.dataset.baseTime;
                 if (!originalStepTime || !originalStepTime.includes(':')) return;
-
+                
                 const originalMin = parseMinutes(originalStepTime);
                 const updatedTime = formatTime(originalMin + deltaMin);
-
-                const displaySpan = titleEl.querySelector('.co-timeline-time-display');
-                if (displaySpan) {
-                    displaySpan.textContent = updatedTime + ' : ';
-                }
+                
+                // On reformate en 12h pour l'affichage
+                const dateObj = new Date('1970-01-01T' + updatedTime + ':00');
+                const formatted = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
+                timeEl.textContent = formatted;
             });
         };
         // ------------------------------------------------------------------------

@@ -136,363 +136,467 @@ if ( ! empty( $options ) && is_array( $options ) ) {
         </div>
     <?php endif; ?>
 
-    <!-- 1. GRAND TITRE DU CIRCUIT (S'affiche uniquement si vous le tapez manuellement dans la metabox) -->
-    <?php if ( $hero_title ) : ?>
-        <h1 style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); font-size: 32px; font-weight: 700; margin: 15px 0 20px 0; line-height: 1.25; clear: both; display: none;">
-            <?php echo esc_html( $hero_title ); ?>
-        </h1>
-    <?php endif; ?>
-
-    <!-- 2. BANDEAU TRIP INFO -->
-    <?php if ( ! empty( $trip_facts ) ) : ?>
-        <div class="co-vip-tripinfo-section" style="margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 22px; width: 100%; clear: both;">
-            
-            <!-- CORRECTION : RESTAURATION DU VRAI TITRE "TRIP INFO" -->
-            <?php if ( $trip_info_title ) : ?>
-                <h3 class="co-vip-title" style="margin: 0 0 18px 0; border: none; padding: 0; font-size: 24px !important; font-weight: 600 !important; line-height: 1.25 !important; font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); text-transform: capitalize;">
-                    <?php echo esc_html( $trip_info_title ); ?>
-                </h3>
-            <?php endif; ?>
-
-            <div class="co-vip-tripinfo-row" style="display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: center;">
-           
-                <?php foreach ( $trip_facts as $fact ) : 
-                    $f_icon  = ! empty( $fact['icon'] ) ? $fact['icon'] : 'fas fa-info-circle';
-                    $f_label = ! empty( $fact['label'] ) ? $fact['label'] : '';
-                    $f_value = ! empty( $fact['value'] ) ? $fact['value'] : '';
-                    if ( empty( $f_label ) && empty( $f_value ) ) continue;
-                ?>
-                    <div class="co-vip-tripinfo-item" style="display: flex; align-items: center; gap: 14px;">
-                        <span class="co-vip-tripinfo-icon" style="color: var(--etb-theme-primary, #ba6827); font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; width: 32px; flex-shrink: 0;">
-                            <i class="<?php echo esc_attr( $f_icon ); ?>"></i>
-                        </span>
-                        <div class="co-vip-tripinfo-text" style="display: flex; flex-direction: column;">
-                            <?php if ( $f_label ) : ?>
-                                <span class="co-vip-tripinfo-label" style="font-size: 12.5px; color: var(--etb-theme-text, #797979); line-height: 1.2; margin-bottom: 3px;">
-                                    <?php echo esc_html( $f_label ); ?>
-                                </span>
-                            <?php endif; ?>
-                            <?php if ( $f_value ) : ?>
-                                <span class="co-vip-tripinfo-value" style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); font-size: 15px; font-weight: 600; color: var(--etb-theme-secondary, #5b3516); line-height: 1.3;">
-                                    <?php echo esc_html( $f_value ); ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- 3. SECTION 2 COLONNES : OVERVIEW (GAUCHE) & CARTE POINTS FORTS SANS BADGE (DROITE) -->
-    <div class="co-hero-overview-grid" style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 40px; align-items: start; margin-bottom: 40px; width: 100%; clear: both;">
+        <!-- NOUVEAU LAYOUT GLOBAL 2 COLONNES (DÉMARRE ICI) -->
+    <div class="co-page-with-aside">
         
-       <!-- COLONNE GAUCHE : SECTIONS DE PRÉSENTATION DYNAMIQUES -->
-        <div class="co-hero-text-col">
-            <?php foreach ( $overview_sections as $sec ) : ?>
-                <div class="co-vip-overview-section" style="margin-bottom: 30px;">
-                    <?php if ( ! empty( $sec['title'] ) ) : ?>
-                        <h2 style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); font-size: 26px; font-weight: 700; margin: 0 0 14px 0; line-height: 1.25;">
-                            <?php echo esc_html( $sec['title'] ); ?>
-                        </h2>
+        <!-- COLONNE GAUCHE : Overview + Timeline + Inclusions -->
+        <div class="co-main-content-col">
+
+            <!-- 1. BANDEAU TRIP INFO -->
+            <?php if ( ! empty( $trip_facts ) ) : ?>
+                <div class="co-vip-tripinfo-section" style="margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 22px; width: 100%; clear: both;">
+                    <?php if ( $trip_info_title ) : ?>
+                        <h3 class="co-vip-title" style="margin: 0 0 18px 0; border: none; padding: 0; font-size: 24px !important; font-weight: 600 !important; line-height: 1.25 !important; font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); text-transform: capitalize;">
+                            <?php echo esc_html( $trip_info_title ); ?>
+                        </h3>
                     <?php endif; ?>
-
-                    <?php if ( ! empty( $sec['desc'] ) ) : ?>
-                        <div class="co-hero-desc" style="color: var(--etb-theme-text, #797979); font-size: 15.5px; line-height: 1.75; font-weight: 500;">
-                            <?php echo wp_kses_post( wpautop( $sec['desc'] ) ); ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- COLONNE DROITE : CARTE POINTS FORTS ÉPURÉE SANS BADGE DE DURÉE -->
-        <?php if ( ! empty( $highlights_items ) ) : ?>
-            <div class="co-hero-highlights-col">
-                <div class="co-vip-highlights-card" style="background: #ffffff; border: 1.5px solid #ebd9cc; border-radius: 12px; padding: 22px 24px; box-shadow: 0 4px 20px rgba(91, 53, 22, 0.04);">
-                    
-                    <h3 style="display: flex; align-items: center; gap: 10px; font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); font-size: 20px; font-weight: 700; margin: 0 0 18px 0; padding-bottom: 12px; border-bottom: 1px solid #f8fafc;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--etb-theme-primary, #ba6827)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        <span><?php echo esc_html( $highlights_title ); ?></span>
-                    </h3>
-
-                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px;">
-                        <?php foreach ( $highlights_items as $hl ) : ?>
-                            <li style="display: flex; align-items: flex-start; gap: 12px; color: var(--etb-theme-text, #797979); font-size: 14.5px; line-height: 1.5;">
-                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--etb-theme-primary, #ba6827)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="16 9 10 15 7 12"></polyline>
-                                </svg>
-                                <span><?php echo esc_html( $hl ); ?></span>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            </div>
-        <?php endif; ?>
-    </div> <!-- Fin de co-hero-overview-grid -->
-
-    <?php
-    // Récupération dynamique de tous les véhicules publiés
-    $vehicles = get_posts( array(
-        'post_type'      => 'tour_vehicle',
-        'post_status'    => 'publish',
-        'numberposts'    => -1,
-        'orderby'        => 'menu_order',
-        'order'          => 'ASC',
-    ) );
-    ?>
-
-    <!-- SECTION ITINÉRAIRE & INCLUSIONS (PLEINE LARGEUR) -->
-    <div class="co-itinerary-section">
-        
-       <!-- ONGLETS VILLES + TIMELINE + INCLUSIONS -->
-        <div class="co-left-details">
-            
-            <!-- 1. ONGLETS DES VILLES DE DÉPART (DANS LA COLONNE GAUCHE) -->
-            <div class="co-departure-nav">
-                <span class="co-nav-label">Departure city:</span>
-                <div class="co-nav-buttons" role="tablist" aria-label="Departure city">                    <?php 
-                    $is_first = true;
-                    foreach ( $options as $opt_id => $opt_data ) : 
-                        $city = ! empty( $opt_data['city_name'] ) ? esc_html( $opt_data['city_name'] ) : 'Departure';
-                        $add_price = floatval( $opt_data['additional_price'] ?? 0 );
-                        $price_suffix = ( $add_price > 0 ) ? ' (+' . $add_price . ' ' . $currency . ')' : '';
-                    ?>
-                    <button type="button" 
-                            class="co-pub-tab-btn <?php echo $is_first ? 'active' : ''; ?>" 
-                            id="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
-                            role="tab"
-                            aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>"
-                            aria-controls="co-pane-<?php echo esc_attr( $opt_id ); ?>"
-                            tabindex="<?php echo $is_first ? '0' : '-1'; ?>"
-                            data-target="<?php echo esc_attr( $opt_id ); ?>"
-                            data-duration="<?php echo esc_attr( $opt_data['duration_hours'] ?? 1 ); ?>"
-                            data-price="<?php echo esc_attr( $add_price ); ?>"
-                            data-time="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
-                        <span class="dashicons dashicons-location" aria-hidden="true"></span>
-                        <?php echo $city . esc_html( $price_suffix ); ?>
-                    </button>
-                    <?php 
-                        $is_first = false;
-                    endforeach; 
-                    ?>
-                </div>
-            </div>
-
-           <?php 
-            $is_first = true;
-            foreach ( $options as $opt_id => $opt_data ) : 
-                $timeline        = $opt_data['timeline'] ?? array();
-                $inclusions      = ! empty( $opt_data['inclusions'] ) ? explode( "\n", trim( $opt_data['inclusions'] ) ) : array();
-                $exclusions      = ! empty( $opt_data['exclusions'] ) ? explode( "\n", trim( $opt_data['exclusions'] ) ) : array();
-                $overview_title  = $opt_data['overview_title'] ?? 'Circuit Overview';
-                $overview_desc   = $opt_data['overview_desc'] ?? '';
-                $trip_info_title = ! empty( $opt_data['trip_info_title'] ) ? $opt_data['trip_info_title'] : 'trip info';
-                $trip_facts      = ! empty( $opt_data['trip_facts'] ) && is_array( $opt_data['trip_facts'] ) ? $opt_data['trip_facts'] : array();
-                
-                // Rétrocompatibilité : on récupère les highlights, sinon on utilise les anciens badges
-                $highlights = $opt_data['highlights'] ?? array();
-                if ( empty( $highlights ) ) {
-                    $highlights = array_filter( array(
-                        $opt_data['badge_1'] ?? '',
-                        $opt_data['badge_2'] ?? '',
-                        $opt_data['badge_3'] ?? '',
-                        $opt_data['badge_4'] ?? '',
-                    ) );
-                }
-            ?>
-                <div class="co-option-pane <?php echo $is_first ? 'active' : ''; ?>" 
-                     id="co-pane-<?php echo esc_attr( $opt_id ); ?>" 
-                     role="tabpanel"
-                     aria-labelledby="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
-                     aria-hidden="<?php echo $is_first ? 'false' : 'true'; ?>"
-                     data-base-departure="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
-                   <!-- PROGRAMME / TIMELINE (ACCORDÉON AVEC COMMANDE GLOBALE) -->
-                    <?php if ( ! empty( $timeline ) ) : ?>
-                        <div class="co-timeline-block">
-                            
-                            <!-- En-tête Itinéraire avec switch Expand all / Collapse all -->
-                            <div class="co-timeline-head-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
-                                <h3 class="co-vip-title" style="margin: 0; padding: 0; border: none;">Itinerary</h3>
-                                
-                                <div class="co-expand-all-wrap" style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
-                                    <span class="co-expand-all-label" style="font-size: 13.5px; font-weight: 600; color: #5b3516;">Expand all</span>
-                                    <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" aria-expanded="false">
-                                        <span class="co-expand-switch-thumb"></span>
-                                    </button>
+                    <div class="co-vip-tripinfo-row" style="display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: center;">
+                        <?php foreach ( $trip_facts as $fact ) : 
+                            $f_icon  = ! empty( $fact['icon'] ) ? $fact['icon'] : 'fas fa-info-circle';
+                            $f_label = ! empty( $fact['label'] ) ? $fact['label'] : '';
+                            $f_value = ! empty( $fact['value'] ) ? $fact['value'] : '';
+                            if ( empty( $f_label ) && empty( $f_value ) ) continue;
+                        ?>
+                            <div class="co-vip-tripinfo-item" style="display: flex; align-items: center; gap: 14px;">
+                                <span class="co-vip-tripinfo-icon" style="color: var(--etb-theme-primary, #ba6827); font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; width: 32px; flex-shrink: 0;">
+                                    <i class="<?php echo esc_attr( $f_icon ); ?>"></i>
+                                </span>
+                                <div class="co-vip-tripinfo-text" style="display: flex; flex-direction: column;">
+                                    <?php if ( $f_label ) : ?>
+                                        <span class="co-vip-tripinfo-label" style="font-size: 12.5px; color: var(--etb-theme-text, #797979); line-height: 1.2; margin-bottom: 3px;"><?php echo esc_html( $f_label ); ?></span>
+                                    <?php endif; ?>
+                                    <?php if ( $f_value ) : ?>
+                                        <span class="co-vip-tripinfo-value" style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); font-size: 15px; font-weight: 600; color: var(--etb-theme-secondary, #5b3516); line-height: 1.3;"><?php echo esc_html( $f_value ); ?></span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                            
-                            <div class="co-vip-timeline">
-                                <?php foreach ( $timeline as $index => $step ) : 
-                                    $is_first_step = ($index === 0);
-                                    $time_label = ! empty( $step['time'] ) ? $step['time'] . ' : ' : '';
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
 
-                                    // Photos de l'étape (IDs choisis dans l'éditeur du circuit) : on écarte les images supprimées
-                                    $step_photos = array();
-                                    foreach ( (array) ( $step['photo_ids'] ?? array() ) as $photo_id ) {
-                                        $photo_id = absint( $photo_id );
-                                        if ( $photo_id && wp_attachment_is_image( $photo_id ) ) {
-                                            $step_photos[] = $photo_id;
-                                        }
-                                    }
-                                ?>
-                                                                    <div class="co-vip-step <?php echo $is_first_step ? 'is-open' : ''; ?>">
+            <!-- 2. OVERVIEW -->
+            <div class="co-hero-overview-grid" style="display: block; margin-bottom: 40px; width: 100%; clear: both;">
+                <div class="co-hero-text-col">
+                    <?php foreach ( $overview_sections as $sec ) : ?>
+                        <div class="co-vip-overview-section" style="margin-bottom: 30px;">
+                            <?php if ( ! empty( $sec['title'] ) ) : ?>
+                                <h2 style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); font-size: 26px; font-weight: 700; margin: 0 0 14px 0; line-height: 1.25;">
+                                    <?php echo esc_html( $sec['title'] ); ?>
+                                </h2>
+                            <?php endif; ?>
+                            <?php if ( ! empty( $sec['desc'] ) ) : ?>
+                                <div class="co-hero-desc" style="color: var(--etb-theme-text, #797979); font-size: 15.5px; line-height: 1.75; font-weight: 500;">
+                                    <?php echo wp_kses_post( wpautop( $sec['desc'] ) ); ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- 3. TIMELINE -->
+            <div class="co-itinerary-section">
+                <div class="co-left-details">
+                    
+                    <!-- ONGLETS VILLES -->
+                    <div class="co-departure-nav">
+                        <span class="co-nav-label">Departure city:</span>
+                        <div class="co-nav-buttons" role="tablist" aria-label="Departure city">                    
+                            <?php 
+                            $is_first = true;
+                            foreach ( $options as $opt_id => $opt_data ) : 
+                                $city = ! empty( $opt_data['city_name'] ) ? esc_html( $opt_data['city_name'] ) : 'Departure';
+                                $add_price = floatval( $opt_data['additional_price'] ?? 0 );
+                                $price_suffix = ( $add_price > 0 ) ? ' (+' . $add_price . ' ' . $currency . ')' : '';
+                            ?>
+                            <button type="button" 
+                                    class="co-pub-tab-btn <?php echo $is_first ? 'active' : ''; ?>" 
+                                    id="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
+                                    role="tab" aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>"
+                                    aria-controls="co-pane-<?php echo esc_attr( $opt_id ); ?>"
+                                    tabindex="<?php echo $is_first ? '0' : '-1'; ?>"
+                                    data-target="<?php echo esc_attr( $opt_id ); ?>"
+                                    data-duration="<?php echo esc_attr( $opt_data['duration_hours'] ?? 1 ); ?>"
+                                    data-price="<?php echo esc_attr( $add_price ); ?>"
+                                    data-time="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
+                        
+                                <?php echo $city . esc_html( $price_suffix ); ?>
+                            </button>
+                            <?php $is_first = false; endforeach; ?>
+                        </div>
+                    </div>
+
+                    <?php 
+                    $is_first = true;
+                    foreach ( $options as $opt_id => $opt_data ) : 
+                        $timeline        = $opt_data['timeline'] ?? array();
+                        $inclusions      = ! empty( $opt_data['inclusions'] ) ? explode( "\n", trim( $opt_data['inclusions'] ) ) : array();
+                        $exclusions      = ! empty( $opt_data['exclusions'] ) ? explode( "\n", trim( $opt_data['exclusions'] ) ) : array();
+                    ?>
+                        <div class="co-option-pane <?php echo $is_first ? 'active' : ''; ?>" 
+                             id="co-pane-<?php echo esc_attr( $opt_id ); ?>" 
+                             role="tabpanel" aria-labelledby="etb-tab-<?php echo esc_attr( $opt_id ); ?>"
+                             aria-hidden="<?php echo $is_first ? 'false' : 'true'; ?>"
+                             data-base-departure="<?php echo esc_attr( $opt_data['departure_time'] ?? '09:00' ); ?>">
+                           
+                            <?php if ( ! empty( $timeline ) ) : ?>
+                                <div class="co-timeline-block">
+                                    <!-- EN-TÊTE DE L'ITINÉRAIRE (Titre + Desc + Durée + Expand) -->
+                                    <div class="co-timeline-head-bar">
                                         
-                                        <div class="co-vip-step-row">
-                                            <div class="co-vip-step-marker <?php echo $is_first_step ? 'filled' : ''; ?>"></div>
+                                        <!-- Partie Gauche : Titre et Description -->
+
+                                        <div class="co-th-left">
+                                            <h3 class="co-vip-title">
+                                                <?php echo esc_html( ! empty( $opt_data['itinerary_title'] ) ? $opt_data['itinerary_title'] : 'Itinerary' ); ?>
+                                            </h3>
                                             
-                                            <h4 class="co-vip-step-title" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
-                                                <button type="button"
-                                                        class="co-vip-step-header"
-                                                        aria-expanded="<?php echo $is_first_step ? 'true' : 'false'; ?>"
-                                                        aria-controls="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
-                                                    <span class="co-timeline-time-display"><?php echo esc_html( $time_label ); ?></span><?php echo esc_html( $step['title'] ?? '' ); ?>
-                                                    <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                                    </svg>
-                                                </button>
-                                            </h4>
-                                        </div><!-- /.co-vip-step-row -->
-
-                                                                                <!-- 2. LE BODY : Contient les photos, le texte et le post -->
-                                        <div class="co-vip-step-body" id="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
-                                            <!-- A. LES PHOTOS : Tout en haut du body pour qu'elles soient masquées avec l'accordéon -->
-                                            <?php if ( ! empty( $step_photos ) ) : 
-                                                $media_class = ( count( $step_photos ) === 1 ) ? 'etb-single-media' : 'etb-gallery-media';
-                                            ?>
-                                                <div class="etb-step-media-grid <?php echo esc_attr( $media_class ); ?>">
-                                                    <?php foreach ( $step_photos as $photo_id ) :
-                                                        $photo_alt = trim( (string) get_post_meta( $photo_id, '_wp_attachment_image_alt', true ) );
-                                                    ?>
-                                                        <figure class="etb-step-photo-premium">
-                                                            <?php
-                                                            echo wp_get_attachment_image( $photo_id, 'large', false, array(
-                                                                'alt'      => '' !== $photo_alt ? $photo_alt : ( $step['title'] ?? '' ),
-                                                                'loading'  => 'lazy',
-                                                                'decoding' => 'async',
-                                                            ) );
-                                                            ?>
-                                                        </figure>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                                <?php if ( ! empty( $step['caption'] ) ) : ?>
-                                                    <p class="etb-step-caption"><?php echo esc_html( $step['caption'] ); ?></p>
-                                                <?php endif; ?>
+                                            <?php if ( ! empty( $opt_data['itinerary_intro'] ) ) : ?>
+                                                <p class="co-th-desc"><?php echo esc_html( $opt_data['itinerary_intro'] ); ?></p>
                                             <?php endif; ?>
+                                        </div>
 
-                                            <!-- B. LE POST (EMBED) : Flotte à droite, le texte s'enroule autour -->
+                                        <!-- Partie Droite : Badge de durée + Bouton Expand -->
+                                        <div class="co-th-right">
                                             <?php 
-                                            $embed_code = ! empty( $step['embed_code'] ) ? $step['embed_code'] : '';
-                                            if ( $embed_code ) : 
+                                            // Calcul de la durée totale
+                                            $dur_hours = floatval( $opt_data['duration_hours'] ?? 1 ); 
+                                            $hours = floor($dur_hours);
+                                            $minutes = ($dur_hours - $hours) * 60;
+                                            $time_str = ($minutes > 0) ? "{$hours}h" . str_pad($minutes, 2, '0', STR_PAD_LEFT) : "{$hours}h";
                                             ?>
-                                                <div class="etb-social-embed-float">
-                                                    <?php echo $embed_code; ?>
-                                                </div>
-                                            <?php endif; ?>
+                                            <div class="co-duration-badge">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                <span>Estimated duration: <?php echo esc_html( $time_str ); ?></span>
+                                            </div>
+                                            
+                                            <div class="co-expand-all-wrap">
+                                                <span class="co-expand-all-label">Expand all</span>
+                                                <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" aria-expanded="false">
+                                                    <span class="co-expand-switch-thumb"></span>
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                            <!-- C. LE TEXTE (Paragraphes & Sous-blocs) -->
-                                            <div class="co-vip-step-text">
-                                                <?php if ( ! empty( $step['desc'] ) ) : ?>
-                                                    <div style="margin: 0 0 24px 0; color: var(--etb-theme-text, #797979); font-size: 15.5px; line-height: 1.8;">
-                                                        <?php echo wp_kses_post( wpautop( $step['desc'] ) ); ?>
+                                    </div>
+                                    
+                                    <div class="co-vip-timeline">
+                                        <?php foreach ( $timeline as $index => $step ) : 
+                                            $is_first_step = ($index === 0);
+                                            
+                                            // --- NOUVEAU : FORMATAGE DE L'HEURE EN 12H AM/PM ---
+                                            $raw_time = $step['time'] ?? '09:00';
+                                            $formatted_time = date('h:i A', strtotime($raw_time));
+                                            // --------------------------------------------------
+                                            
+                                            $step_photos = array();
+                                            $step_photos = array();
+                                            foreach ( (array) ( $step['photo_ids'] ?? array() ) as $photo_id ) {
+                                                $photo_id = absint( $photo_id );
+                                                if ( $photo_id && wp_attachment_is_image( $photo_id ) ) { $step_photos[] = $photo_id; }
+                                            }
+                                            $thumb_id = !empty($step_photos) ? $step_photos[0] : 0;
+                                            $embed_code = ! empty( $step['embed_code'] ) ? $step['embed_code'] : '';
+                                        ?>
+                                            <div class="co-vip-step <?php echo $is_first_step ? 'is-open' : ''; ?>">
+                                                <div class="co-vip-step-row">
+                                                    
+                                                 <!-- COLONNE GAUCHE : Numéro -->
+                                                    <div class="co-timeline-left-col">
+                                                        <div class="co-vip-step-marker <?php echo $is_first_step ? 'filled' : ''; ?>">
+                                                            <?php echo $index + 1; ?>
+                                                        </div>
+                                                        <div class="co-timeline-line"></div>   <!-- 👈 à ajouter -->
                                                     </div>
-                                                <?php endif; ?>
 
-                                                <?php if ( ! empty( $step['subblocks'] ) && is_array( $step['subblocks'] ) ) : ?>
-                                                    <div class="co-vip-step-subblocks" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px; margin-bottom: 24px;">
-                                                        <?php foreach ( $step['subblocks'] as $sub ) : 
-                                                            $sub_title = ! empty( $sub['title'] ) ? $sub['title'] : '';
-                                                            $sub_desc  = ! empty( $sub['desc'] ) ? $sub['desc'] : '';
-                                                        ?>
-                                                            <div class="co-vip-subblock-item">
-                                                                <?php if ( $sub_title ) : ?>
-                                                                    <h5 style="font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif); color: var(--etb-theme-secondary, #5b3516); font-size: 17px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.35;">
-                                                                        <?php echo esc_html( $sub_title ); ?>
-                                                                    </h5>
+                                                    <!-- COLONNE DROITE : LE BLOC UNIFIÉ -->
+                                                    <div class="co-vip-step-card-wrapper">
+                                                        
+                                                        <button type="button"
+                                                                class="co-vip-step-header"
+                                                                aria-expanded="<?php echo $is_first_step ? 'true' : 'false'; ?>"
+                                                                aria-controls="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
+                                                            
+                                                            <div class="co-vip-step-card">
+                                                                <?php if ( $thumb_id ) : ?>
+                                                                    <div class="co-time-wrap">
+                                                                        <!-- L'HEURE À L'INTÉRIEUR DE LA CARTE -->
+                                                                        <div class="co-card-time" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
+                                                                            <?php echo esc_html( $formatted_time ); ?>
+                                                                        </div>
+                                                                        <div class="co-card-img">
+                                                                            <?php echo wp_get_attachment_image( $thumb_id, 'medium', false, array('alt' => $step['title'] ?? '') ); ?>
+                                                                         </div>
+                                                                    </div>
+                                                                    
                                                                 <?php endif; ?>
-                                                                <?php if ( $sub_desc ) : ?>
-                                                                    <div style="margin: 0; color: var(--etb-theme-text, #797979); font-size: 15px; line-height: 1.8;">
-                                                                        <?php echo wp_kses_post( wpautop( $sub_desc ) ); ?>
+
+                                                                <div class="co-card-content">
+                                                                    <div class="co-head-detail">
+                                                                        <h4 class="co-card-title"><?php echo esc_html( $step['title'] ?? '' ); ?></h4>
+                                                                        <?php if ( ! empty( $step['desc'] ) ) : ?>
+                                                                            <p class="co-card-desc"><?php echo wp_trim_words( wp_strip_all_tags( $step['desc'] ), 15 ); ?></p>
+                                                                        <?php endif; ?>
+                                                                    </div>
+                                                                    <div class="co-card-chevron">
+                                                                        <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                                    </div>
+                                                                </div>
+
+                                                                
+                                                            </div>
+                                                        </button>
+                                                        
+                                                
+
+                                                        <!-- Le contenu déplié (Mode Magazine) -->
+                                                        <div class="co-vip-step-body" id="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
+                                                            
+                                                            <?php 
+                                                            $has_images = !empty($step_photos);
+                                                            $extra_photos = array_slice($step_photos, 1);
+                                                            ?>
+                                                            
+                                                            <!-- PARTIE HAUTE : Image Hero (Pleine largeur) puis Texte -->
+                                                            <?php if ( $has_images ) : ?>
+                                                                <div class="co-step-hero-wrapper">
+                                                                    <?php echo wp_get_attachment_image( $step_photos[0], 'large', false, array('loading' => 'lazy', 'class' => 'co-hero-img') ); ?>
+                                                                </div>
+                                                            <?php endif; ?>
+
+                                                            <div class="co-step-intro-wrapper">
+                                                                <?php if ( ! empty( $step['desc'] ) ) : ?>
+                                                                    <div class="co-step-main-desc">
+                                                                        <?php echo wp_kses_post( wpautop( $step['desc'] ) ); ?>
                                                                     </div>
                                                                 <?php endif; ?>
                                                             </div>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div><!-- /.co-vip-step-text -->
 
-                                        </div><!-- /.co-vip-step-body -->
+                                                            <!-- PARTIE MILIEU : Sous-blocs avec photos -->
+                                                            <?php if ( ! empty( $step['subblocks'] ) && is_array( $step['subblocks'] ) ) : ?>
+                                                                <div class="co-step-callouts-grid">
+                                                                    <?php foreach ( $step['subblocks'] as $sub ) : 
+                                                                        if( empty($sub['title']) && empty($sub['desc']) && empty($sub['photo_ids']) ) continue;
+                                                                    ?>
+                                                                        <div class="co-callout-card" style="flex-direction: column;">
+                                                                            <?php if ( ! empty( $sub['photo_ids'] ) && is_array( $sub['photo_ids'] ) ) : ?>
+                                                                                <div class="co-subblock-gallery">
+                                                                                    <?php foreach ( $sub['photo_ids'] as $photo_id ) : ?>
+                                                                                        <div class="co-subblock-img">
+                                                                                            <?php echo wp_get_attachment_image( $photo_id, 'medium', false, array('loading' => 'lazy') ); ?>
+                                                                                        </div>
+                                                                                    <?php endforeach; ?>
+                                                                                </div>
+                                                                            <?php endif; ?>
+                                                                            <div class="co-callout-text-wrap" style="display: flex; gap: 16px; width: 100%;">
+                                                                                <div class="co-callout-icon">
+                                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                                                                </div>
+                                                                                <div class="co-callout-content">
+                                                                                    <?php if ( ! empty( $sub['title'] ) ) : ?><h5 class="co-callout-title"><?php echo esc_html( $sub['title'] ); ?></h5><?php endif; ?>
+                                                                                    <?php if ( ! empty( $sub['desc'] ) ) : ?><div class="co-callout-desc"><?php echo wp_kses_post( wpautop( $sub['desc'] ) ); ?></div><?php endif; ?>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    <?php endforeach; ?>
+                                                                </div>
+                                                            <?php endif; ?>
+
+                                                            <!-- PARTIE BASSE : Galerie d'images supplémentaires -->
+                                                            <?php if ( count( $step_photos ) > 1 || $embed_code ) : ?>
+                                                                <div class="co-step-media-section">
+                                                                    <h4 class="co-media-title">Médias & Découvertes</h4>
+                                                                    <?php if ( count( $step_photos ) > 1 ) : ?>
+                                                                        <div class="co-step-gallery">
+                                                                            <?php foreach ( $extra_photos as $photo_id ) : ?>
+                                                                                <div class="co-gallery-item"><?php echo wp_get_attachment_image( $photo_id, 'medium', false, array('loading' => 'lazy') ); ?></div>
+                                                                            <?php endforeach; ?>
+                                                                        </div>
+                                                                    <?php endif; ?>
+                                                                    <?php if ( $embed_code ) : ?>
+                                                                        <div class="co-step-social-embed"><?php echo $embed_code; ?></div>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            <?php endif; ?>
+
+                                                        </div><!-- /.co-vip-step-body -->
+                                                    </div><!-- /.co-vip-step-card-wrapper -->
+                                                </div><!-- /.co-vip-step-row -->
+                        
+                                            </div>
+                                        <?php endforeach; ?>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- INCLUS / NON INCLUS -->
+                            <?php if ( ! empty( $inclusions ) || ! empty( $exclusions ) ) : ?>
+                                <div class="co-vip-inclusions-section">
+                                    <div class="co-vip-inclusions-wrap">
+                                        <?php if ( ! empty( $inclusions ) ) : ?>
+                                            <div>
+                                                <h4>Included:</h4>
+                                                <ul class="co-vip-inc-list">
+                                                    <?php foreach ( $inclusions as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
+                                                        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 9 10 15 7 12"></polyline></svg><span><?php echo esc_html( trim( $item ) ); ?></span></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ( ! empty( $exclusions ) ) : ?>
+                                            <div>
+                                                <h4>Not included:</h4>
+                                                <ul class="co-vip-inc-list">
+                                                    <?php foreach ( $exclusions as $item ) : if ( empty( trim( $item ) ) ) continue; ?>
+                                                        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg><span><?php echo esc_html( trim( $item ) ); ?></span></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
                         </div>
-                    <?php endif; ?>
-
-                    <!-- INCLUS / NON INCLUS (STYLE PHOTO 2) -->
-                    <?php if ( ! empty( $inclusions ) || ! empty( $exclusions ) ) : ?>
-                        <div class="co-vip-inclusions-section" style="display: block; width: 100%; border-top: 1px solid #f1f5f9; padding-top: 35px; margin-top: 35px;">
-                            
-                            
-                            <div class="co-vip-inclusions-wrap">
-                                
-                                <!-- BLOC INCLUS (CERCLE VERT) -->
-                                <?php if ( ! empty( $inclusions ) ) : ?>
-                                    <div>
-                                        <h4 style="font-family: 'Sunsive-Medium', Sans-serif; color: #5b3516; font-size: 18px; font-weight: 600; margin: 0 0 16px 0;">Included:</h4>
-                                        <ul class="co-vip-inc-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
-                                            <?php foreach ( $inclusions as $item ) : 
-                                                if ( empty( trim( $item ) ) ) continue;
-                                            ?>
-                                                <li style="display: flex; align-items: flex-start; gap: 12px; color: #797979; font-size: 15px; line-height: 1.5;">
-                                                    <!-- Icône Cercle Coche Verte (Photo 2) -->
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                        <polyline points="16 9 10 15 7 12"></polyline>
-                                                    </svg>
-                                                    <span><?php echo esc_html( trim( $item ) ); ?></span>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- BLOC NON INCLUS (CERCLE ROUGE) -->
-                                <?php if ( ! empty( $exclusions ) ) : ?>
-                                    <div>
-                                        <h4 style="font-family: 'Sunsive-Medium', Sans-serif; color: #5b3516; font-size: 18px; font-weight: 600; margin: 0 0 16px 0;">Not included:</h4>
-                                        <ul class="co-vip-inc-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
-                                            <?php foreach ( $exclusions as $item ) : 
-                                                if ( empty( trim( $item ) ) ) continue;
-                                            ?>
-                                                <li style="display: flex; align-items: flex-start; gap: 12px; color: #797979; font-size: 15px; line-height: 1.5;">
-                                                    <!-- Icône Cercle Croix Rouge (Photo 2) -->
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                                                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                                                    </svg>
-                                                    <span><?php echo esc_html( trim( $item ) ); ?></span>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </div>
-                                <?php endif; ?>
-
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                </div>
-            <?php 
-                $is_first = false;
-            endforeach; 
-            ?>
+                    <?php $is_first = false; endforeach; ?>
                 </div> <!-- Fermeture de .co-left-details -->
-    </div> <!-- Fermeture de .co-itinerary-section -->
+            </div> <!-- Fermeture de .co-itinerary-section -->
+            
+        </div> <!-- Fermeture de .co-main-content-col -->
+
+
+        <!-- COLONNE DROITE : L'ASIDE -->
+        <aside class="co-circuit-aside">
+            
+            <!-- ========================================================= -->
+            <!-- BLOC 1 : MONOBLOC INFOS (Hero + Highlights + Trip Facts) -->
+            <!-- ========================================================= -->
+            <div class="co-aside-master-card">
+                
+                <!-- A. Hero (Image + Titre + Desc) -->
+                <div class="co-am-section co-am-hero">
+                    <?php 
+                    $featured_img_url = get_the_post_thumbnail_url( $circuit_id, 'large' );
+                    if ( $featured_img_url ) : 
+                    ?>
+                        <div class="co-aside-hero-img">
+                            <img src="<?php echo esc_url( $featured_img_url ); ?>" alt="<?php echo esc_attr( get_the_title( $circuit_id ) ); ?>">
+                        </div>
+                    <?php endif; ?>
+                    <div class="co-am-content">
+                        <h3 class="co-aside-hero-title"><?php echo esc_html( get_the_title( $circuit_id ) ); ?></h3>
+                        <?php 
+                        $hero_desc = ! empty( $active_option['aside_hero_desc'] ) ? $active_option['aside_hero_desc'] : 'La ville du cinéma et de l\'élégance.';
+                        ?>
+                        <p class="co-aside-hero-desc"><?php echo wp_kses_post( $hero_desc ); ?></p>
+                    </div>
+                </div>
+
+                <!-- B. Highlights -->
+                <?php if ( ! empty( $highlights_items ) ) : ?>
+                    <div class="co-am-section co-am-highlights">
+                        <h3 class="co-aside-title">Points forts du circuit</h3>
+                        <ul class="co-aside-list">
+                            <?php foreach ( $highlights_items as $hl ) : ?>
+                                <li>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ba6827" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    <span><?php echo esc_html( $hl ); ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <!-- C. Infos Pratiques -->
+                <?php if ( ! empty( $trip_facts ) ) : ?>
+                    <div class="co-am-section co-am-facts">
+                        <h3 class="co-aside-title">Informations pratiques</h3>
+                        <ul class="co-aside-facts-list">
+                            <?php foreach ( $trip_facts as $fact ) : 
+                                $f_icon  = ! empty( $fact['icon'] ) ? $fact['icon'] : 'fas fa-info-circle';
+                                $f_label = ! empty( $fact['label'] ) ? $fact['label'] : '';
+                                $f_value = ! empty( $fact['value'] ) ? $fact['value'] : '';
+                                if ( empty( $f_label ) && empty( $f_value ) ) continue;
+                            ?>
+                                <li>
+                                    <div class="co-fact-icon"><i class="<?php echo esc_attr( $f_icon ); ?>"></i></div>
+                                    <div class="co-fact-text">
+                                        <span class="co-fact-label"><?php echo esc_html( $f_label ); ?></span>
+                                        <span class="co-fact-value"><?php echo esc_html( $f_value ); ?></span>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+                <!-- D. MAP (Intégrée dans le même bloc) -->
+                <?php if ( ! empty( $active_option['map_iframe'] ) ) : 
+                    $raw_map = trim( $active_option['map_iframe'] );
+                    $map_src = '';
+                    if ( preg_match( '/src="([^"]+)"/', $raw_map, $matches ) ) {
+                        $map_src = $matches[1];
+                    } elseif ( filter_var( $raw_map, FILTER_VALIDATE_URL ) ) {
+                        $map_src = $raw_map;
+                    }
+                    if ( $map_src ) :
+                ?>
+                    <div class="co-am-section co-am-map-section">
+                        <h3 class="co-aside-title">Localisation</h3>
+                        <div class="co-am-map-container">
+                            <iframe src="<?php echo esc_url( $map_src ); ?>" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                <?php endif; endif; ?>
+
+            </div> <!-- /.co-aside-master-card -->
+
+         
+        
+            <!-- ========================================================= -->
+            <!-- BLOC 3 : MONOBLOC AVIS + IMAGE + CTA -->
+            <!-- ========================================================= -->
+            <div class="co-aside-card co-aside-monobloc">
+                <!-- A. L'Avis (Témoignage) -->
+                <?php if ( ( $active_option['aside_review_enabled'] ?? '1' ) === '1' ) : 
+                    $rev_name   = $active_option['aside_review_name'] ?? 'Sophie L.';
+                    $rev_text   = $active_option['aside_review_text'] ?? '« Une journée parfaite ! »';
+                    $rev_rating = absint( $active_option['aside_review_rating'] ?? 5 );
+                    $stars      = str_repeat('★', $rev_rating) . str_repeat('☆', 5 - $rev_rating);
+                ?>
+                <div class="co-review-inner">
+                    <img src="https://ui-avatars.com/api/?name=<?php echo urlencode( $rev_name ); ?>&background=ba6827&color=fff" alt="Client" class="co-review-avatar">
+                    <div class="co-review-info">
+                        <p class="co-review-text"><?php echo esc_html( $rev_text ); ?></p>
+                        <span class="co-review-name"><?php echo esc_html( $rev_name ); ?></span>
+                        <div class="co-review-stars"><?php echo $stars; ?> <span class="co-review-count"><?php echo $rev_rating; ?>/5</span></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- B. L'Image Secondaire -->
+                <?php if ( ( $active_option['aside_image_enabled'] ?? '1' ) === '1' && ! empty( $active_option['aside_image_id'] ) ) : 
+                    $aside_img_id = absint( $active_option['aside_image_id'] );
+                ?>
+                <div class="co-monobloc-img">
+                    <?php echo wp_get_attachment_image( $aside_img_id, 'large', false, array( 'alt' => 'Image secondaire', 'style' => 'width:100%; height:100%; object-fit:cover;' ) ); ?>
+                </div>
+                <?php endif; ?>
+
+                <!-- C. Le Bouton d'action (CTA) -->
+                <div class="co-monobloc-cta">
+                    <div class="co-cta-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ba6827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+                    </div>
+                    <p class="co-cta-text">Prêt pour une expérience inoubliable sur la Côte d'Azur ?</p>
+                    <a href="#co-vehicles-grid" class="co-btn-primary">Réserver ce circuit</a>
+                </div>
+            </div>
+
+        </aside>
+       
+
+    </div> <!-- Fermeture de .co-page-with-aside -->
 
     <!-- LAYOUT GLOBAL (VÉHICULES + FORMULAIRE) -->
     <div class="etb-booking-layout">
@@ -717,9 +821,9 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                     <div class="nexora-pax-row">
                                         <div class="etb-pax-info"><strong>Luggage</strong><span>Bagages</span></div>
                                         <div class="nexora-stepper">
-                                            <button type="button" class="etb-qty-btn etb-minus" onclick="let i=document.querySelector('input[name=\'etb_total_luggage\']'); if(i.value>0)i.value--; i.dispatchEvent(new Event('input'));">-</button>
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
                                             <input type="number" name="etb_total_luggage" value="0" min="0" readonly>
-                                            <button type="button" class="etb-qty-btn etb-plus" onclick="let i=document.querySelector('input[name=\'etb_total_luggage\']'); i.value++; i.dispatchEvent(new Event('input'));">+</button>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
                                         </div>
                                     </div>
                                 <?php endif; ?>
