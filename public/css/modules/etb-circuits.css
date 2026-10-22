@@ -5883,3 +5883,20 @@
 .co-vip-step.is-open .co-vip-step-body{
     padding: 4px 4px 20px 4px !important;
 }
+
+.co-vip-step.is-open  .co-card-content {
+    padding-right: 28px !important;
+}
+
+.etb-mobile-sticky-bar.is-visible {
+        display: flex !important;
+        transform: translateX(-50%) translateY(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+
+/* Classe pour masquer les cartes véhicules lors du filtrage */
+.etb-vehicle-card.etb-hidden {
+    display: none !important;
+}

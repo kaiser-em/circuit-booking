@@ -3,12 +3,22 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+
+
 // Variables d'environnement & Réglages
 $gen_settings  = get_option( 'etb_general_settings', array() );
 $form_settings = get_option( 'etb_form_settings', array() );
 $currency      = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
 $sec_token     = class_exists( 'ETB_Security' ) ? ETB_Security::generate_timestamp_token() : array( 'time' => time(), 'token' => '' );
 $extras        = get_posts( array( 'post_type' => 'tour_extra', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ) );
+// Récupération dynamique de tous les véhicules publiés (Code restauré)
+$vehicles = get_posts( array(
+    'post_type'      => 'tour_vehicle',
+    'post_status'    => 'publish',
+    'numberposts'    => -1,
+    'orderby'        => 'menu_order',
+    'order'          => 'ASC',
+) );
 ?>
 
 <?php
@@ -406,7 +416,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                             <!-- PARTIE BASSE : Galerie d'images supplémentaires -->
                                                             <?php if ( count( $step_photos ) > 1 || $embed_code ) : ?>
                                                                 <div class="co-step-media-section">
-                                                                    <h4 class="co-media-title">Médias & Découvertes</h4>
+                                                                    <h4 class="co-media-title"><?php echo esc_html( ! empty( $opt_data['timeline_media_title'] ) ? $opt_data['timeline_media_title'] : 'Médias & Découvertes' ); ?></h4>
                                                                     <?php if ( count( $step_photos ) > 1 ) : ?>
                                                                         <div class="co-step-gallery">
                                                                             <?php foreach ( $extra_photos as $photo_id ) : ?>
@@ -496,7 +506,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                 <!-- B. Highlights -->
                 <?php if ( ! empty( $highlights_items ) ) : ?>
                     <div class="co-am-section co-am-highlights">
-                        <h3 class="co-aside-title">Points forts du circuit</h3>
+                        <h3 class="co-aside-title"><?php echo esc_html( $highlights_title ); ?></h3>
                         <ul class="co-aside-list">
                             <?php foreach ( $highlights_items as $hl ) : ?>
                                 <li>
@@ -584,12 +594,12 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                 <?php endif; ?>
 
                 <!-- C. Le Bouton d'action (CTA) -->
-                <div class="co-monobloc-cta">
+                                <div class="co-monobloc-cta">
                     <div class="co-cta-icon">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ba6827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
                     </div>
-                    <p class="co-cta-text">Prêt pour une expérience inoubliable sur la Côte d'Azur ?</p>
-                    <a href="#co-vehicles-grid" class="co-btn-primary">Réserver ce circuit</a>
+                    <p class="co-cta-text">Ready for an unforgettable experience on the French Riviera?</p>
+                    <a href="#co-vehicles-grid" class="co-btn-primary" id="etb-scroll-to-vehicles">Book this circuit</a>
                 </div>
             </div>
 
@@ -614,14 +624,15 @@ if ( ! empty( $options ) && is_array( $options ) ) {
 
                 <!-- Filtres (Visuel pour l'instant) -->
                 <div class="nexora-filters">
-                    <button class="nexora-filter-btn active">All</button>
-                    <button class="nexora-filter-btn">Sedan</button>
-                    <button class="nexora-filter-btn">Van</button>
-                    <button class="nexora-filter-btn">SUV</button>
+                    <button class="nexora-filter-btn active" data-filter="all">All</button>
+                    <button class="nexora-filter-btn" data-filter="sedan">Sedan</button>
+                    <button class="nexora-filter-btn" data-filter="van">Van</button>
+                    <button class="nexora-filter-btn" data-filter="sprinter">Sprinter</button>
                 </div>
                 
                 <div class="co-vehicles-grid" id="co-vehicles-grid">
-                    <?php foreach ( $vehicles as $vehicle ) : 
+                    <?php foreach ( $vehicles as $vehicle ) :
+                        $vehicle_type  = get_post_meta( $vehicle->ID, '_etb_vehicle_type', true ) ?: 'all'; 
                         $base_price    = get_post_meta( $vehicle->ID, '_etb_base_price', true );
                         $hourly_rate   = get_post_meta( $vehicle->ID, '_etb_hourly_rate', true );
                         $pack_10h      = get_post_meta( $vehicle->ID, '_etb_pack_10h', true );
@@ -633,6 +644,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                         $is_featured   = ( get_post_meta( $vehicle->ID, '_etb_vehicle_featured', true ) === '1' );
                     ?>
                     <div class="etb-vehicle-card<?php echo $is_featured ? ' etb-featured' : ''; ?>" 
+                            data-type="<?php echo esc_attr( $vehicle_type ); ?>"
                              data-id="<?php echo $vehicle->ID; ?>" 
                              data-hourly-rate="<?php echo esc_attr( $hourly_rate ); ?>"
                              data-pack-10h="<?php echo esc_attr( $pack_10h ); ?>"

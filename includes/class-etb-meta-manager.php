@@ -313,6 +313,11 @@ class ETB_Meta_Manager {
                                 <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][itinerary_intro]" rows="2" class="widefat" placeholder="Discover the emblematic places of this circuit..."><?php echo esc_textarea( $data['itinerary_intro'] ?? '' ); ?></textarea>
                             </div>
 
+                            <div class="etb-engine-row" style="grid-column: 1 / -1;">
+                                <label>Titre de la section Médias (ex: Médias & Découvertes) :</label>
+                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_media_title]" value="<?php echo esc_attr( $data['timeline_media_title'] ?? 'Médias & Découvertes' ); ?>" class="widefat" placeholder="Médias & Découvertes">
+                            </div>
+
                         </div>
                     </div>
 
@@ -847,7 +852,8 @@ class ETB_Meta_Manager {
                 // NOUVEAUX CHAMPS ITINÉRAIRE
                 'itinerary_title'  => sanitize_text_field( $raw_data['itinerary_title'] ?? 'Itinerary' ),
                 'itinerary_intro'  => sanitize_textarea_field( $raw_data['itinerary_intro'] ?? '' ),
-                
+                'timeline_media_title' => sanitize_text_field( $raw_data['timeline_media_title'] ?? 'Médias & Découvertes' ),
+
                 // Nouveaux blocs de texte dynamiques (Colonne gauche)
                 'overview_sections'=> $overview_sections,
                 'highlights_title' => sanitize_text_field( $raw_data['highlights_title'] ?? 'Highlights' ),
@@ -987,7 +993,17 @@ class ETB_Meta_Manager {
         <p>
                 <label>Nombre max bagages :</label><br>
                 <input type="number" min="0" name="etb_max_bag" value="<?php echo esc_attr( $max_bag ); ?>" class="widefat">
-            </p>
+        </p>
+        <p>
+            <label><strong>Type de véhicule (pour les filtres) :</strong></label><br>
+            <select name="etb_vehicle_type" class="widefat">
+                <option value="all" <?php selected( get_post_meta( $post->ID, '_etb_vehicle_type', true ), 'all' ); ?>>Tous</option>
+                <option value="sedan" <?php selected( get_post_meta( $post->ID, '_etb_vehicle_type', true ), 'sedan' ); ?>>Sedan</option>
+                <option value="van" <?php selected( get_post_meta( $post->ID, '_etb_vehicle_type', true ), 'van' ); ?>>Van</option>
+                <option value="sprinter" <?php selected( get_post_meta( $post->ID, '_etb_vehicle_type', true ), 'sprinter' ); ?>>Sprinter</option>
+            </select>
+        </p>
+
             <p>
             <label><strong>🎬 GIF / Image animée au survol (Optionnel) :</strong></label><br>
             <input type="url" name="etb_hover_image" value="<?php echo esc_url( get_post_meta( $post->ID, '_etb_hover_image', true ) ); ?>" class="widefat" placeholder="https://.../mon-vehicule-anime.gif">
@@ -1533,6 +1549,7 @@ class ETB_Meta_Manager {
 
                 update_post_meta( $post_id, '_etb_max_pax', absint( $_POST['etb_max_pax'] ?? 0 ) );
                 update_post_meta( $post_id, '_etb_max_baggage', absint( $_POST['etb_max_bag'] ?? 0 ) );
+                update_post_meta( $post_id, '_etb_vehicle_type', sanitize_key( $_POST['etb_vehicle_type'] ?? 'all' ) );
                 update_post_meta( $post_id, '_etb_hover_image', esc_url_raw( $_POST['etb_hover_image'] ?? '' ) );
                 update_post_meta( $post_id, '_etb_vehicle_featured', isset( $_POST['etb_vehicle_featured'] ) ? '1' : '0' );
 

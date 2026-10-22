@@ -148,7 +148,7 @@
         const pickupErrorEl = root.querySelector('#etb-pickup-error');
         const globalSubmitErrorEl = root.querySelector('#etb-global-submit-error') || document.querySelector('#etb-global-submit-error');
 
-                const phoneInput   = root.querySelector('input[name="etb_phone"]');
+        const phoneInput   = root.querySelector('input[name="etb_phone"]');
         const phoneErrorEl = root.querySelector('#etb-phone-error');
 
         // Téléphone international : drapeau, indicatif, formatage (intl-tel-input)
@@ -1268,28 +1268,34 @@
             // --- LOGIQUE DE SCROLL ---
             window.addEventListener('scroll', () => {
                 const timelineBlock = document.querySelector('.co-timeline-block');
-                const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                const bookingLayout = document.querySelector('.etb-booking-layout');
                 
                 if (!timelineBlock) return;
 
-                // Règle 1 : Si un véhicule est sélectionné, on garde la barre visible pour voir le prix
+                // Si on est dans la zone de réservation (véhicules + formulaire), on cache la barre
+                if (bookingLayout) {
+                    const layoutRect = bookingLayout.getBoundingClientRect();
+                    // Si le haut de la section réservation est visible à l'écran
+                    if (layoutRect.top < window.innerHeight && layoutRect.bottom > 0) {
+                        mobileStickyBar.classList.remove('is-visible');
+                        return;
+                    }
+                }
+
+                // Si un véhicule est sélectionné, on garde la barre visible (pour voir le prix)
                 if (hasSelectedVehicle) {
                     mobileStickyBar.classList.add('is-visible');
                     return;
                 }
 
-                // Règle 2 : Sinon, on gère l'affichage en fonction de la position
+                // Gestion normale basée sur la timeline
                 const timelineRect = timelineBlock.getBoundingClientRect();
                 const isPastTimelineStart = timelineRect.top < window.innerHeight - 100;
                 
-                let isAtVehicles = false;
-                if (vehiclesSection) {
-                    const vehiclesRect = vehiclesSection.getBoundingClientRect();
-                    // Si le haut de la section véhicule entre dans l'écran, on cache la barre
-                    isAtVehicles = vehiclesRect.top < window.innerHeight - 100;
-                }
+                // On cache aussi si on est en dessous de la timeline
+                const isPastTimelineEnd = timelineRect.bottom < 100;
 
-                if (isPastTimelineStart && !isAtVehicles) {
+                if (isPastTimelineStart && !isPastTimelineEnd) {
                     mobileStickyBar.classList.add('is-visible');
                 } else {
                     mobileStickyBar.classList.remove('is-visible');
@@ -1297,22 +1303,36 @@
             }, { passive: true });
             
             // --- LOGIQUE DU CLIC ---
+                        // --- LOGIQUE DU CLIC ---
             mobileStickyBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 
+                // Si aucun véhicule n'est sélectionné, on scrolle vers la grille de véhicules
                 if (!hasSelectedVehicle) {
                     const vehiclesSection = document.querySelector('.co-top-vehicles-section');
                     if (vehiclesSection) {
-                        // 🔧 CORRECTION : block: 'start' pour scroller pile sur le titre
                         vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
-                } else {
-                    const activeStep = document.querySelector('.etb-progress-step.is-active')?.dataset.step || '1';
-                    if (activeStep === 3) {
-                        if (submitButton) submitButton.click();
-                    } else {
+                } 
+                // Si un véhicule est sélectionné
+                else {
+                    // On vérifie si le formulaire est visible
+                    const formWrapper = document.getElementById('etb-booking-form-wrapper');
+                    
+                    if (formWrapper && !formWrapper.classList.contains('is-hidden')) {
+                        // Le formulaire est visible, on scrolle vers le bouton "Continue" ou le formulaire
                         const nextBtn = document.querySelector('.etb-btn-next[data-next]');
-                        if (nextBtn) nextBtn.click();
+                        if (nextBtn) {
+                            nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else {
+                        // Le formulaire est caché (étape de sélection de véhicule), on scrolle vers la grille
+                        const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                        if (vehiclesSection) {
+                            vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                     }
                 }
             });
@@ -1605,6 +1625,79 @@
                 sidebarSubmitBtn.click();
             });
         }
+
+        // --- GESTION DES FILTRES DE VÉHICULES ---
+        const filterBtns = document.querySelectorAll('.nexora-filter-btn'); // On cible tout le document
+        const vehicleCards = document.querySelectorAll('.etb-vehicle-card');
+
+        if (filterBtns.length > 0 && vehicleCards.length > 0) {
+            filterBtns.forEach(btn => {
+                // On retire les anciens écouteurs pour éviter les doublons
+                const newBtn = btn.cloneNode(true);
+                btn.replaceWith(newBtn);
+            });
+
+            const activeFilterBtns = document.querySelectorAll('.nexora-filter-btn');
+
+            activeFilterBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    activeFilterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const filter = this.dataset.filter;
+
+                    vehicleCards.forEach(card => {
+                        const type = card.dataset.type;
+                        // On utilise une classe CSS au lieu de display:flex
+                        if (filter === 'all' || type === filter) {
+                            card.classList.remove('etb-hidden');
+                        } else {
+                            card.classList.add('etb-hidden');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // ----------------------------------------
+
+        // --- SCROLL INTELLIGENT DEPUIS LE BOUTON DE L'ASIDE ---
+        const scrollToVehiclesBtn = document.getElementById('etb-scroll-to-vehicles');
+        if (scrollToVehiclesBtn) {
+            scrollToVehiclesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                if (!hasSelectedVehicle) {
+                    // Cas 1 : Aucun véhicule sélectionné -> On scrolle vers la grille
+                    const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                    if (vehiclesSection) {
+                        vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    // Cas 2 : Un véhicule est sélectionné
+                    const formWrapper = document.getElementById('etb-booking-form-wrapper');
+                    
+                    if (formWrapper && !formWrapper.classList.contains('is-hidden')) {
+                        // Le formulaire est ouvert -> On scrolle vers le bouton de validation
+                        const nextBtn = document.querySelector('.etb-btn-next[data-next]');
+                        if (nextBtn) {
+                            nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else {
+                        // Le formulaire est caché (au cas où) -> On scrolle vers la grille
+                        const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                        if (vehiclesSection) {
+                            vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }
+            });
+        }
+        // -------------------------------------------------------
         // Lancement initial
 
         refreshAll();
@@ -1763,3 +1856,30 @@
         });
     }
 })();
+
+
+    // Filtrage des véhicules
+    const filterBtns = document.querySelectorAll('.nexora-filter-btn');
+    const vehicleCards = document.querySelectorAll('.etb-vehicle-card');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // UI Active
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.dataset.filter;
+
+            // Filtrage
+            vehicleCards.forEach(card => {
+                const type = card.dataset.type;
+                if (filter === 'all' || type === filter) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+        
