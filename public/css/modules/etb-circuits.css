@@ -4946,11 +4946,11 @@
 }
 
 .co-nav-label {
-    font-size: 13px !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
+    font-size: 20px !important;
+    font-weight: 500 !important;
+    /* text-transform: uppercase !important; */
     letter-spacing: 0.05em !important;
-    color: #94a3b8 !important; /* Gris discret */
+    color: #57616e !important;
 }
 
 .co-nav-buttons {
@@ -5944,3 +5944,62 @@
 .etb-btn-back-to-vehicles:hover svg {
     transform: translateX(-4px) !important; /* La flèche recule */
 }
+
+
+ .co-callout-text-wrap{
+    display: flex; gap: 16px; width: 100%;
+    flex-direction: row;
+
+ }
+
+
+@media (max-width: 980px) {
+    .co-circuit-aside{
+        max-width: 100% !important;
+        flex-direction: row !important;
+    }
+
+    .co-circuit-wrapper{
+        padding: 0 !important;
+    }
+
+    .co-aside-monobloc{
+        max-height: 500px !important;
+    }
+
+}
+
+@media (max-width: 428px) {
+    .co-bento-grid {
+        display: none !important;
+    }
+    .co-aside-master-card{
+        display: none !important
+    }
+    .co-circuit-aside{
+        max-width: 100% !important;
+        flex-direction: column !important;
+    }
+
+    .co-vip-step-row{
+        gap: 4px !important;
+    }
+
+    .co-callout-card{
+        border-left: none !important;
+        padding: 4px 0 !important;
+
+    }
+
+    .co-callout-text-wrap{
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+}
+
+@media (max-width: 720px) {
+
+
+}
+
+

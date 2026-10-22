@@ -399,7 +399,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                                                     <?php endforeach; ?>
                                                                                 </div>
                                                                             <?php endif; ?>
-                                                                            <div class="co-callout-text-wrap" style="display: flex; gap: 16px; width: 100%;">
+                                                                            <div class="co-callout-text-wrap">
                                                                                 <div class="co-callout-icon">
                                                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                                                                                 </div>
@@ -971,7 +971,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Change Vehicle
             </button>
-            
+
             <div class="etb-sidebar-sticky">
                 
                 <!-- Titre déplacé à l'intérieur de la carte -->
