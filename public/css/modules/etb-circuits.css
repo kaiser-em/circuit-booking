@@ -3475,7 +3475,7 @@
 }
 
 .etb-booking-layout.has-selection .etb-booking-sidebar {
-    display: block !important; /* Le panier apparaît */
+    display: flex !important; /* Le panier apparaît */
 }
 
 .etb-booking-layout.has-selection .co-vehicles-grid {
@@ -3637,7 +3637,7 @@
 /* On retire un peu de padding au sommet de la carte sticky pour compenser le titre qui est dedans */
 .etb-sidebar-sticky {
     padding-top: 24px !important; 
-    margin-top: 70px !important;
+    margin-top: 0px !important;
 }
 
 /* ==========================================================================
@@ -5899,4 +5899,48 @@
 /* Classe pour masquer les cartes véhicules lors du filtrage */
 .etb-vehicle-card.etb-hidden {
     display: none !important;
+}
+
+/* ==========================================================================
+   BOUTON RETOUR AUX VÉHICULES (AU-DESSUS DE L'ASIDE)
+   ========================================================================== */
+
+/* On s'assure que le bouton s'affiche au-dessus de la carte */
+.etb-booking-sidebar {
+    display: none !important;
+    flex-direction: column !important;
+}
+
+.etb-btn-back-to-vehicles {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: #8a9ee50d !important;
+    color: #64748b !important;
+    border: none !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    margin-bottom: 30px !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+    text-align: center!important;
+    width: 200px !important;
+    margin: 20px 4px 10px auto !important;
+}
+
+.etb-btn-back-to-vehicles:hover {
+    color: #ba6827 !important; /* Devient orange au survol */
+    background: #fdf8f3 !important; /* Léger fond crème */
+    border-radius: 8px !important;
+}
+
+.etb-btn-back-to-vehicles svg {
+    transition: transform 0.2s ease !important;
+}
+
+.etb-btn-back-to-vehicles:hover svg {
+    transform: translateX(-4px) !important; /* La flèche recule */
 }

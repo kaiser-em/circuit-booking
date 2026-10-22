@@ -699,12 +699,15 @@ if ( ! empty( $options ) && is_array( $options ) ) {
 
             <!-- FORMULAIRE (Caché au début, apparaît après sélection) -->
             <div class="co-booking-form-reveal is-hidden" id="etb-booking-form-wrapper" style="margin-top: 30px;">
-                 <!-- 🔧 NOUVEAU : Titre de la section -->
-                <div class="nexora-section-header">
-                    <h2 class="nexora-main-title">Configure your trip</h2>
-                    <p class="nexora-sub-title">Please enter your trip details below.</p>
+                 
+                <!-- En-tête avec bouton de retour -->
+                <div class="nexora-section-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                    <div>
+                        <h2 class="nexora-main-title">Configure your trip</h2>
+                        <p class="nexora-sub-title">Please enter your trip details below.</p>
+                    </div>
+                    
                 </div>
-
                 <form class="etb-booking-widget" id="etb-booking-app" onsubmit="return false;">
                     
                     <div style="position: absolute !important; left: -9999px !important; opacity: 0 !important;" aria-hidden="true">
@@ -962,6 +965,12 @@ if ( ! empty( $options ) && is_array( $options ) ) {
 
         <!-- COLONNE DROITE : LE SIDEBAR STICKY -->
         <div class="etb-booking-sidebar">
+            
+            <!-- NOUVEAU : BOUTON DE RETOUR AUX VÉHICULES -->
+            <button type="button" id="etb-back-to-vehicles" class="etb-btn-back-to-vehicles">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Change Vehicle
+            </button>
             
             <div class="etb-sidebar-sticky">
                 

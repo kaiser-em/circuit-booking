@@ -1698,6 +1698,36 @@
             });
         }
         // -------------------------------------------------------
+
+                // --- BOUTON RETOUR AUX VÉHICULES (DEPUIS LE FORMULAIRE) ---
+        const btnBackToVehicles = document.getElementById('etb-back-to-vehicles');
+        if (btnBackToVehicles) {
+            btnBackToVehicles.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 1. Cacher le formulaire
+                const formWrapper = document.getElementById('etb-booking-form-wrapper');
+                if (formWrapper) {
+                    formWrapper.classList.add('is-hidden');
+                }
+
+                // 2. Retirer le layout 2 colonnes de la sidebar
+                const bookingLayout = document.querySelector('.etb-booking-layout');
+                if (bookingLayout) {
+                    bookingLayout.classList.remove('has-selection');
+                }
+
+                // 3. Réafficher la grille de véhicules
+                const vehiclesSection = document.querySelector('.co-top-vehicles-section');
+                if (vehiclesSection) {
+                    vehiclesSection.style.display = ''; // Réinitialise
+                    setTimeout(() => {
+                        vehiclesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 50);
+                }
+            });
+        }
+        // ---------------------------------------------------------
         // Lancement initial
 
         refreshAll();
