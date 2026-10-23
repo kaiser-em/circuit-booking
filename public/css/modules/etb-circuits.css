@@ -6003,3 +6003,121 @@
 }
 
 
+.iti--separate-dial-code .iti__selected-flag{
+    background-color: transparent !important;
+}
+
+.iti--separate-dial-code .iti__selected-flag:focus-visible{
+    outline: none !important;
+}
+
+
+/* ==========================================================================
+   PREMIUM EXTRAS — ACCORDÉON (Phase 2a.1b)
+   ========================================================================== */
+
+.etb-extras-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 18px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+    transition: background 0.2s ease;
+}
+
+.etb-extras-toggle:hover {
+    background: rgba(186, 104, 39, 0.04);
+}
+
+.etb-extras-toggle:focus-visible {
+    outline: 2px solid var(--etb-theme-primary, #ba6827);
+    outline-offset: 2px;
+}
+
+.etb-extras-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.etb-extras-toggle-left .dashicons {
+    color: var(--etb-theme-primary, #ba6827);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.etb-extras-toggle-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+.etb-extras-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--etb-theme-primary, #ba6827);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+}
+
+.etb-extras-toggle-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.etb-extras-toggle-meta {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.etb-extras-chevron {
+    color: #64748b;
+    transition: transform 0.3s ease;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.etb-extras-card:not(.is-collapsed) .etb-extras-chevron {
+    transform: rotate(180deg);
+}
+
+.etb-extras-panel {
+    padding: 0 20px 20px 20px;
+    animation: etb-extras-fadeIn 0.25s ease;
+}
+
+@keyframes etb-extras-fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive : sur très petits écrans, cacher le compteur "X items" */
+@media (max-width: 480px) {
+    .etb-extras-toggle-meta {
+        display: none;
+    }
+    .etb-extras-toggle {
+        padding: 16px;
+    }
+}

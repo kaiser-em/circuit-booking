@@ -1284,8 +1284,10 @@ class ETB_Meta_Manager {
                 <div style="margin-bottom: 12px; padding: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px;">
                     <p style="margin: 0 0 8px 0;"><strong>LimoExpress :</strong> 
                         <span id="etb-limo-status-badge">
-                            <?php if ( $limo_status === 'synced' ) : ?>
+                                                        <?php if ( $limo_status === 'synced' && ! empty( $limo_id ) ) : ?>
                                 <span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">✅ Synchronisé (Course #<?php echo esc_html( $limo_id ); ?>)</span>
+                            <?php elseif ( $limo_status === 'autonomous' ) : ?>
+                                <span style="background: #e0f2fe; color: #075985; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">🔵 Mode autonome (aucun dispatch externe)</span>
                             <?php elseif ( $limo_status === 'failed' ) : ?>
                                 <span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">❌ Échec : <?php echo esc_html( $limo_error ?: 'Erreur de connexion' ); ?></span>
                             <?php else : ?>

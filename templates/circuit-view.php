@@ -842,11 +842,104 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                         </div>
                                     </div>
                                 <?php endif; ?>
+
+                                <!-- NOUVEAU : Sous-section Child Seats -->
+                                <div class="etb-child-seats-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
+                                    
+                                    <!-- Titre de sous-section -->
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                                        <span class="dashicons dashicons-buddicons-buddypress-logo" style="color: #ba6827; font-size: 18px; width: 18px; height: 18px;"></span>
+                                        <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b; letter-spacing: 0.02em;">Child Seats</h4>
+                                        <span style="font-size: 12px; color: #94a3b8; font-weight: 500;">Optional</span>
+                                    </div>
+
+                                    <!-- Siège bébé (0-2 ans) -->
+                                    <div class="nexora-pax-row">
+                                        <div class="etb-pax-info">
+                                            <strong>Baby Seat</strong>
+                                            <span>0-2 years — 1st free</span>
+                                        </div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                            <input type="number" name="etb_baby_seat_count" value="0" min="0" max="2" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rehausseur (2-10 ans) -->
+                                    <div class="nexora-pax-row">
+                                        <div class="etb-pax-info">
+                                            <strong>Booster Seat</strong>
+                                            <span>2-10 years — 2 first free</span>
+                                        </div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                            <input type="number" name="etb_booster_seat_count" value="0" min="0" max="3" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <p class="etb-error-message" id="etb-pax-capacity-error" style="display:none; margin-top: 16px;">
                                 <svg width="13" height="13" viewBox="0 0 24 24" class="etb-ico etb-ico-alert" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#etb-ico-alert" xlink:href="#etb-ico-alert"/></svg> Passenger capacity exceeded
                             </p>
                         </div>
+
+                        <!-- CARTE PREMIUM EXTRAS — ACCORDÉON -->
+                        <?php 
+                        // Récupération des extras publiés (triés par ordre de menu)
+                        $extras_posts = get_posts( array( 
+                            'post_type'      => 'tour_extra', 
+                            'numberposts'    => -1, 
+                            'post_status'    => 'publish',
+                            'orderby'        => 'menu_order',
+                            'order'          => 'ASC'
+                        ) ); 
+                        if ( ! empty( $extras_posts ) ) : 
+                            $extras_count = count( $extras_posts );
+                        ?>
+                        <div class="nexora-card etb-extras-card is-collapsed" style="margin-top: 24px; padding: 0; overflow: hidden;" id="etb-extras-card">
+                            <!-- Header accordéon (cliquable) -->
+                            <button type="button" class="etb-extras-toggle" id="etb-extras-toggle" 
+                                    aria-expanded="false" aria-controls="etb-extras-panel">
+                                <span class="etb-extras-toggle-left">
+                                    <span class="dashicons dashicons-star-filled"></span>
+                                    <span class="etb-extras-toggle-title">Premium Extras</span>
+                                    <span class="etb-extras-badge" id="etb-extras-badge" style="display:none;">
+                                        <span id="etb-extras-badge-count">0</span>&nbsp;selected
+                                    </span>
+                                </span>
+                                <span class="etb-extras-toggle-right">
+                                    <span class="etb-extras-toggle-meta"><?php echo esc_html( $extras_count ); ?> item<?php echo ( $extras_count > 1 ) ? 's' : ''; ?></span>
+                                    <span class="dashicons dashicons-arrow-down-alt2 etb-extras-chevron"></span>
+                                </span>
+                            </button>
+
+                            <!-- Panneau (caché par défaut) -->
+                            <div class="etb-extras-panel" id="etb-extras-panel" hidden>
+                                <div class="nexora-field-group">
+                                    <?php foreach ( $extras_posts as $extra ) :
+                                        $extra_price = (float) get_post_meta( $extra->ID, '_etb_price', true );
+                                        $extra_max   = absint( get_post_meta( $extra->ID, '_etb_max_qty', true ) ) ?: 10;
+                                        $extra_type  = get_post_meta( $extra->ID, '_etb_price_type', true ) ?: 'fixed';
+                                    ?>
+                                    <div class="nexora-pax-row etb-extra-item" data-extra-id="<?php echo esc_attr( $extra->ID ); ?>">
+                                        <div class="etb-pax-info">
+                                            <strong><?php echo esc_html( $extra->post_title ); ?></strong>
+                                            <span class="etb-price-tag">+<?php echo esc_html( $extra_price ); ?> <?php echo esc_html( $currency ); ?><?php echo ( $extra_type === 'per_quantity' ) ? ' / unit' : ''; ?></span>
+                                        </div>
+                                        <div class="nexora-stepper">
+                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                            <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" max="<?php echo esc_attr( $extra_max ); ?>" readonly>
+                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
 
                         <div class="etb-step-nav" style="margin-top: 30px; border-top: none;">
                             <div class="etb-step-nav-error" data-nav-error="1" style="display:none;"></div>

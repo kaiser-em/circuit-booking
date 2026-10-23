@@ -383,6 +383,7 @@
 
             // Options supplémentaires (Extras) : calcul et illumination visuelle dynamique
             let extrasHtml = '';
+            let selectedExtrasCount = 0;
             root.querySelectorAll('input[name^="etb_extra_"]').forEach(inp => {
                 const qty    = parseInt(inp.value) || 0;
                 const parent = inp.closest('.etb-extra-item') || inp.closest('.etb-pax-card');
@@ -393,6 +394,7 @@
                 }
 
                 if (qty > 0) {
+                    selectedExtrasCount++;
                     const name      = parent?.querySelector('strong')?.textContent.trim() || 'Option';
                     const priceSpan = parent?.querySelector('.etb-price-tag');
                     const price     = parsePrice(priceSpan?.textContent || '0');
@@ -401,6 +403,18 @@
                     extrasHtml += `<div class="etb-summary-row"><span>${qty}x ${name}</span><span>+ ${(price * qty).toFixed(0)} ${state.currency}</span></div>`;
                 }
             });
+
+            // Badge accordéon : compteur d'extras sélectionnés (distincts)
+            const extrasBadgeEl      = document.getElementById('etb-extras-badge');
+            const extrasBadgeCountEl = document.getElementById('etb-extras-badge-count');
+            if (extrasBadgeEl && extrasBadgeCountEl) {
+                if (selectedExtrasCount > 0) {
+                    extrasBadgeCountEl.textContent = selectedExtrasCount;
+                    extrasBadgeEl.style.display = 'inline-flex';
+                } else {
+                    extrasBadgeEl.style.display = 'none';
+                }
+            }
 
             // Remise Promo
             let discountAmount = 0;
@@ -1025,6 +1039,40 @@
             
             refreshAll(); 
         });
+
+                // 3. Toggle Extras simples
+        root.addEventListener('click', (e) => {
+            const item = e.target.closest('.etb-extra-item.etb-type-toggle');
+            if (!item) return;
+
+            const input = item.querySelector('input[type="hidden"]');
+            const isSelected = item.classList.contains('etb-selected');
+            
+            item.classList.toggle('etb-selected');
+            if (input) input.value = isSelected ? "0" : "1";
+            
+            refreshAll(); 
+        });
+
+        // 3bis. Accordéon « Premium Extras » (Phase 2a.1b)
+        const extrasCardEl   = document.getElementById('etb-extras-card');
+        const extrasToggleEl = document.getElementById('etb-extras-toggle');
+        const extrasPanelEl  = document.getElementById('etb-extras-panel');
+        if (extrasCardEl && extrasToggleEl && extrasPanelEl) {
+            extrasToggleEl.addEventListener('click', function (e) {
+                e.preventDefault();
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                if (isExpanded) {
+                    this.setAttribute('aria-expanded', 'false');
+                    extrasCardEl.classList.add('is-collapsed');
+                    extrasPanelEl.hidden = true;
+                } else {
+                    this.setAttribute('aria-expanded', 'true');
+                    extrasCardEl.classList.remove('is-collapsed');
+                    extrasPanelEl.hidden = false;
+                }
+            });
+        }
 
         // 4. Écouteurs de saisie formulaire
         const luggageInput = root.querySelector('input[name="etb_total_luggage"]');

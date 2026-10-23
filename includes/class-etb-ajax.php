@@ -290,7 +290,7 @@ class ETB_Ajax {
                 ) );
             }
 
-            if ( $p_query->have_posts() ) {
+                       if ( $p_query->have_posts() ) {
                 $used_promo_id = $p_query->posts[0]->ID;
                 $rem = get_post_meta( $used_promo_id, '_etb_promo_remaining', true );
                 if ( '' !== $rem && is_numeric( $rem ) && (int) $rem > 0 ) {
@@ -299,6 +299,52 @@ class ETB_Ajax {
             }
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        // DISPATCH AUTOMATIQUE VERS LIMOEXPRESS (Phase 1)
+        //
+        // Corrige le bug : la métadonnée _etb_limo_status restait vide après
+        // une réservation, ce qui affichait « Non synchronisé / En attente »
+        // dans l'admin WordPress.
+        //
+        // Reproduit le pattern éprouvé de [ETB] handle_submit_checkout()
+        // (branche mono-trajets), adapté aux spécificités Circuit :
+        //   - Un circuit = prestation à durée fixe ⇒ trip_mode = 'hourly'
+        //     (LimoExpress reçoit to_location = "As Directed (À disposition)").
+        //   - Pas de Stripe en Circuit v1.0.4 ⇒ paid = false, logs vides.
+        //   - Pas de champs Blacklane (flight/waiting_board/cost_center).
+        //   - Sièges bébé déjà gérés nativement par send_booking() via les
+        //     extras dont le nom contient « bébé / bebe / baby ».
+        // ─────────────────────────────────────────────────────────────────────
+                if ( class_exists( 'ETB_Dispatcher_Manager' ) ) {
+            $data['trip_mode']         = 'hourly';
+            $data['client_note']       = ! empty( $data['note'] ) ? $data['note'] : 'Aucune';
+            $data['extra_fees']        = array();
+            $data['paid']              = false;
+            $data['payment_logs']      = array();
+            $data['payment_intent_id'] = '';
+
+            $dispatch_result = ETB_Dispatcher_Manager::dispatch_booking( $booking_id, $data );
+
+            if ( $dispatch_result['success'] ) {
+                // Ne déclarer 'synced' QUE si LimoExpress a réellement retourné un ID.
+                // En mode autonome ('none'), dispatch_booking retourne success=true
+                // mais AUCUN envoi externe n'a eu lieu : on ne doit pas afficher
+                // « Synchronisé » pour ne pas induire l'admin en erreur.
+                $limo_id_real = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+
+                if ( ! empty( $limo_id_real ) ) {
+                    update_post_meta( $booking_id, '_etb_limo_status', 'synced' );
+                } else {
+                    $active_disp = get_option( 'etb_general_settings', array() )['active_dispatcher'] ?? 'none';
+                    if ( 'none' === $active_disp ) {
+                        update_post_meta( $booking_id, '_etb_limo_status', 'autonomous' );
+                    }
+                }
+            } else {
+                update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', $dispatch_result['message'] );
+            }
+        }
 
         $data['booking_id'] = $booking_id;
         wp_send_json_success( $data );
@@ -394,9 +440,16 @@ class ETB_Ajax {
         $dispatch_result = ETB_Dispatcher_Manager::dispatch_booking( $booking_id, $data );
 
         if ( $dispatch_result['success'] ) {
-            $limo_id      = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+            $limo_id = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+            if ( empty( $limo_id ) ) {
+                // Dispatch "réussi" mais rien envoyé (ex: mode autonome)
+                wp_send_json_error( array(
+                    'message' => 'Aucune synchronisation externe n\'a été effectuée (mode autonome actif).',
+                ) );
+                return;
+            }
             $client_debug = get_post_meta( $booking_id, '_etb_limo_client_debug', true );
-            wp_send_json_success( array( 
+            wp_send_json_success( array(
                 'limo_id'      => $limo_id,
                 'client_debug' => $client_debug,
             ) );
