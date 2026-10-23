@@ -1649,7 +1649,7 @@
 
 
 .etb-summary-row strong {
-    color: var(--etb-accent) !important;
+    color: #ba6827 !important;
 }
 
 #promo-line.etb-promo-row strong{
@@ -3106,9 +3106,10 @@
 
 /* Fond gris clair pour le formulaire (pour faire ressortir les cartes blanches) */
 .etb-booking-main .etb-step {
-    background: #fbfbfb !important;
-    border: none !important;
+    background: #ffffff !important;
+    /*border: 1px solid #8080803b  !important;*/
     box-shadow: none !important;
+    border-radius: 14px !important;
     padding: 0 !important;
 }
 
@@ -3117,9 +3118,9 @@
     background: #ffffff !important;
     /*border: 1px solid #e2e8f0 !important;*/
     border-radius: 12px !important;
-    padding: 20px !important;
-    margin-bottom: 20px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+    padding:20px !important;
+    /*margin-bottom: 20px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;*/
 }
 
 /* On remet un peu d'espace pour la barre de progression */
@@ -3137,7 +3138,6 @@
     align-items: center !important;
     gap: 10px !important;
     margin-bottom: 16px !important;
-    padding-bottom: 12px !important;
     border-bottom: 1px solid #f1f5f9 !important;
 }
 
@@ -3203,6 +3203,7 @@
     padding: 4px !important;
     background: #fff !important;
     width: fit-content !important;
+    max-height: 38px !important;
 }
 
 .nexora-stepper button {
@@ -3491,7 +3492,7 @@
     }
     .co-vehicles-grid,
     .etb-booking-layout.has-selection .co-vehicles-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr 1fr !important;
     }
 }
 
@@ -4511,6 +4512,7 @@
 @media (max-width: 992px) {
     .co-page-with-aside {
         grid-template-columns: 1fr !important;
+        gap:    10px important;
     }
     .co-circuit-aside {
         order: -1 !important; /* L'aside passe en haut sur mobile */
@@ -5957,6 +5959,7 @@
     .co-circuit-aside{
         max-width: 100% !important;
         flex-direction: row !important;
+        order:  1 !important;
     }
 
     .co-circuit-wrapper{
@@ -5979,10 +5982,14 @@
     .co-circuit-aside{
         max-width: 100% !important;
         flex-direction: column !important;
+        order : 5 !important;
     }
 
     .co-vip-step-row{
         gap: 4px !important;
+    }
+    .co-vip-step-card{
+        gap: 8px !important;
     }
 
     .co-callout-card{
@@ -5995,11 +6002,45 @@
         flex-direction: column !important;
         gap: 4px !important;
     }
+
+    .co-page-with-aside{
+        gap: 5px !important ;
+    }
+
+    .co-vehicles-grid,
+    .etb-booking-layout.has-selection .co-vehicles-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .co-vip-inclusions-section {
+        width: 100% !important;
+        border-top: none !important;
+        padding-top: 0px !important; 
+        margin-top: 0px !important;
+    }
+
+    .co-card-desc{
+        display: none !important;
+    }
+
+    .co-vip-step-header{
+        padding-right: 8px !important;
+        padding-left: 8px !important;
+    }
+
+    .co-card-content{
+        padding-right: 0px !important;
+
+    }
 }
 
 @media (max-width: 720px) {
 
 
+}
+
+.co-vip-inclusions-wrap h4{
+        font-size:  20px !important;
 }
 
 
@@ -6013,111 +6054,156 @@
 
 
 /* ==========================================================================
-   PREMIUM EXTRAS — ACCORDÉON (Phase 2a.1b)
+   PREMIUM EXTRAS — GRILLE DE CARDS (Étape 3, Phase B)
    ========================================================================== */
 
-.etb-extras-toggle {
+.etb-extras-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 colonnes */
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.etb-extra-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.etb-extra-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+/* État sélectionné (Q5-b) */
+.etb-extra-card.is-selected {
+    border-color: #ba6827;
+    background: #fffdfa;
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.08);
+}
+
+.etb-extra-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    background: transparent;
-    border: none;
-    padding: 18px 20px;
-    cursor: pointer;
-    font-family: inherit;
-    text-align: left;
-    color: inherit;
-    transition: background 0.2s ease;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
-.etb-extras-toggle:hover {
-    background: rgba(186, 104, 39, 0.04);
-}
-
-.etb-extras-toggle:focus-visible {
-    outline: 2px solid var(--etb-theme-primary, #ba6827);
-    outline-offset: 2px;
-}
-
-.etb-extras-toggle-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.etb-extras-toggle-left .dashicons {
-    color: var(--etb-theme-primary, #ba6827);
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
-
-.etb-extras-toggle-title {
-    font-size: 16px;
+.etb-extra-card-title {
+    font-size: 13.5px;
     font-weight: 700;
     color: #1e293b;
-    letter-spacing: -0.01em;
+    line-height: 1.3;
 }
 
-.etb-extras-badge {
-    display: inline-flex;
-    align-items: center;
-    background: var(--etb-theme-primary, #ba6827);
-    color: #ffffff;
-    font-size: 11px;
+.etb-extra-card-price {
+    font-size: 12px;
     font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 20px;
-    margin-left: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    line-height: 1.4;
+    color: #ba6827;
+    white-space: nowrap;
 }
 
-.etb-extras-toggle-right {
+.etb-extra-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* Bouton "Add" */
+.etb-extra-add-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.etb-extra-add-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* Mini Stepper */
+.etb-extra-mini-stepper {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 2px;
 }
 
-.etb-extras-toggle-meta {
+
+.etb-extra-mini-stepper .etb-qty-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    border-radius: 4px;
+    background: #f8fafc;
+    border:none !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.etb-extra-mini-stepper .etb-qty-btn:hover {
+    background: #e2e8f0;
+}
+
+.etb-extra-mini-stepper input {
+    width: 24px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 0;
+}
+
+/* Checkmark */
+.etb-extra-checkmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 12px;
-    color: #94a3b8;
-    font-weight: 600;
+    font-weight: 700;
+    color: #ba6827;
 }
 
-.etb-extras-chevron {
-    color: #64748b;
-    transition: transform 0.3s ease;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+.etb-extra-checkmark .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
 }
 
-.etb-extras-card:not(.is-collapsed) .etb-extras-chevron {
-    transform: rotate(180deg);
-}
-
-.etb-extras-panel {
-    padding: 0 20px 20px 20px;
-    animation: etb-extras-fadeIn 0.25s ease;
-}
-
-@keyframes etb-extras-fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive : sur très petits écrans, cacher le compteur "X items" */
-@media (max-width: 480px) {
-    .etb-extras-toggle-meta {
-        display: none;
+/* Responsive Mobile */
+@media (max-width: 640px) {
+    .etb-extras-grid {
+        grid-template-columns: 1fr; /* 1 colonne sur mobile */
     }
-    .etb-extras-toggle {
-        padding: 16px;
-    }
+}
+
+/* ==========================================================================
+   STEPPER — État désactivé (max/min atteint)
+   ========================================================================== */
+
+.etb-qty-btn.etb-disabled,
+.etb-qty-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #f1f5f9 !important;
+    color: #94a3b8 !important;
 }

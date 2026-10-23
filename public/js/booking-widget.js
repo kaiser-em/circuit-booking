@@ -206,7 +206,8 @@
             pickup: { name: '', price: 0 },
             currency: (typeof etbAjax !== 'undefined' && etbAjax.currency) ? etbAjax.currency : '$',
             promo: { code: '', discount_type: 'fixed', discount_value: 0 },
-            circuit: { duration: 1, additionalPrice: 0, optionId: '', cityName: '' }
+            circuit: { duration: 1, additionalPrice: 0, optionId: '', cityName: '' },
+            totalCapacityPax: 0 // NOUVEAU : capacité max du véhicule sélectionné
         };
 
         let hasAttemptedSubmit = false;
@@ -308,11 +309,29 @@
             // Passagers
             const adults = parseInt(root.querySelector('input[name="etb_adults"]')?.value || 1);
             const children = parseInt(root.querySelector('input[name="etb_children"]')?.value || 0);
+            
+            // NOUVEAU : Récupération Bagages & Sièges Enfants
+            const luggageCount = parseInt(root.querySelector('input[name="etb_total_luggage"]')?.value || 0);
+            const babyCount    = parseInt(root.querySelector('input[name="etb_baby_seat_count"]')?.value || 0);
+            const boosterCount = parseInt(root.querySelector('input[name="etb_booster_seat_count"]')?.value || 0);
+
+            // Calcul des frais (Règle ETB : 1er baby gratuit, 2 premiers boosters gratuits, ensuite 50€/u)
+            const paidBaby     = Math.max(0, babyCount - 1);
+            const paidBooster  = Math.max(0, boosterCount - 2);
+            const childSeatFee = (paidBaby + paidBooster) * 50; 
+            
+            // Ajout au total
+            total += childSeatFee;
+
+            // Validation de la capacité des passagers
+
+             // NOUVEAU : mémoriser la capacité max pour le handler des steppers
+            state.totalCapacityPax = totalCapacityPax;
 
             // Validation de la capacité des passagers
             const totalPassengers = adults + children;
             const isPaxCapacityExceeded = totalPassengers > totalCapacityPax;
-
+            
             if (capacityDisplayEl) {
                 capacityDisplayEl.textContent = totalCapacityPax > 0 ? `👤 ${totalCapacityPax} passagers max` : '';
             }
@@ -382,22 +401,33 @@
             }
 
             // Options supplémentaires (Extras) : calcul et illumination visuelle dynamique
+               // Options supplémentaires (Extras) : calcul et illumination visuelle dynamique
             let extrasHtml = '';
             let selectedExtrasCount = 0;
             root.querySelectorAll('input[name^="etb_extra_"]').forEach(inp => {
                 const qty    = parseInt(inp.value) || 0;
-                const parent = inp.closest('.etb-extra-item') || inp.closest('.etb-pax-card');
+                // Correction : on cherche la nouvelle classe .etb-extra-card en priorité
+                const parent = inp.closest('.etb-extra-card') || inp.closest('.etb-extra-item') || inp.closest('.etb-pax-card');
 
-                // Illumination orange dès que la quantité est >= 1, extinction si 0
+                // Illumination de la carte
                 if (parent) {
-                    parent.classList.toggle('etb-selected', qty > 0);
+                    if (parent.classList.contains('etb-extra-card')) {
+                        parent.classList.toggle('is-selected', qty > 0);
+                    } else {
+                        parent.classList.toggle('etb-selected', qty > 0);
+                    }
                 }
 
                 if (qty > 0) {
                     selectedExtrasCount++;
-                    const name      = parent?.querySelector('strong')?.textContent.trim() || 'Option';
-                    const priceSpan = parent?.querySelector('.etb-price-tag');
-                    const price     = parsePrice(priceSpan?.textContent || '0');
+                    // Correction : on lit le nouveau titre et le nouveau prix
+                    const name = parent?.querySelector('.etb-extra-card-title')?.textContent.trim() 
+                              || parent?.querySelector('strong')?.textContent.trim() 
+                              || 'Option';
+                              
+                    const priceSpan = parent?.querySelector('.etb-extra-card-price') 
+                                   || parent?.querySelector('.etb-price-tag');
+                    const price = parsePrice(priceSpan?.textContent || '0');
                     
                     total += (price * qty);
                     extrasHtml += `<div class="etb-summary-row"><span>${qty}x ${name}</span><span>+ ${(price * qty).toFixed(0)} ${state.currency}</span></div>`;
@@ -435,12 +465,35 @@
                 promoHtml = `<div class="etb-summary-row etb-promo-row" id="promo-line"><strong>Code promo (${state.promo.code})</strong><strong>- ${discountAmount.toFixed(0)} ${state.currency}</strong></div>`;
             }
 
+            // Préparation des lignes HTML pour Luggage, Baby & Booster
+            let luggageHtml = '';
+            if (luggageCount > 0) {
+                luggageHtml = `<div class="etb-summary-row"><span>${luggageCount} Luggage(s)</span></div>`;
+            }
+
+            let childSeatsHtml = '';
+            if (babyCount > 0 || boosterCount > 0) {
+                childSeatsHtml = `<div class="etb-summary-row"><span>`;
+                if (babyCount > 0) childSeatsHtml += `${babyCount}x Baby Seat `;
+                if (boosterCount > 0) childSeatsHtml += `${boosterCount}x Booster `;
+                childSeatsHtml += `</span>`;
+                
+                if (childSeatFee > 0) {
+                    childSeatsHtml += `<span>+ ${childSeatFee.toFixed(0)} ${state.currency}</span>`;
+                } else {
+                    childSeatsHtml += `<span style="color:#22c55e;">Free</span>`;
+                }
+                childSeatsHtml += `</div>`;
+            }
+
             // Mise à jour du Récapitulatif sombre
             if (summaryTextEl) {
                 summaryTextEl.innerHTML = `
                     <div class="etb-summary-details">
                         ${vehiclesHtml}
-                        <div class="etb-summary-row"><span>${root.querySelector('input[name="etb_adults"]')?.value || 1} Adult(s), ${root.querySelector('input[name="etb_children"]')?.value || 0} Child(ren)</span></div>
+                        <div class="etb-summary-row"><span>${adults} Adult(s), ${children} Child(ren)</span></div>
+                        ${luggageHtml}
+                        ${childSeatsHtml}
                         ${state.pickup.name ? `<div class="etb-summary-row"><span>Pickup: ${state.pickup.name}</span></div>` : ''}
                         ${circuitPriceHtml}
                         ${extrasHtml}
@@ -557,8 +610,60 @@
 
         const refreshAll = () => {
             updateSummary();
+            updateStepperButtons();
         };
 
+        // ────────────────────────────────────────────────────────────────
+        // Met à jour l'état visuel des boutons +/- selon min/max de chaque input
+        // ────────────────────────────────────────────────────────────────
+        const updateStepperButtons = () => {
+            document.querySelectorAll('.nexora-stepper').forEach(stepper => {
+                const input = stepper.querySelector('input[type="number"]');
+                if (!input) return;
+
+                const val     = parseInt(input.value) || 0;
+                const minAttr = input.getAttribute('min');
+                const maxAttr = input.getAttribute('max');
+                const min     = (minAttr !== null && minAttr !== '') ? parseInt(minAttr) : 0;
+                const max     = (maxAttr !== null && maxAttr !== '') ? parseInt(maxAttr) : Infinity;
+
+                const minusBtn = stepper.querySelector('.etb-minus');
+                const plusBtn  = stepper.querySelector('.etb-plus');
+
+                // NOUVEAU : détection des inputs passagers
+                const isPassengerInput = ( input.name === 'etb_adults' || input.name === 'etb_children' );
+
+                if (minusBtn) {
+                    const disabled = (val <= min);
+                    minusBtn.disabled = disabled;
+                    minusBtn.classList.toggle('etb-disabled', disabled);
+                    minusBtn.style.opacity       = disabled ? '0.35' : '';
+                    minusBtn.style.cursor        = disabled ? 'not-allowed' : '';
+                    minusBtn.style.pointerEvents = disabled ? 'none' : '';
+                }
+
+                if (plusBtn) {
+                    let disabled;
+
+                    if ( isPassengerInput ) {
+                        // Logique spéciale passagers : bloqué si la somme atteint la capacité
+                        const currentAdults   = parseInt(root.querySelector('input[name="etb_adults"]')?.value || 0);
+                        const currentChildren = parseInt(root.querySelector('input[name="etb_children"]')?.value || 0);
+                        const currentTotal    = currentAdults + currentChildren;
+                        disabled = ( state.totalCapacityPax > 0 && currentTotal >= state.totalCapacityPax );
+                    } else {
+                        // Logique standard : bloqué si on atteint le max
+                        disabled = (val >= max);
+                    }
+
+                    plusBtn.disabled = disabled;
+                    plusBtn.classList.toggle('etb-disabled', disabled);
+                    plusBtn.style.opacity       = disabled ? '0.35' : '';
+                    plusBtn.style.cursor        = disabled ? 'not-allowed' : '';
+                    plusBtn.style.pointerEvents = disabled ? 'none' : '';
+                }
+            });
+        };
 
         /**
          * Recalcule dynamiquement les horaires de la timeline selon l'heure de départ choisie
@@ -996,6 +1101,63 @@
         });
         
 
+                // ────────────────────────────────────────────────────────────────
+        // GESTION DES CARDS EXTRAS (ÉTAPE 3)
+        // ────────────────────────────────────────────────────────────────
+        root.addEventListener('click', (e) => {
+            // 1. Clic sur "Add" (toggle ou stepper)
+            const addBtn = e.target.closest('.etb-extra-add-btn');
+            if (addBtn) {
+                e.preventDefault();
+                const card = addBtn.closest('.etb-extra-card');
+                if (!card) return;
+
+                const cardType = card.dataset.type;
+                const input    = card.querySelector('input[name^="etb_extra_"]');
+                
+                if (cardType === 'toggle') {
+                    // Type Toggle : on active/désactive
+                    input.value = 1;
+                    card.classList.add('is-selected');
+                    addBtn.style.display = 'none';
+                    card.querySelector('.etb-extra-checkmark').style.display = 'inline-flex';
+                } else {
+                    // Type Stepper : on affiche le mini stepper et on met à 1
+                    input.value = 1;
+                    card.classList.add('is-selected');
+                    addBtn.style.display = 'none';
+                    card.querySelector('.etb-extra-mini-stepper').style.display = 'flex';
+                }
+                refreshAll();
+                return;
+            }
+
+            // 2. Clic sur la card elle-même (pour retirer une sélection)
+            const card = e.target.closest('.etb-extra-card');
+            if (!card) return;
+
+            // Si on clique sur le mini-stepper ou le bouton Add, on ne fait rien ici
+            if (e.target.closest('.etb-extra-mini-stepper') || e.target.closest('.etb-extra-add-btn')) {
+                return;
+            }
+
+            // Si la card est déjà sélectionnée, on la désélectionne
+            if (card.classList.contains('is-selected')) {
+                const input = card.querySelector('input[name^="etb_extra_"]');
+                input.value = 0;
+                card.classList.remove('is-selected');
+                card.querySelector('.etb-extra-add-btn').style.display = 'inline-block';
+                card.querySelector('.etb-extra-checkmark').style.display = 'none';
+                
+                const stepper = card.querySelector('.etb-extra-mini-stepper');
+                if (stepper) {
+                    stepper.style.display = 'none';
+                    stepper.querySelector('input').value = 0;
+                }
+                refreshAll();
+            }
+        });
+
         // 2. Boutons de quantité +/- (Gestion isolée sans conflit)
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.etb-qty-btn');
@@ -1014,12 +1176,41 @@
             }
 
             let val = parseInt(input.value) || 0;
-            const min = parseInt(input.getAttribute('min') || 0);
+            const minAttr = input.getAttribute('min');
+            const maxAttr = input.getAttribute('max');
+            const min = (minAttr !== null && minAttr !== '') ? parseInt(minAttr) : 0;
+            const max = (maxAttr !== null && maxAttr !== '') ? parseInt(maxAttr) : Infinity;
 
             if (btn.classList.contains('etb-plus')) {
-                val++;
+                // NOUVEAU : blocage spécifique pour les passagers (capacité du véhicule)
+                if ( input.name === 'etb_adults' || input.name === 'etb_children' ) {
+                    const currentAdults   = parseInt(root.querySelector('input[name="etb_adults"]')?.value || 0);
+                    const currentChildren = parseInt(root.querySelector('input[name="etb_children"]')?.value || 0);
+                    const currentTotal    = currentAdults + currentChildren;
+
+                    if ( state.totalCapacityPax > 0 && currentTotal >= state.totalCapacityPax ) {
+                        return; // Capacité max du véhicule atteinte
+                    }
+                }
+
+                if (val < max) {
+                    val++;
+                } else {
+                    return; // Limite maximale atteinte : on ne fait rien
+                }
             } else if (btn.classList.contains('etb-minus')) {
                 if (val > min) val--;
+            }
+
+            // Si c'est un stepper d'extra et que la valeur tombe à 0, on désélectionne
+            if (val === 0 && input.name && input.name.startsWith('etb_extra_')) {
+                const card = input.closest('.etb-extra-card');
+                if (card) {
+                    card.classList.remove('is-selected');
+                    card.querySelector('.etb-extra-add-btn').style.display = 'inline-block';
+                    card.querySelector('.etb-extra-mini-stepper').style.display = 'none';
+                    card.querySelector('.etb-extra-checkmark').style.display = 'none';
+                }
             }
 
             input.value = val;
@@ -1054,26 +1245,7 @@
             refreshAll(); 
         });
 
-        // 3bis. Accordéon « Premium Extras » (Phase 2a.1b)
-        const extrasCardEl   = document.getElementById('etb-extras-card');
-        const extrasToggleEl = document.getElementById('etb-extras-toggle');
-        const extrasPanelEl  = document.getElementById('etb-extras-panel');
-        if (extrasCardEl && extrasToggleEl && extrasPanelEl) {
-            extrasToggleEl.addEventListener('click', function (e) {
-                e.preventDefault();
-                const isExpanded = this.getAttribute('aria-expanded') === 'true';
-                if (isExpanded) {
-                    this.setAttribute('aria-expanded', 'false');
-                    extrasCardEl.classList.add('is-collapsed');
-                    extrasPanelEl.hidden = true;
-                } else {
-                    this.setAttribute('aria-expanded', 'true');
-                    extrasCardEl.classList.remove('is-collapsed');
-                    extrasPanelEl.hidden = false;
-                }
-            });
-        }
-
+        
         // 4. Écouteurs de saisie formulaire
         const luggageInput = root.querySelector('input[name="etb_total_luggage"]');
         if (luggageInput) luggageInput.addEventListener('input', refreshAll);

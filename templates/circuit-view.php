@@ -844,7 +844,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                 <?php endif; ?>
 
                                 <!-- NOUVEAU : Sous-section Child Seats -->
-                                <div class="etb-child-seats-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
+                                <div class="etb-child-seats-section" style="margin-top: 24px;">
                                     
                                     <!-- Titre de sous-section -->
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
@@ -885,60 +885,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                             </p>
                         </div>
 
-                        <!-- CARTE PREMIUM EXTRAS — ACCORDÉON -->
-                        <?php 
-                        // Récupération des extras publiés (triés par ordre de menu)
-                        $extras_posts = get_posts( array( 
-                            'post_type'      => 'tour_extra', 
-                            'numberposts'    => -1, 
-                            'post_status'    => 'publish',
-                            'orderby'        => 'menu_order',
-                            'order'          => 'ASC'
-                        ) ); 
-                        if ( ! empty( $extras_posts ) ) : 
-                            $extras_count = count( $extras_posts );
-                        ?>
-                        <div class="nexora-card etb-extras-card is-collapsed" style="margin-top: 24px; padding: 0; overflow: hidden;" id="etb-extras-card">
-                            <!-- Header accordéon (cliquable) -->
-                            <button type="button" class="etb-extras-toggle" id="etb-extras-toggle" 
-                                    aria-expanded="false" aria-controls="etb-extras-panel">
-                                <span class="etb-extras-toggle-left">
-                                    <span class="dashicons dashicons-star-filled"></span>
-                                    <span class="etb-extras-toggle-title">Premium Extras</span>
-                                    <span class="etb-extras-badge" id="etb-extras-badge" style="display:none;">
-                                        <span id="etb-extras-badge-count">0</span>&nbsp;selected
-                                    </span>
-                                </span>
-                                <span class="etb-extras-toggle-right">
-                                    <span class="etb-extras-toggle-meta"><?php echo esc_html( $extras_count ); ?> item<?php echo ( $extras_count > 1 ) ? 's' : ''; ?></span>
-                                    <span class="dashicons dashicons-arrow-down-alt2 etb-extras-chevron"></span>
-                                </span>
-                            </button>
-
-                            <!-- Panneau (caché par défaut) -->
-                            <div class="etb-extras-panel" id="etb-extras-panel" hidden>
-                                <div class="nexora-field-group">
-                                    <?php foreach ( $extras_posts as $extra ) :
-                                        $extra_price = (float) get_post_meta( $extra->ID, '_etb_price', true );
-                                        $extra_max   = absint( get_post_meta( $extra->ID, '_etb_max_qty', true ) ) ?: 10;
-                                        $extra_type  = get_post_meta( $extra->ID, '_etb_price_type', true ) ?: 'fixed';
-                                    ?>
-                                    <div class="nexora-pax-row etb-extra-item" data-extra-id="<?php echo esc_attr( $extra->ID ); ?>">
-                                        <div class="etb-pax-info">
-                                            <strong><?php echo esc_html( $extra->post_title ); ?></strong>
-                                            <span class="etb-price-tag">+<?php echo esc_html( $extra_price ); ?> <?php echo esc_html( $currency ); ?><?php echo ( $extra_type === 'per_quantity' ) ? ' / unit' : ''; ?></span>
-                                        </div>
-                                        <div class="nexora-stepper">
-                                            <button type="button" class="etb-qty-btn etb-minus">-</button>
-                                            <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" max="<?php echo esc_attr( $extra_max ); ?>" readonly>
-                                            <button type="button" class="etb-qty-btn etb-plus">+</button>
-                                        </div>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php endif; ?>
+                    
 
 
                         <div class="etb-step-nav" style="margin-top: 30px; border-top: none;">
@@ -1031,6 +978,66 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                     <strong id="etb-review-pickup" style="color: #1e293b; font-size: 14px;">Not set</strong>
                                 </div>
                             </div>
+
+                                                        <!-- NOUVEAU : GRILLE PREMIUM EXTRAS (ÉTAPE 3) -->
+                            <?php 
+                            $extras_posts = get_posts( array( 
+                                'post_type'      => 'tour_extra', 
+                                'numberposts'    => -1, 
+                                'post_status'    => 'publish',
+                                'orderby'        => 'menu_order',
+                                'order'          => 'ASC'
+                            ) ); 
+                            if ( ! empty( $extras_posts ) ) : ?>
+                            <div class="etb-enhance-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
+                                <div style="margin-bottom: 16px;">
+                                    <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                        <span class="dashicons dashicons-star-filled" style="color: #ba6827;"></span>
+                                        Enhance your experience
+                                    </h4>
+                                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Add a premium touch to your trip.</p>
+                                </div>
+
+                                <div class="etb-extras-grid">
+                                    <?php foreach ( $extras_posts as $extra ) :
+                                        $extra_price = (float) get_post_meta( $extra->ID, '_etb_price', true );
+                                        $extra_max   = absint( get_post_meta( $extra->ID, '_etb_max_qty', true ) ) ?: 10;
+                                        $extra_type  = get_post_meta( $extra->ID, '_etb_price_type', true ) ?: 'fixed';
+                                        $is_stepper  = ( $extra_type === 'per_quantity' );
+                                    ?>
+                                    <div class="etb-extra-card" data-extra-id="<?php echo esc_attr( $extra->ID ); ?>" data-type="<?php echo $is_stepper ? 'stepper' : 'toggle'; ?>">
+                                        
+                                        <!-- Titre & Prix -->
+                                        <div class="etb-extra-card-header">
+                                            <strong class="etb-extra-card-title"><?php echo esc_html( $extra->post_title ); ?></strong>
+                                            <span class="etb-extra-card-price">+<?php echo esc_html( $extra_price ); ?> <?php echo esc_html( $currency ); ?></span>
+                                        </div>
+
+                                        <!-- Contrôles (Bouton Add OU Stepper) -->
+                                        <div class="etb-extra-card-actions">
+                                            <!-- Bouton Add (visible quand non sélectionné) -->
+                                            <button type="button" class="etb-extra-add-btn">Add</button>
+                                            
+                                            <!-- Mini Stepper (visible uniquement si type=stepper ET sélectionné) -->
+                                            <div class="etb-extra-mini-stepper" style="display: none;">
+                                                <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                                <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" max="<?php echo esc_attr( $extra_max ); ?>" readonly>
+                                                <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                            </div>
+                                            
+                                            <!-- Input caché pour le type toggle -->
+                                            <?php if ( ! $is_stepper ) : ?>
+                                                <input type="hidden" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0">
+                                            <?php endif; ?>
+                                            
+                                            <!-- Checkmark (visible quand sélectionné) -->
+                                            <span class="etb-extra-checkmark" style="display: none;"><span class="dashicons dashicons-yes"></span> Added</span>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
 
                             <!-- Conditions Générales -->
                             <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
