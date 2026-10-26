@@ -70,34 +70,7 @@ class ETB_Meta_Manager {
         }
         ?>
         <div class="co-admin-wrapper">
-                        <!-- Section « Autres circuits » (champs au niveau circuit) -->
-            <div style="background: #ffffff; border: 1.5px solid #ebd9cc; border-radius: 8px; padding: 18px; margin-bottom: 18px;">
-                <h3 style="margin: 0 0 6px 0; color: #5b3516; font-size: 15px; font-weight: 700;">
-                    🔗 Section « Autres circuits » (bas de page)
-                </h3>
-                <p style="font-size: 12px; color: #64748b; margin: 0 0 14px 0;">
-                    Personnalisez le titre et le sous-titre affichés sous la vue circuit. Laissez vide pour utiliser les valeurs par défaut.
-                </p>
 
-                                <!-- Interrupteur : afficher / masquer la section au front -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
-                        <input type="checkbox" name="etb_related_enabled" value="1" <?php checked( $related_enabled, '1' ); ?>>
-                        <span style="font-size: 13px; font-weight: 600; color: #334155;">Afficher la section sur la page</span>
-                    </label>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Titre :</label>
-                        <input type="text" name="etb_related_title" value="<?php echo esc_attr( $related_title ); ?>" class="widefat" placeholder="Découvrez nos autres circuits">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Sous-titre :</label>
-                        <input type="text" name="etb_related_subtitle" value="<?php echo esc_attr( $related_subtitle ); ?>" class="widefat" placeholder="Poursuivez l'aventure avec une autre expérience sur mesure.">
-                    </div>
-                </div>
-            </div>
             <div class="co-tabs-nav" style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
                 <?php 
                 $first = true;
@@ -119,7 +92,7 @@ class ETB_Meta_Manager {
                 <?php 
                 $first = true;
                 foreach ( $options as $opt_id => $opt_data ) : 
-                    $this->render_pane_html( $opt_id, $opt_data, $first );
+                    $this->render_pane_html( $opt_id, $opt_data, $first, $related_title, $related_subtitle, $related_enabled );
                     $first = false;
                 endforeach; 
                 ?>
@@ -139,13 +112,13 @@ class ETB_Meta_Manager {
                 'timeline'         => array(),
                 'inclusions'       => "Véhicule privé\nChauffeur\nEau à bord",
                 'exclusions'       => "Repas",
-            ), false ); 
+            ), false, '', '', '1' );  
             ?>
         </template>
         <?php
     }
 
-    private function render_pane_html( $opt_id, $data, $is_active = false ) {
+    private function render_pane_html( $opt_id, $data, $is_active = false, $related_title = '', $related_subtitle = '', $related_enabled = '1' ) {
         $city             = $data['city_name'] ?? '';
         $duration         = $data['duration_hours'] ?? 1.0;
         $departure_time   = $data['departure_time'] ?? '09:00';
@@ -207,6 +180,9 @@ class ETB_Meta_Manager {
                     </button>
                     <button type="button" class="etb-engine-tab-btn" data-target="engine-aside-<?php echo esc_attr( $opt_id ); ?>">
                         <span class="dashicons dashicons-align-right"></span> <span class="etb-tab-text">Aside / Sidebar</span>
+                    </button>
+                    <button type="button" class="etb-engine-tab-btn" data-target="engine-related-<?php echo esc_attr( $opt_id ); ?>">
+                        <span class="dashicons dashicons-admin-links"></span> <span class="etb-tab-text">Autres circuits</span>
                     </button>
                 </div>
                 <!-- CONTENU DROIT -->
@@ -688,24 +664,56 @@ class ETB_Meta_Manager {
                             </div>
                         </div>
 
-                        <!-- 3. Image Secondaire -->
-                        <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                         <!-- 3. Image Secondaire -->
+                        <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
                             <h4 style="margin: 0 0 10px 0;">🖼️ Image secondaire (Bas de l'Aside)</h4>
                             <p style="margin-top:0;">
                                 <label><input type="checkbox" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_image_enabled]" value="1" <?php checked( $data['aside_image_enabled'] ?? '1', '1' ); ?>> Afficher l'image secondaire</label>
                             </p>
                             <?php 
                             $aside_img_id = $data['aside_image_id'] ?? '';
-                            $aside_img_url = $aside_img_id ? wp_get_attachment_image_url( $aside_img_id, 'medium' ) : '';
+                            // Changement de 'medium' à 'thumbnail' pour charger une image plus légère
+                            $aside_img_url = $aside_img_id ? wp_get_attachment_image_url( $aside_img_id, 'thumbnail' ) : '';
                             ?>
                             <input type="hidden" class="etb-aside-image-id" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_image_id]" value="<?php echo esc_attr( $aside_img_id ); ?>">
                             <div class="etb-aside-image-preview" style="margin-top: 10px;">
                                 <?php if ( $aside_img_url ) : ?>
-                                    <img src="<?php echo esc_url( $aside_img_url ); ?>" style="max-width: 100%; border-radius: 6px; display: block;">
+                                    <!-- Limitation de la taille d'affichage à 150px avec une petite bordure -->
+                                    <img src="<?php echo esc_url( $aside_img_url ); ?>" style="max-width: 150px; height: auto; border-radius: 10px; display: block; border: 1px solid #cbd5e1; padding: 3px; background: #fff;">
                                 <?php endif; ?>
                             </div>
                             <button type="button" class="button etb-upload-aside-image-btn" style="margin-top: 10px;">Choisir une image</button>
                             <button type="button" class="button etb-remove-aside-image-btn" style="margin-top: 10px; display: <?php echo $aside_img_id ? 'inline-block' : 'none'; ?>; color: #dc2626;">Retirer</button>
+                        </div>
+                    </div>
+
+
+                    <!-- ONGLET 6 : AUTRES CIRCUITS -->
+                    <div class="etb-engine-pane" id="engine-related-<?php echo esc_attr( $opt_id ); ?>">
+                        <h3 class="etb-engine-pane-title">Section « Autres circuits » (bas de page)</h3>
+                        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+                            <em>Note : Ces réglages sont globaux et s'appliquent à tout le circuit.</em>
+                        </p>
+
+                        <div style="background: #ffffff; border: 1.5px solid #ebd9cc; border-radius: 8px; padding: 18px;">
+                            <!-- Interrupteur : afficher / masquer la section au front -->
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                                    <input type="checkbox" name="etb_related_enabled" value="1" <?php checked( $related_enabled, '1' ); ?>>
+                                    <span style="font-size: 13px; font-weight: 600; color: #334155;">Afficher la section sur la page</span>
+                                </label>
+                            </div>
+
+                            <div class="etb-engine-grid-2">
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Titre :</label>
+                                    <input type="text" name="etb_related_title" value="<?php echo esc_attr( $related_title ); ?>" class="widefat" placeholder="Découvrez nos autres circuits">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Sous-titre :</label>
+                                    <input type="text" name="etb_related_subtitle" value="<?php echo esc_attr( $related_subtitle ); ?>" class="widefat" placeholder="Poursuivez l'aventure avec une autre expérience sur mesure.">
+                                </div>
+                            </div>
                         </div>
                     </div>
 

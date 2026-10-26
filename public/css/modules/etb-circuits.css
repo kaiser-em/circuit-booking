@@ -6207,3 +6207,7 @@
     background: #f1f5f9 !important;
     color: #94a3b8 !important;
 }
+
+button.co-expand-toggle-switch {
+    background-color: #b1b1b1 !important;
+}

@@ -596,7 +596,33 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                 <!-- C. Le Bouton d'action (CTA) -->
                                 <div class="co-monobloc-cta">
                     <div class="co-cta-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ba6827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+                            <svg width="22" height="22" fill="none" stroke="#ba6827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 -4.19 50.375 50.375" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                            <g id="Group_51" data-name="Group 51" transform="translate(-1214.766 -1789.472)">
+                            <path id="Path_134"
+                                    data-name="Path 134"
+                                    d="M1216.766,1829.464h46.375l-9-16.831-9.455,5.4-12.607-17.11Z"
+                                    fill="none"
+                                    stroke="#ba6827"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="4"
+                            ></path>
+                            <path
+                                    id="Path_135"
+                                    data-name="Path 135"
+                                    d="M1257.737,1798.9a7.429,7.429,0,1,1-7.428-7.429A7.428,7.428,0,0,1,1257.737,1798.9Z"
+                                    fill="#ffffff"
+                                    stroke="#ba6827"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="4"
+                            ></path>
+                            </g>
+                            </g>
+                        </svg>
                     </div>
                     <p class="co-cta-text">Ready for an unforgettable experience on the French Riviera?</p>
                     <a href="#co-vehicles-grid" class="co-btn-primary" id="etb-scroll-to-vehicles">Book this circuit</a>
