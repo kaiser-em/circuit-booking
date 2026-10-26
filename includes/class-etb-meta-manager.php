@@ -1380,6 +1380,19 @@ class ETB_Meta_Manager {
                 <p><strong>Date & Heure :</strong> <?php echo esc_html( $date ); ?> à <?php echo esc_html( $time ); ?></p>
                 <p><strong>Passagers :</strong> <?php echo esc_html( $adults ); ?> adulte(s), <?php echo esc_html( $children ); ?> enfant(s)</p>
                 <p><strong>Bagages :</strong> <?php echo esc_html( $luggage ); ?></p>
+                
+                <?php 
+                $baby_seats    = get_post_meta( $post->ID, '_etb_baby_seat_count', true ) ?: 0;
+                $booster_seats = get_post_meta( $post->ID, '_etb_booster_seat_count', true ) ?: 0;
+                $child_fee     = get_post_meta( $post->ID, '_etb_child_seat_fee', true ) ?: 0;
+                if ( $baby_seats > 0 || $booster_seats > 0 ) : ?>
+                    <p><strong>Sièges enfants :</strong> 
+                        <?php echo esc_html( $baby_seats ); ?> Baby, <?php echo esc_html( $booster_seats ); ?> Booster
+                        <?php if ( $child_fee > 0 ) : ?>
+                            <span style="color: #e65a15; font-weight: bold;">(+<?php echo number_format_i18n( $child_fee, 2 ); ?> €)</span>
+                        <?php endif; ?>
+                    </p>
+                <?php endif; ?>
             </div>
         </div>
 

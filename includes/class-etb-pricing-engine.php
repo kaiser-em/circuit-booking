@@ -112,7 +112,14 @@ class ETB_Pricing_Engine {
             }
         }
 
-        $subtotal = $vehicles_total + $pickup_surcharge + $extras_total + $circuit_additional_price;
+        // 4. Calcul des sièges enfants (1er baby gratuit, 2 premiers boosters gratuits, 50€/u ensuite)
+        $baby_count     = min( 2, absint( $data['baby_seat_count'] ?? 0 ) );
+        $booster_count  = min( 3, absint( $data['booster_seat_count'] ?? 0 ) );
+        $paid_baby      = max( 0, $baby_count - 1 );
+        $paid_booster   = max( 0, $booster_count - 2 );
+        $child_seat_fee = ( $paid_baby + $paid_booster ) * 50;
+
+        $subtotal = $vehicles_total + $pickup_surcharge + $extras_total + $circuit_additional_price + $child_seat_fee;
         $discount_amount = 0;
         $promo_code = ! empty( $data['promo'] ) ? strtoupper( trim( sanitize_text_field( $data['promo'] ) ) ) : '';
 
@@ -192,11 +199,17 @@ class ETB_Pricing_Engine {
 
         $grand_total = max( 0, $subtotal - $discount_amount );
 
+        // Calcul du tarif de base net pour LimoExpress (Total - Sièges enfants - Extras)
+        // Cela permet à LimoExpress d'afficher le bon "Prix" et d'ajouter les frais sans fausser le total.
+        $base_fare = $grand_total - $child_seat_fee;
+
         return array(
             'vehicles_total'           => $vehicles_total,
             'pickup_surcharge'         => $pickup_surcharge,
             'extras_total'             => $extras_total,
             'circuit_additional_price' => $circuit_additional_price,
+            'child_seat_fee'           => $child_seat_fee,
+            'base_fare'                => $base_fare, // <-- NOUVEAU
             'duration_hours'           => $duration_hours,
             'discount_amount'          => $discount_amount,
             'promo_code'               => $promo_code,

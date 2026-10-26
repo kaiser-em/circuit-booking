@@ -154,10 +154,12 @@ class ETB_Ajax {
         }
 
         $data = array(
-            'vehicles'       => $vehicles,
-            'adults'         => min( 200, absint( $_POST['etb_adults'] ?? 0 ) ),
-            'children'       => min( 200, absint( $_POST['etb_children'] ?? 0 ) ),
-            'pickup_id'      => absint( $_POST['etb_pickup_id'] ?? 0 ),
+            'vehicles'           => $vehicles,
+            'adults'             => min( 200, absint( $_POST['etb_adults'] ?? 0 ) ),
+            'children'           => min( 200, absint( $_POST['etb_children'] ?? 0 ) ),
+            'baby_seat_count'    => min( 2, absint( $_POST['etb_baby_seat_count'] ?? 0 ) ),
+            'booster_seat_count' => min( 3, absint( $_POST['etb_booster_seat_count'] ?? 0 ) ),
+            'pickup_id'          => absint( $_POST['etb_pickup_id'] ?? 0 ),
             'pickup_address' => sanitize_text_field( $_POST['etb_pickup_address'] ?? '' ),
             'dropoff_info'   => sanitize_textarea_field( $_POST['etb_dropoff_info'] ?? '' ),
             'option_id'      => sanitize_text_field( $_POST['etb_option_id'] ?? '' ),
@@ -262,6 +264,15 @@ class ETB_Ajax {
         update_post_meta( $booking_id, '_etb_vehicles', $data['vehicles'] );
         update_post_meta( $booking_id, '_etb_extras', $data['extras'] );
 
+        // Nouveaux champs enfants
+        $data['total_child_seats'] = $data['baby_seat_count'] + $data['booster_seat_count'];
+        $child_seat_fee = $pricing_details['child_seat_fee'] ?? 0;
+
+        update_post_meta( $booking_id, '_etb_baby_seat_count', $data['baby_seat_count'] );
+        update_post_meta( $booking_id, '_etb_booster_seat_count', $data['booster_seat_count'] );
+        update_post_meta( $booking_id, '_etb_total_child_seats', $data['total_child_seats'] );
+        update_post_meta( $booking_id, '_etb_child_seat_fee', $child_seat_fee );
+
         update_post_meta( $booking_id, '_etb_note', $data['note'] );
         update_post_meta( $booking_id, '_etb_total_price', $pricing_details['grand_total'] );
         update_post_meta( $booking_id, '_etb_pricing_details', $pricing_details );
@@ -315,13 +326,29 @@ class ETB_Ajax {
         //   - Sièges bébé déjà gérés nativement par send_booking() via les
         //     extras dont le nom contient « bébé / bebe / baby ».
         // ─────────────────────────────────────────────────────────────────────
-                if ( class_exists( 'ETB_Dispatcher_Manager' ) ) {
+        if ( class_exists( 'ETB_Dispatcher_Manager' ) ) {
             $data['trip_mode']         = 'hourly';
             $data['client_note']       = ! empty( $data['note'] ) ? $data['note'] : 'Aucune';
-            $data['extra_fees']        = array();
             $data['paid']              = false;
             $data['payment_logs']      = array();
             $data['payment_intent_id'] = '';
+
+            // Préparation des frais supplémentaires pour LimoExpress
+            $limo_extra_fees = array();
+            
+            // 1. Ajout du supplément Siège Enfant
+            if ( $child_seat_fee > 0 ) {
+                $limo_extra_fees[] = array(
+                    'category' => 'child_seat_fee',
+                    'amount'   => (float) round( $child_seat_fee, 2 ),
+                    'value'    => (float) round( $child_seat_fee, 2 ),
+                    'active'   => true,
+                );
+            }
+
+            // 2. On ne passe QUE les frais que LimoExpress reconnaît (Sièges enfants).
+            // Les autres extras sont déjà inclus dans le prix de base.
+            $data['extra_fees'] = $limo_extra_fees;
 
             $dispatch_result = ETB_Dispatcher_Manager::dispatch_booking( $booking_id, $data );
 

@@ -250,28 +250,15 @@ class ETB_LimoExpress {
         $extras_summary     = '';
         $extra_fees         = array();
 
-        // 1. Récupération des extras personnalisés
+        // 1. Récupération des extras personnalisés (Uniquement pour le résumé textuel)
         if ( ! empty( $data['extras'] ) ) {
             foreach ( $data['extras'] as $e_id => $qty ) {
                 if ( $qty > 0 ) {
                     $e_name     = get_the_title( $e_id );
-                    $e_price    = floatval( get_post_meta( $e_id, '_etb_price', true ) );
-                    $line_total = $e_price * $qty;
-
                     $extras_summary .= sprintf( '%s x %d, ', $e_name, $qty );
 
                     if ( stripos( $e_name, 'bébé' ) !== false || stripos( $e_name, 'bebe' ) !== false || stripos( $e_name, 'baby' ) !== false ) {
                         $baby_seat_count += $qty;
-                    }
-
-                    if ( $line_total > 0 ) {
-                        $category_slug = str_replace( '-', '_', sanitize_title( $e_name ) );
-                        $extra_fees[]  = array(
-                            'category' => $category_slug,
-                            'amount'   => (float) round( $line_total, 2 ),
-                            'value'    => (float) round( $line_total, 2 ),
-                            'active'   => true,
-                        );
                     }
                 }
             }

@@ -1044,15 +1044,15 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                             <!-- Bouton Add (visible quand non sélectionné) -->
                                             <button type="button" class="etb-extra-add-btn">Add</button>
                                             
-                                            <!-- Mini Stepper (visible uniquement si type=stepper ET sélectionné) -->
-                                            <div class="etb-extra-mini-stepper" style="display: none;">
-                                                <button type="button" class="etb-qty-btn etb-minus">-</button>
-                                                <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" max="<?php echo esc_attr( $extra_max ); ?>" readonly>
-                                                <button type="button" class="etb-qty-btn etb-plus">+</button>
-                                            </div>
-                                            
-                                            <!-- Input caché pour le type toggle -->
-                                            <?php if ( ! $is_stepper ) : ?>
+                                            <?php if ( $is_stepper ) : ?>
+                                                <!-- Mini Stepper (visible uniquement si type=stepper ET sélectionné) -->
+                                                <div class="etb-extra-mini-stepper" style="display: none;">
+                                                    <button type="button" class="etb-qty-btn etb-minus">-</button>
+                                                    <input type="number" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0" min="0" max="<?php echo esc_attr( $extra_max ); ?>" readonly>
+                                                    <button type="button" class="etb-qty-btn etb-plus">+</button>
+                                                </div>
+                                            <?php else : ?>
+                                                <!-- Input caché pour le type toggle -->
                                                 <input type="hidden" name="etb_extra_<?php echo esc_attr( $extra->ID ); ?>" value="0">
                                             <?php endif; ?>
                                             
