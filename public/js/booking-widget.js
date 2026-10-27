@@ -184,7 +184,7 @@
 
 
            // Carte unifiée Véhicule + Total (Étape 3)
-                const missionCardEl   = document.querySelector('#etb-mission-card');
+        const missionCardEl   = document.querySelector('#etb-mission-card');
         const missionImg      = document.querySelector('#etb-mc-img');
         const missionName     = document.querySelector('#etb-mc-name');
         const missionMeta     = document.querySelector('#etb-mc-meta');
@@ -214,11 +214,106 @@
         let hasSelectedVehicle = false;
         let hasRequiredFieldsMissing = false;
 
-        // Date minimum : aujourd'hui (bloque les dates passées)
-        const _today = new Date();
-        const todayStr = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
+                // 1. Initialisation de la Date (Flatpickr)
         if (dateInput) {
-            dateInput.setAttribute('min', todayStr);
+            if (!dateInput.id) dateInput.id = 'etb-date-input';
+
+            flatpickr(dateInput, {
+                minDate: "today",
+                dateFormat: "Y-m-d",     // Format serveur
+                altInput: true,
+                altFormat: "d/m/Y",      // Format affiché
+                allowInput: true,
+                disableMobile: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    refreshAll();
+                    // Met à jour le select d'heure quand la date change
+                    if (typeof updateTimeOptions === 'function') {
+                        updateTimeOptions(); 
+                    }
+                }
+            });
+        }
+
+        // 2. Initialisation de l'Heure (Custom Dropdown)
+        const timeWrapper = root.querySelector('#etb-time-wrapper');
+        const timeTrigger = root.querySelector('#etb-time-trigger');
+        const timeLabel   = root.querySelector('#etb-time-label');
+        const timeHidden  = root.querySelector('#etb-time-value');
+        const timeOptionsList = root.querySelector('#etb-time-options');
+        const timeOptions = timeOptionsList ? Array.from(timeOptionsList.querySelectorAll('.etb-time-option')) : [];
+
+        const updateTimeOptions = () => {
+            if (!timeOptionsList || !dateInput) return;
+            
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const isToday = (dateInput.value === todayStr);
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            timeOptions.forEach(opt => {
+                const [h, m] = opt.dataset.value.split(':').map(Number);
+                let disable = false;
+                
+                if (isToday && (h < currentHour || (h === currentHour && m <= currentMinute))) {
+                    disable = true;
+                }
+                opt.classList.toggle('is-disabled', disable);
+                
+                // Si l'heure sélectionnée devient invalide, on la réinitialise
+                if (disable && timeHidden.value === opt.dataset.value) {
+                    timeHidden.value = '';
+                    timeLabel.textContent = 'Select time';
+                    timeLabel.style.color = '#94a3b8';
+                    timeOptions.forEach(o => o.classList.remove('is-selected'));
+                }
+            });
+        };
+
+        if (timeWrapper) {
+            // Ouvrir / Fermer le menu
+            timeTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = timeOptionsList.style.display === 'block';
+                timeOptionsList.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) updateTimeOptions(); // Mise à jour à l'ouverture
+            });
+
+            // Fermer si on clique ailleurs
+            document.addEventListener('click', (e) => {
+                if (!timeWrapper.contains(e.target)) {
+                    timeOptionsList.style.display = 'none';
+                }
+            });
+
+            // Sélection d'une option
+            timeOptions.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (opt.classList.contains('is-disabled')) return;
+                    
+                    timeHidden.value = opt.dataset.value;
+                    timeLabel.textContent = opt.textContent;
+                    timeLabel.style.color = '#1e293b';
+                    
+                    timeOptions.forEach(o => o.classList.remove('is-selected'));
+                    opt.classList.add('is-selected');
+                    
+                    timeOptionsList.style.display = 'none';
+                    
+                    if (typeof updateTimelineTimes === 'function') {
+                        updateTimelineTimes(opt.dataset.value);
+                    }
+                    refreshAll();
+                });
+            });
+
+            // Mise à jour quand la date change
+            if (dateInput) {
+                dateInput.addEventListener('change', updateTimeOptions);
+            }
+
+            setTimeout(updateTimeOptions, 100);
         }
 
         const parsePrice = (str) => {
@@ -358,6 +453,11 @@
             if (phoneErrorEl) phoneErrorEl.style.display = (hasAttemptedSubmit && isPhoneInvalid) ? 'block' : 'none';
 
             const isDateMissing = !!dateInput && dateInput.value.trim() === '';
+            
+            // Redéfinition locale de todayStr pour éviter l'erreur
+            const _todayObj = new Date();
+            const todayStr = `${_todayObj.getFullYear()}-${String(_todayObj.getMonth() + 1).padStart(2, '0')}-${String(_todayObj.getDate()).padStart(2, '0')}`;
+            
             const isDatePast    = !!dateInput && dateInput.value !== '' && dateInput.value < todayStr;
             
             if (dateErrorEl) {
@@ -1351,18 +1451,7 @@
                 refreshAll();
             });
         }
-        if (dateInput) {
-            dateInput.addEventListener('change', refreshAll);
-            dateInput.addEventListener('input', refreshAll);
-        }
-        if (timeInput) {
-            const handleTimeChange = function () {
-                updateTimelineTimes(this.value);
-                refreshAll();
-            };
-            timeInput.addEventListener('change', handleTimeChange);
-            timeInput.addEventListener('input', handleTimeChange);
-        }
+
 
 
 
@@ -1414,9 +1503,33 @@
                 formData.append('action', 'etb_submit_booking');
                 formData.append('nonce', etbAjax.nonce);
 
-                const originalBtnText = submitButton.textContent;
-                submitButton.disabled = true;
-                submitButton.textContent = 'Traitement en cours...';
+                const formElement = root.querySelector('form') || root;
+
+                // 1. Masquage des éléments superflus et affichage du Loading State
+                const progressBarEl = document.getElementById('etb-progress-bar');
+                if (progressBarEl) progressBarEl.style.display = 'none';
+
+                const sidebar = document.querySelector('.etb-booking-sidebar');
+                if (sidebar) sidebar.style.display = 'none';
+
+                const btnBackToVehicles = document.getElementById('etb-back-to-vehicles');
+                if (btnBackToVehicles) btnBackToVehicles.style.display = 'none';
+
+                const bookingLayout = document.querySelector('.etb-booking-layout');
+                if (bookingLayout) {
+                    bookingLayout.classList.remove('has-selection');
+                    bookingLayout.style.gridTemplateColumns = '1fr'; // Une seule colonne
+                }
+
+                formElement.innerHTML = `
+                    <div class="nexora-card" style="padding: 60px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
+                        <div class="etb-spinner" style="margin: 0 auto 24px auto; width: 48px; height: 48px; border: 4px solid #f1f5f9; border-top-color: #ba6827; border-radius: 50%; animation: etb-spin 1s linear infinite;"></div>
+                        <h3 style="color: #1e293b; font-size: 20px; font-weight: 800; margin: 0 0 12px 0; letter-spacing: -0.02em;">Processing your booking</h3>
+                        <p style="color: #64748b; font-size: 15px; margin: 0; line-height: 1.5;">
+                            Please wait while we secure your vehicle and synchronize with our dispatch system.<br>This may take up to 20 seconds.
+                        </p>
+                    </div>
+                `;
 
                 fetch(etbAjax.ajax_url, {
                     method: 'POST',
@@ -1425,58 +1538,57 @@
                 .then((response) => response.json())
                 .then((result) => {
                     if (result.success) {
-                        // 1. Affichage du message de confirmation vert
-                        const formElement = root.querySelector('form') || root;
+                        // 2. Affichage du message de succès Premium
                         formElement.innerHTML = `
-                            <div class="etb-success-notice" style="padding: 25px; text-align: center; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--etb-radius-md, 12px); margin: 10px 0;">
-                                <div style="font-size: 38px; margin-bottom: 10px;">✅</div>
-                                <h3 style="color: #166534; margin-top: 0; font-size: 18px; font-weight: 800;">Votre demande de réservation a bien été reçue !</h3>
-                                <p style="color: #15803d; font-size: 16px; margin: 10px 0;">
-                                    Numéro de dossier : <strong>#${result.data.booking_id}</strong>
+                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
+                                <div style="width: 72px; height: 72px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <h3 style="color: #1e293b; font-size: 24px; font-weight: 800; margin: 0 0 12px 0; letter-spacing: -0.02em;">Booking Confirmed</h3>
+                                <p style="color: #64748b; font-size: 15px; margin: 0 0 24px 0; line-height: 1.5;">
+                                    Your reservation request has been successfully received. <br>
+                                    A confirmation email has been sent to <strong>${escapeHtml(result.data.email)}</strong>.
                                 </p>
-                                 <p style="color: #374151; font-size: 14px; margin-bottom: 0;">
-                                    Un accusé de réception avec les détails de votre prestation a été envoyé à l'adresse <strong>${escapeHtml(result.data.email)}</strong>.
-                                </p>
+                                
+                                <div style="display: inline-flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 50px;">
+                                    <span style="font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Booking Ref</span>
+                                    <span style="font-size: 18px; color: #ba6827; font-weight: 800;">#${result.data.booking_id}</span>
+                                </div>
                             </div>
                         `;
 
-                        // 2. Remise à zéro des cartes véhicules (quantités = 0 et fermeture des pilules)
+                        // Remise à zéro des cartes véhicules en arrière-plan
                         document.querySelectorAll('.etb-vehicle-card input[name^="etb_car_qty"]').forEach(inp => {
                             inp.value = 0;
                         });
                         document.querySelectorAll('.etb-vehicle-card').forEach(card => {
                             card.classList.remove('etb-selected');
                         });
+                        if (sidebarHeaderEl) sidebarHeaderEl.classList.remove('etb-visible');
 
-                        // 3. Rétractation animée de l'en-tête de prix latéral
-                        if (sidebarHeaderEl) {
-                            sidebarHeaderEl.classList.remove('etb-visible');
-                        }
-
-                        // 4. Auto-scroll fluide vers la grille des véhicules en haut
-                        const scrollTarget = document.querySelector('.co-top-vehicles-section') || document.querySelector('#co-circuit-app') || root;
-                        if (scrollTarget) {
-                            scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
                     } else {
-                        submitButton.disabled = false;
-                        submitButton.textContent = originalBtnText;
-                        if (globalSubmitErrorEl) {
-                            globalSubmitErrorEl.textContent = (result.data && result.data.message) || 'Une erreur est survenue lors de la réservation.';
-                            globalSubmitErrorEl.style.display = 'block';
-                            globalSubmitErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
+                        // 3. Affichage de l'erreur API
+                        formElement.innerHTML = `
+                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
+                                <div style="font-size: 40px; color: #dc2626; margin-bottom: 20px;">⚠️</div>
+                                <h3 style="color: #1e293b; font-size: 20px; font-weight: 800; margin: 0 0 12px 0;">Booking Failed</h3>
+                                <p style="color: #64748b; font-size: 15px; margin: 0 0 24px 0;">${(result.data && result.data.message) || 'An error occurred during booking.'}</p>
+                                <button type="button" onclick="window.location.reload()" class="etb-btn-next" style="padding: 12px 24px; border-radius: 8px; background: #ba6827; color: #fff; border: none; cursor: pointer; font-weight: bold; display: inline-block;">Try Again</button>
+                            </div>
+                        `;
                     }
                 })
                 .catch((error) => {
                     console.error('ETB AJAX error:', error);
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalBtnText;
-                    if (globalSubmitErrorEl) {
-                        globalSubmitErrorEl.textContent = 'Une erreur réseau est survenue. Veuillez vérifier votre connexion et réessayer.';
-                        globalSubmitErrorEl.style.display = 'block';
-                        globalSubmitErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    // 4. Affichage de l'erreur réseau
+                    formElement.innerHTML = `
+                        <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
+                            <div style="font-size: 40px; color: #dc2626; margin-bottom: 20px;">⚠️</div>
+                            <h3 style="color: #1e293b; font-size: 20px; font-weight: 800; margin: 0 0 12px 0;">Connection Error</h3>
+                            <p style="color: #64748b; font-size: 15px; margin: 0 0 24px 0;">Could not reach the server. Please check your connection and try again.</p>
+                            <button type="button" onclick="window.location.reload()" class="etb-btn-next" style="padding: 12px 24px; border-radius: 8px; background: #ba6827; color: #fff; border: none; cursor: pointer; font-weight: bold; display: inline-block;">Reload Page</button>
+                        </div>
+                    `;
                 });
             });
         }

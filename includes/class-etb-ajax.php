@@ -171,7 +171,7 @@ class ETB_Ajax {
             'time'           => sanitize_text_field( $_POST['etb_time'] ?? '' ),
             'luggage'        => min( 500, absint( $_POST['etb_total_luggage'] ?? 0 ) ),
             'promo'          => sanitize_text_field( $_POST['etb_promo'] ?? '' ),
-            'note'           => sanitize_textarea_field( $_POST['etb_note'] ?? '' ),
+            'note'           => sanitize_textarea_field( $_POST['etb_notes'] ?? '' ), // Correction : etb_notes avec un S
         );
 
         // Validation métier

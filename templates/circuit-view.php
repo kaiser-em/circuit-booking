@@ -735,7 +735,11 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                     
                 </div>
                 <form class="etb-booking-widget" id="etb-booking-app" onsubmit="return false;">
-                    
+
+                    <button type="button" id="etb-back-to-vehicles" class="etb-btn-back-to-vehicles inside">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Change Vehicle
+                    </button>
                     <div style="position: absolute !important; left: -9999px !important; opacity: 0 !important;" aria-hidden="true">
                         <input type="text" name="etb_hp_email" value="" tabindex="-1" autocomplete="off">
                         <input type="hidden" name="etb_sec_time" value="<?php echo esc_attr( $sec_token['time'] ); ?>">
@@ -806,7 +810,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                     <div class="etb-field">
                                         <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Date *</label>
                                         <div class="nexora-input-wrapper">
-                                            <input type="date" name="etb_date" lang="en">
+                                            <input type="text" name="etb_date" id="etb-date-input" placeholder="DD/MM/YYYY" autocomplete="off" readonly style="cursor: pointer;">
                                         </div>
                                         <p class="etb-error-message" id="etb-date-error" style="display:none;">⚠ Please select a date.</p>
                                     </div>
@@ -815,12 +819,38 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                 <?php if ( ( $form_settings['show_time'] ?? '1' ) !== '0' ) : ?>
                                     <div class="etb-field">
                                         <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Time *</label>
-                                        <div class="nexora-input-wrapper">
+                                        
+                                        <!-- Custom Dropdown Premium -->
+                                        <div class="etb-custom-select-wrapper" id="etb-time-wrapper">
+                                            <input type="hidden" name="etb_time" id="etb-time-value" value="">
                                             
-                                            <input type="time" name="etb_time">
+                                            <div class="nexora-input-wrapper etb-custom-select-trigger" id="etb-time-trigger">
+                                                <span id="etb-time-label" style="color: #94a3b8;">Select time</span>
+                                                <span class="dashicons dashicons-arrow-down-alt2" style="color: #64748b; font-size: 18px;"></span>
+                                            </div>
+                                            
+                                            <ul class="etb-custom-select-options" id="etb-time-options">
+                                                <?php
+                                                for ( $i = 0; $i < 24; $i++ ) {
+                                                    for ( $j = 0; $j < 60; $j += 15 ) {
+                                                        $h = sprintf( '%02d', $i );
+                                                        $m = sprintf( '%02d', $j );
+                                                        $val = "$h:$m";
+                                                        
+                                                        $display_h = $i % 12;
+                                                        if ( $display_h == 0 ) $display_h = 12;
+                                                        $ampm = $i < 12 ? 'AM' : 'PM';
+                                                        $display = sprintf( '%02d:%02d %s', $display_h, $j, $ampm );
+                                                        
+                                                        echo '<li class="etb-time-option" data-value="' . esc_attr( $val ) . '">' . esc_html( $display ) . '</li>';
+                                                    }
+                                                }
+                                                ?>
+                                            </ul>
                                         </div>
                                         <p class="etb-error-message" id="etb-time-error" style="display:none;">⚠ Please select a time.</p>
                                     </div>
+
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -1092,12 +1122,6 @@ if ( ! empty( $options ) && is_array( $options ) ) {
         <!-- COLONNE DROITE : LE SIDEBAR STICKY -->
         <div class="etb-booking-sidebar">
             
-            <!-- NOUVEAU : BOUTON DE RETOUR AUX VÉHICULES -->
-            <button type="button" id="etb-back-to-vehicles" class="etb-btn-back-to-vehicles">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Change Vehicle
-            </button>
-
             <div class="etb-sidebar-sticky">
                 
                 <!-- Titre déplacé à l'intérieur de la carte -->
