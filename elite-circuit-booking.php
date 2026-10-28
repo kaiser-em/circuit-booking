@@ -215,7 +215,9 @@ class Elite_Transfer_Booking {
             wp_enqueue_media();
 
             if ( file_exists( ETB_PATH . 'admin/css/etb-admin.css' ) ) {
-                wp_enqueue_style( 'etb-admin-style', ETB_URL . 'admin/css/etb-admin.css', array(), ETB_VERSION );
+                // On déclare Elementor comme dépendance pour que notre CSS soit chargé APRÈS le sien
+                $style_deps = wp_style_is( 'elementor-admin-css', 'registered' ) ? array( 'elementor-admin-css' ) : array();
+                wp_enqueue_style( 'etb-admin-style', ETB_URL . 'admin/css/etb-admin.css', $style_deps, ETB_VERSION );
             }
             if ( file_exists( ETB_PATH . 'admin/js/etb-admin.js' ) ) {
                 wp_enqueue_script( 'etb-admin-script', ETB_URL . 'admin/js/etb-admin.js', array( 'jquery', 'jquery-ui-sortable' ), ETB_VERSION, true );

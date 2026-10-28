@@ -118,6 +118,16 @@ jQuery(document).ready(function ($) {
         $icon.toggleClass('dashicons-arrow-down-alt2 dashicons-arrow-up-alt2');
     });
 
+    // 8bis. Accordéon Médias (Photos & Intégrations)
+    $(document).on('click', '.etb-media-accordion-header', function (e) {
+        e.preventDefault();
+        var $body = $(this).next('.etb-media-accordion-body');
+        var $icon = $(this).find('.etb-media-toggle-icon');
+        
+        $body.slideToggle(200);
+        $icon.toggleClass('dashicons-arrow-down-alt2 dashicons-arrow-up-alt2');
+    });
+
     // 9. Itinéraire - Maj dynamique du titre de l'étape
     $(document).on('input', '.etb-step-title-input', function () {
         var val = $(this).val().trim();
@@ -176,12 +186,21 @@ jQuery(document).ready(function ($) {
                         </button>
                     </div>
 
-                    <!-- PHOTOS DE L'ÉTAPE -->
-                    <div class="etb-sp-wrapper" data-max="${spMax}">
-                        <span class="etb-sp-title">Photos de l'étape</span>
-                        <input type="hidden" class="etb-sp-ids" name="co_options[${optId}][timeline_photo_ids][${stepKey}]" value="">
-                        <div class="etb-sp-thumbs"></div>
-                        <button type="button" class="button button-small etb-sp-add">+ Ajouter des photos</button>
+                    <!-- NOUVEAU : Accordéon Médias -->
+                    <div class="etb-media-accordion" style="margin-top: 16px;">
+                        <div class="etb-media-accordion-header">
+                            <span class="dashicons dashicons-format-gallery"></span>
+                            <span>Médias & Intégrations (Photos, Réseaux)</span>
+                            <span class="dashicons dashicons-arrow-down-alt2 etb-media-toggle-icon"></span>
+                        </div>
+                        <div class="etb-media-accordion-body" style="display: none;">
+                            <div class="etb-sp-wrapper" data-max="${spMax}">
+                                <span class="etb-sp-title">Photos de l'étape</span>
+                                <input type="hidden" class="etb-sp-ids" name="co_options[${optId}][timeline_photo_ids][${stepKey}]" value="">
+                                <div class="etb-sp-thumbs"></div>
+                                <button type="button" class="button button-small etb-sp-add">+ Ajouter des photos</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -755,5 +774,54 @@ jQuery(document).ready(function($) {
         
         // B. On retire l'image visuellement
         item.remove();
+    });
+});
+jQuery(document).ready(function($) {
+    // Ajustement automatique de la hauteur au chargement initial UNIQUEMENT
+    setTimeout(function() {
+        $('#co_circuit_options_meta textarea').each(function() {
+            // On vérifie que le champ n'a pas déjà été redimensionné manuellement
+            if (!$(this).attr('style') || $(this).attr('style').indexOf('height') === -1) {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight + 5) + 'px';
+            }
+        });
+    }, 500);
+});
+
+jQuery(document).ready(function($) {
+    'use strict';
+
+    let etbFormChanged = false;
+
+    // 1. Détecte toute modification dans les champs de la metabox du circuit
+    // On utilise $(document).on() pour que ça fonctionne aussi sur les champs ajoutés dynamiquement (timeline, options)
+    $(document).on('input change', '#co_circuit_options_meta input, #co_circuit_options_meta textarea, #co_circuit_options_meta select', function() {
+        etbFormChanged = true;
+    });
+
+    // 2. Réinitialise le drapeau si l'utilisateur clique sur "Mettre à jour" ou "Enregistrer"
+    $(document).on('click', '#publish, #save-post', function() {
+        etbFormChanged = false;
+    });
+
+    // 3. Intercepte la fermeture de la page / fermeture de l'onglet
+    $(window).on('beforeunload', function(e) {
+        if (etbFormChanged) {
+            // Message standard (la plupart des navigateurs modernes affichent leur propre texte, mais le return est requis)
+            const message = 'Vous avez des modifications non sauvegardées dans le circuit. Voulez-vous vraiment quitter ?';
+            e.returnValue = message; 
+            return message;
+        }
+    });
+
+    // 4. Intercepte les clics sur les liens de l'admin (ex: "Retour à la liste", menu de gauche)
+    $('a').on('click', function(e) {
+        if (etbFormChanged) {
+            if (!confirm('Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter cette page ?')) {
+                e.preventDefault(); // Annule la navigation
+                e.stopPropagation();
+            }
+        }
     });
 });

@@ -263,8 +263,8 @@ class ETB_Meta_Manager {
                         <h3 class="etb-engine-pane-title">Général & Tarifs</h3>
                         <div class="etb-engine-grid-2">
                             <div class="etb-engine-row">
-                                <label>Ville / Titre de départ * :</label>
-                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][city_name]" value="<?php echo esc_attr( $city ); ?>" class="widefat co-city-input" placeholder="Ex: Cannes, Antsirabe...">
+                                <label>Ville / Titre de départ (Optionnel) :</label>
+                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][city_name]" value="<?php echo esc_attr( $city ); ?>" class="widefat co-city-input" placeholder="Ex: Cannes, Nice...">
                             </div>
                             <div class="etb-engine-row">
                                 <label>Durée (en heures) * :</label>
@@ -291,7 +291,7 @@ class ETB_Meta_Manager {
 
                             <div class="etb-engine-row" style="grid-column: 1 / -1;">
                                 <label>Titre de la section Médias (ex: Médias & Découvertes) :</label>
-                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_media_title]" value="<?php echo esc_attr( $data['timeline_media_title'] ?? 'Médias & Découvertes' ); ?>" class="widefat" placeholder="Médias & Découvertes">
+                                <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_media_title]" value="<?php echo esc_attr( $data['timeline_media_title'] ?? 'Medias & Discovery' ); ?>" class="widefat" placeholder="Medias & Discovery">
                             </div>
 
                         </div>
@@ -506,40 +506,49 @@ class ETB_Meta_Manager {
                                             }
                                         }
                                         ?>
-
-
-                                                                                <div class="etb-sp-wrapper" data-max="<?php echo esc_attr( $this->get_step_photo_limit() ); ?>">
-                                            <span class="etb-sp-title">Photos de l'étape</span>
-                                            <input type="hidden" class="etb-sp-ids" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_photo_ids][<?php echo esc_attr( $step_key ); ?>]" value="<?php echo esc_attr( implode( ',', $step_photo_ids ) ); ?>">
-                                            
-                                            <div class="etb-sp-thumbs">
-                                                <?php foreach ( $step_photo_ids as $sp_id ) : ?>
-                                                    <div class="etb-sp-thumb" data-id="<?php echo esc_attr( $sp_id ); ?>">
-                                                        <img src="<?php echo esc_url( wp_get_attachment_image_url( $sp_id, 'thumbnail' ) ); ?>" alt="">
-                                                        <button type="button" class="etb-sp-remove" aria-label="Retirer cette photo">&times;</button>
+                                            <!-- NOUVEAU : Accordéon Médias -->
+                                            <div class="etb-media-accordion" style="margin-top: 16px;">
+                                                <div class="etb-media-accordion-header">
+                                                    <span class="dashicons dashicons-format-gallery"></span>
+                                                    <span>Médias & Intégrations (Photos, Réseaux)</span>
+                                                    <span class="dashicons dashicons-arrow-down-alt2 etb-media-toggle-icon"></span>
+                                                </div>
+                                                <div class="etb-media-accordion-body" style="display: none;">
+                                                    
+                                                 <!-- Le bloc existant commence ici -->
+                                                <div class="etb-sp-wrapper" data-max="<?php echo esc_attr( $this->get_step_photo_limit() ); ?>">
+                                                    <span class="etb-sp-title">Photos de l'étape</span>
+                                                    <input type="hidden" class="etb-sp-ids" name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_photo_ids][<?php echo esc_attr( $step_key ); ?>]" value="<?php echo esc_attr( implode( ',', $step_photo_ids ) ); ?>">
+                                                    
+                                                    <div class="etb-sp-thumbs">
+                                                        <?php foreach ( $step_photo_ids as $sp_id ) : ?>
+                                                            <div class="etb-sp-thumb" data-id="<?php echo esc_attr( $sp_id ); ?>">
+                                                                <img src="<?php echo esc_url( wp_get_attachment_image_url( $sp_id, 'thumbnail' ) ); ?>" alt="">
+                                                                <button type="button" class="etb-sp-remove" aria-label="Retirer cette photo">&times;</button>
+                                                            </div>
+                                                        <?php endforeach; ?>
                                                     </div>
-                                                <?php endforeach; ?>
-                                            </div>
-                                            <button type="button" class="button button-small etb-sp-add">+ Ajouter des photos</button>
+                                                    <button type="button" class="button button-small etb-sp-add">+ Ajouter des photos</button>
 
-                                            <!-- 🔧 NOUVEAU : Code d'intégration Instagram / Facebook / X -->
-                                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;">
-                                                <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 4px;">Code d'intégration (Instagram / Facebook / X) :</label>
-                                                <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_embed][<?php echo esc_attr( $step_key ); ?>]" rows="3" class="widefat" style="font-family: monospace; font-size: 12px;" placeholder="Collez ici le code &lt;blockquote&gt;...&lt;/blockquote&gt; fourni par Instagram"><?php echo esc_textarea( $step['embed_code'] ?? '' ); ?></textarea>
-                                                <span class="description" style="font-size: 11px; color: #94a3b8; margin-top: 4px; display: block;">Sur Instagram, cliquez sur les trois petits points > "Intégrer" et copiez le code.</span>
-                                            </div>
+                                                    <!-- 🔧 NOUVEAU : Code d'intégration Instagram / Facebook / X -->
+                                                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;">
+                                                        <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 4px;">Code d'intégration (Instagram / Facebook / X) :</label>
+                                                        <textarea name="co_options[<?php echo esc_attr( $opt_id ); ?>][timeline_embed][<?php echo esc_attr( $step_key ); ?>]" rows="3" class="widefat" style="font-family: monospace; font-size: 12px;" placeholder="Collez ici le code &lt;blockquote&gt;...&lt;/blockquote&gt; fourni par Instagram"><?php echo esc_textarea( $step['embed_code'] ?? '' ); ?></textarea>
+                                                        <span class="description" style="font-size: 11px; color: #94a3b8; margin-top: 4px; display: block;">Sur Instagram, cliquez sur les trois petits points > "Intégrer" et copiez le code.</span>
+                                                    </div>
 
-                                            <!-- 🔧 NOUVEAU : Légende de l'image (Style Magazine) -->
-                                            <div style="margin-top: 10px;">
-                                                <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 4px;">Légende de la photo (optionnel) :</label>
-                                                <input type="text" 
-                                                       name="co_options[<?php echo esc_attr($opt_id); ?>][timeline_caption][<?php echo esc_attr($step_key); ?>]" 
-                                                       value="<?php echo esc_attr($step['caption'] ?? ''); ?>" 
-                                                       class="widefat" 
-                                                       placeholder="Ex: Un moment magique au bord de l'eau...">
-                                            </div>
-                                        </div>
-
+                                                    <!-- 🔧 NOUVEAU : Légende de l'image (Style Magazine) -->
+                                                    <div style="margin-top: 10px;">
+                                                        <label style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 4px;">Légende de la photo (optionnel) :</label>
+                                                        <input type="text" 
+                                                               name="co_options[<?php echo esc_attr($opt_id); ?>][timeline_caption][<?php echo esc_attr($step_key); ?>]" 
+                                                               value="<?php echo esc_attr($step['caption'] ?? ''); ?>" 
+                                                               class="widefat" 
+                                                               placeholder="Ex: Un moment magique au bord de l'eau...">
+                                                    </div>
+                                                </div>
+                                            </div> <!-- /etb-media-accordion-body -->
+                                        </div> <!-- /etb-media-accordion -->
                                     </div>
                                 </div>
                             <?php endforeach; endif; ?>
@@ -646,7 +655,7 @@ class ETB_Meta_Manager {
                         <div class="etb-engine-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                             <h4 style="margin: 0 0 10px 0;">⭐ Avis Client</h4>
                             <p style="margin-top:0;">
-                                <label><input type="checkbox" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_enabled]" value="1" <?php checked( $data['aside_review_enabled'] ?? '1', '1' ); ?>> Afficher l'avis client</label>
+                                <label><input type="checkbox" name="co_options[<?php echo esc_attr( $opt_id ); ?>][aside_review_enabled]" value="1" <?php checked( $data['aside_review_enabled'] ?? '0', '1' ); ?>> Afficher l'avis client</label>
                             </p>
                             <div class="etb-engine-grid-2">
                                 <div>

@@ -29,6 +29,7 @@
 .etb-booking-widget * {
     box-sizing: border-box !important;
     font-family: inherit !important;
+    text-align: justify;
 }
 
 /* Protection de la police Dashicons contre les resets de thème */
@@ -316,8 +317,8 @@
 }
 
 .co-vehicles-grid .etb-vehicle-price {
-    font-size: 14px !important;
-    font-weight: 800 !important;
+    font-size: 18px !important;
+    font-weight: 300 !important;
     color: #ba6827 !important;
     margin: 5px 0 6px auto !important;
     line-height: 1.2 !important;
@@ -2364,9 +2365,6 @@
     margin-bottom: 32px !important;
 }
 
-.co-itinerary-section .co-vip-step-header {
-    padding-bottom: 12px !important;
-}
 
 .co-itinerary-section .co-vip-step-title {
     font-size: 21px !important;
@@ -4753,6 +4751,7 @@
     width: 100% !important;
     padding: 14px !important;
     font-size: 14px !important;
+    text-align: center !important;
 }
 
 /* ==========================================================================
@@ -4810,9 +4809,9 @@
 }
 
 .co-aside-hero-title {
-    font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;
-    font-size: 22px !important;
-    font-weight: 700 !important;
+   /* font-family: var(--etb-theme-font-head, 'Sunsive-Medium', sans-serif) !important;*/
+    
+    font-weight: 400 !important;
     color: #1e293b !important;
     margin: 0 0 8px 0 !important;
 }
@@ -4953,8 +4952,8 @@
 }
 
 .co-nav-label {
-    font-size: 20px !important;
-    font-weight: 500 !important;
+    font-size: 16px !important;
+    /*font-weight: 500 !important;*/
     /* text-transform: uppercase !important; */
     letter-spacing: 0.05em !important;
     color: #57616e !important;
@@ -5176,11 +5175,12 @@
     gap: 20px !important;
     background: transparent !important; /* On enlève le fond beige */
     border: none !important;
-    border-left: 3px solid #ba6827 !important; /* Barre orange à gauche (Style Apple) */
+   /* border-left: 3px solid #ba6827 !important; /* Barre orange à gauche (Style Apple) */ */
     border-radius: 0 !important;
-    padding: 4px 0 4px 24px !important; /* Padding uniquement à gauche */
+    padding: 4px 0 4px 0 !important; /* Padding uniquement à gauche */
     transition: none !important;
     box-shadow: none !important;
+    text-align: justify !important;
 }
 
 .co-callout-card:hover {
@@ -5551,13 +5551,13 @@
     border: 1px solid #e2e8f0 !important;
     border-radius: 12px !important;
     overflow: hidden !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+    /*box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;*/
 }
 
 /* 4. Le Header de la carte */
 .co-vip-step-header {
     width: 100% !important;
-    padding:10px 20px !important;
+    padding:20px !important;
     background: transparent !important;
     border: none !important;
     display: block !important; /* On passe en block pour gérer l'intérieur */
@@ -6315,4 +6315,20 @@ button.co-expand-toggle-switch {
     justify-content: flex-start !important;
     width: 200px !important;
     background-color: transparent !important;
+}
+
+.co-aside-hero-title {
+    font-size: 18px !important;
+    /* letter-spacing: 0.1em !important; */
+    line-height: 100% !important;
+}
+
+.co-aside-list span {
+    text-align: left !important;
+}
+
+
+
+.co-departure-nav {
+    display: none !important;
 }

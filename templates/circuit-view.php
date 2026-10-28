@@ -80,8 +80,9 @@ if ( ! empty( $options ) && is_array( $options ) ) {
     $trip_facts      = ! empty( $active_option['trip_facts'] ) && is_array( $active_option['trip_facts'] ) ? $active_option['trip_facts'] : array();
     
     // Titre des points forts
-    $highlights_title = ! empty( $active_option['highlights_title'] ) ? $active_option['highlights_title'] : ( ! empty( $active_option['hero_subtitle'] ) ? $active_option['hero_subtitle'] : 'Points forts :' );
+    $highlights_title = ! empty( $active_option['highlights_title'] ) ? $active_option['highlights_title'] : ( ! empty( $active_option['hero_subtitle'] ) ? $active_option['hero_subtitle'] : 'highlights :' );
     $highlights_items = ! empty( $active_option['highlights'] ) ? $active_option['highlights'] : ( ! empty( $active_option['hero_bullets'] ) ? array_filter( array_map( 'trim', explode( "\n", $active_option['hero_bullets'] ) ) ) : array() );
+     $map_title = ! empty ( $active_option['map_title']) ? $active_option['map_title'] : 'Map';
 
     // Récupération des URLs de la galerie photo
     $gallery_enabled = ! empty( $active_option['gallery_enabled'] ) && '1' === (string) $active_option['gallery_enabled'];
@@ -211,12 +212,24 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                     
                     <!-- ONGLETS VILLES -->
                     <div class="co-departure-nav">
-                        <span class="co-nav-label">Departure city:</span>
+                        <?php 
+                        // On vérifie si le nom de la ville existe et n'est pas vide
+                        if ( ! empty( $opt_data['city_name'] ) ) : 
+                        ?>
+                            <div class="co-departure-city-wrapper">
+                                <span class="co-nav-label">Departure city:</span>
+                                <span><?php echo esc_html( $opt_data['city_name'] ); ?>
+                                    <?php if ( ! empty( $opt_data['additional_price'] ) && $opt_data['additional_price'] > 0 ) : ?>
+                                        +<?php echo esc_html( $opt_data['additional_price'] ); ?> €
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
                         <div class="co-nav-buttons" role="tablist" aria-label="Departure city">                    
                             <?php 
                             $is_first = true;
                             foreach ( $options as $opt_id => $opt_data ) : 
-                                $city = ! empty( $opt_data['city_name'] ) ? esc_html( $opt_data['city_name'] ) : 'Departure';
+                                $city = ! empty( $opt_data['city_name'] ) ? esc_html( $opt_data['city_name'] ) : '';
                                 $add_price = floatval( $opt_data['additional_price'] ?? 0 );
                                 $price_suffix = ( $add_price > 0 ) ? ' (+' . $add_price . ' ' . $currency . ')' : '';
                             ?>
@@ -329,18 +342,19 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                                 aria-controls="etb-step-body-<?php echo esc_attr( $opt_id . '-' . $index ); ?>">
                                                             
                                                             <div class="co-vip-step-card">
-                                                                <?php if ( $thumb_id ) : ?>
-                                                                    <div class="co-time-wrap">
-                                                                        <!-- L'HEURE À L'INTÉRIEUR DE LA CARTE -->
-                                                                        <div class="co-card-time" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
-                                                                            <?php echo esc_html( $formatted_time ); ?>
-                                                                        </div>
+                                                                <!-- L'HEURE EST MAINTENANT TOUJOURS AFFICHÉE -->
+                                                                <div class="co-time-wrap">
+                                                                    <div class="co-card-time" data-base-time="<?php echo esc_attr( $step['time'] ?? '' ); ?>">
+                                                                        <?php echo esc_html( $formatted_time ); ?>
+                                                                    </div>
+                                                                    
+                                                                    <!-- L'IMAGE S'AFFICHE UNIQUEMENT SI ELLE EXISTE -->
+                                                                    <?php if ( $thumb_id ) : ?>
                                                                         <div class="co-card-img">
                                                                             <?php echo wp_get_attachment_image( $thumb_id, 'medium', false, array('alt' => $step['title'] ?? '') ); ?>
                                                                          </div>
-                                                                    </div>
-                                                                    
-                                                                <?php endif; ?>
+                                                                    <?php endif; ?>
+                                                                </div>
 
                                                                 <div class="co-card-content">
                                                                     <div class="co-head-detail">
@@ -350,7 +364,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                                         <?php endif; ?>
                                                                     </div>
                                                                     <div class="co-card-chevron">
-                                                                        <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                                        <svg class="co-vip-step-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                                                     </div>
                                                                 </div>
 
@@ -401,7 +415,8 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                                             <?php endif; ?>
                                                                             <div class="co-callout-text-wrap">
                                                                                 <div class="co-callout-icon">
-                                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                                                                    <svg width="20" height="20" viewBox="0 0 512 512" fill="#ccac8f" stroke="none" stroke-linecap="round" stroke-linejoin="round"><path d="M256,0C114.615,0,0,114.615,0,256s114.615,256,256,256s256-114.615,256-256S397.385,0,256,0z M350.797,328.86 L275.9,403.757C270.622,409.035,263.464,412,256,412c-7.464,0-14.622-2.965-19.9-8.243l-74.896-74.897 c-52.355-52.355-52.355-137.239,0-189.594l0,0c52.354-52.355,137.238-52.355,189.593,0l0,0 C403.151,191.621,403.151,276.505,350.797,328.86z"></path>
+                                                                                 <circle cx="256" cy="234.062" r="48.75"></circle></svg>
                                                                                 </div>
                                                                                 <div class="co-callout-content">
                                                                                     <?php if ( ! empty( $sub['title'] ) ) : ?><h5 class="co-callout-title"><?php echo esc_html( $sub['title'] ); ?></h5><?php endif; ?>
@@ -497,7 +512,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                     <div class="co-am-content">
                         <h3 class="co-aside-hero-title"><?php echo esc_html( get_the_title( $circuit_id ) ); ?></h3>
                         <?php 
-                        $hero_desc = ! empty( $active_option['aside_hero_desc'] ) ? $active_option['aside_hero_desc'] : 'La ville du cinéma et de l\'élégance.';
+                        $hero_desc = ! empty( $active_option['aside_hero_desc'] ) ? $active_option['aside_hero_desc'] : 'A wonderfull City, a wide open door to a breathtaking experience.';
                         ?>
                         <p class="co-aside-hero-desc"><?php echo wp_kses_post( $hero_desc ); ?></p>
                     </div>
@@ -521,7 +536,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                 <!-- C. Infos Pratiques -->
                 <?php if ( ! empty( $trip_facts ) ) : ?>
                     <div class="co-am-section co-am-facts">
-                        <h3 class="co-aside-title">Informations pratiques</h3>
+                        <h3 class="co-aside-title">Practical information</h3>
                         <ul class="co-aside-facts-list">
                             <?php foreach ( $trip_facts as $fact ) : 
                                 $f_icon  = ! empty( $fact['icon'] ) ? $fact['icon'] : 'fas fa-info-circle';
@@ -552,7 +567,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                     if ( $map_src ) :
                 ?>
                     <div class="co-am-section co-am-map-section">
-                        <h3 class="co-aside-title">Localisation</h3>
+                        <h3 class="co-aside-title"><?php echo esc_html( $map_title ); ?></h3>
                         <div class="co-am-map-container">
                             <iframe src="<?php echo esc_url( $map_src ); ?>" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>

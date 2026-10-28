@@ -395,7 +395,7 @@
             // 2. Supplément éventuel du circuit
             if (state.circuit.additionalPrice > 0) {
                 total += state.circuit.additionalPrice;
-                const cityLabel = state.circuit.cityName ? ` (${state.circuit.cityName})` : '';
+                const cityLabel = state.circuit.cityName ? ` ${state.circuit.cityName}` : '';
                 circuitPriceHtml = `<div class="etb-summary-row"><span>Departure surcharge${cityLabel}</span><span>+ ${state.circuit.additionalPrice.toFixed(0)} ${state.currency}</span></div>`;
             }
 
