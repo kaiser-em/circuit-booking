@@ -82,8 +82,14 @@ class ETB_Settings {
         // Application de dispatch choisie (Autonome, LimoExpress...)
         $new_input['active_dispatcher'] = isset( $input['active_dispatcher'] ) ? sanitize_text_field( $input['active_dispatcher'] ) : 'none';
 
+        // ── SAUVEGARDE DES CHAMPS STRIPE ──
+        $new_input['stripe_enabled']         = isset( $input['stripe_enabled'] ) ? '1' : '0';
+        $new_input['stripe_mode']            = ( isset( $input['stripe_mode'] ) && 'live' === $input['stripe_mode'] ) ? 'live' : 'test';
+        $new_input['stripe_publishable_key'] = ! empty( $input['stripe_publishable_key'] ) ? sanitize_text_field( trim( $input['stripe_publishable_key'] ) ) : '';
+        $new_input['stripe_secret_key']      = ! empty( $input['stripe_secret_key'] ) ? sanitize_text_field( trim( $input['stripe_secret_key'] ) ) : '';
+        $new_input['payment_page_url']       = ! empty( $input['payment_page_url'] ) ? esc_url_raw( trim( $input['payment_page_url'] ) ) : home_url( '/payment/' );
+
         // Crochet WordPress (Hook) : on laisse l'application sélectionnée sauvegarder ses propres champs
-        // Si LimoExpress est branché, c'est lui qui interceptera ce hook pour sauvegarder son Token.
         $new_input = apply_filters( 'etb_sanitize_dispatcher_settings', $new_input, $input );
 
         return $new_input;
@@ -200,6 +206,7 @@ class ETB_Settings {
                             <a class="etb-nav-pill" data-target="sec-company"><span class="dashicons dashicons-store"></span> Identité & Marque</a>
                             <a class="etb-nav-pill" data-target="sec-geo"><span class="dashicons dashicons-location"></span> Géolocalisation & URLs</a>
                             <a class="etb-nav-pill" data-target="sec-dispatch"><span class="dashicons dashicons-randomize"></span> Système de Dispatch</a>
+                            <a class="etb-nav-pill" data-target="sec-payments"><span class="dashicons dashicons-credit-card"></span> Paiements Stripe</a>
                         </div>
 
                         <!-- CONTENT PANELS -->
@@ -343,6 +350,51 @@ class ETB_Settings {
                                     // sans casser notre layout car nous sommes dans une `table.form-table` !
                                     do_action( 'etb_render_dispatcher_settings', $options ); 
                                     ?>
+                                </table>
+                            </div>
+
+                            <!-- SECTION: PAIEMENTS STRIPE -->
+                            <div id="sec-payments" class="etb-settings-section">
+                                <h2 class="etb-section-title">Paiements Stripe</h2>
+                                <table class="form-table">
+                                    <tr>
+                                        <th scope="row">Activer Stripe</th>
+                                        <td>
+                                            <label style="display:flex; align-items:center; gap:10px;">
+                                                <input type="checkbox" name="etb_general_settings[stripe_enabled]" value="1" <?php checked( $options['stripe_enabled'] ?? '0', '1' ); ?> style="width:18px; height:18px;">
+                                                <span style="font-weight:600; color:#0f172a;">Activer les paiements en ligne</span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Mode Test / Live</th>
+                                        <td>
+                                            <select name="etb_general_settings[stripe_mode]">
+                                                <option value="test" <?php selected( $options['stripe_mode'] ?? 'test', 'test' ); ?>>🧪 Mode Test (Sandbox)</option>
+                                                <option value="live" <?php selected( $options['stripe_mode'] ?? 'test', 'live' ); ?>>🚀 Mode Production (Live)</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Clé Publique (Publishable Key)</th>
+                                        <td>
+                                            <input type="text" name="etb_general_settings[stripe_publishable_key]" value="<?php echo esc_attr( $options['stripe_publishable_key'] ?? '' ); ?>" class="regular-text" placeholder="pk_test_... ou pk_live_...">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Clé Secrète (Secret Key)</th>
+                                        <td>
+                                            <input type="password" name="etb_general_settings[stripe_secret_key]" value="<?php echo esc_attr( $options['stripe_secret_key'] ?? '' ); ?>" class="regular-text" placeholder="sk_test_... ou sk_live_...">
+                                            <p class="description">Ne partagez jamais cette clé.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">URL de la page de paiement</th>
+                                        <td>
+                                            <input type="url" name="etb_general_settings[payment_page_url]" value="<?php echo esc_url( $options['payment_page_url'] ?? home_url('/payment/') ); ?>" class="regular-text">
+                                            <p class="description">La page où se trouve le shortcode <code>[etb_payment]</code>.</p>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
 

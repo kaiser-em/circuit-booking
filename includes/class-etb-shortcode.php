@@ -6,8 +6,10 @@ class ETB_Shortcode {
     public function __construct() {
         add_shortcode( 'tour_booking', array( $this, 'render_booking_form' ) );
         add_shortcode( 'circuit_view', array( $this, 'render_circuit_view' ) );
+        add_shortcode( 'etb_payment', array( $this, 'render_payment_view' ) ); // <-- NOUVEAU
         add_filter( 'the_content', array( $this, 'auto_append_to_circuit_single' ), 20 );
     }
+
     /**
      * Shortcode [etb_checkout] : Formulaire de réservation détaillée & Checkout VIP Blacklane
      */
@@ -26,6 +28,28 @@ class ETB_Shortcode {
      * Shortcode [etb_payment] : Page de paiement dédiée et sécurisée pour solde et devis validés
      */
     public function render_payment_view( $atts = array() ) {
+        // 1. Chargement forcé du CSS (Zéro dépendance au thème)
+        wp_enqueue_style( 'etb-payment-css', ETB_URL . 'public/css/modules/etb-payment.css', array(), ETB_VERSION );
+        
+        // 2. Vérification de la configuration Stripe
+        $gen_settings   = get_option( 'etb_general_settings', array() );
+        $stripe_enabled = ! empty( $gen_settings['stripe_enabled'] ) && '1' === $gen_settings['stripe_enabled'];
+        $stripe_pk      = ! empty( $gen_settings['stripe_publishable_key'] ) ? trim( $gen_settings['stripe_publishable_key'] ) : '';
+
+        // 3. Chargement des scripts Stripe (Uniquement si configuré)
+        if ( $stripe_enabled && ! empty( $stripe_pk ) ) {
+            wp_enqueue_script( 'stripe-js', 'https://js.stripe.com/v3/', array(), null, true );
+            wp_enqueue_script( 'etb-payment-js', ETB_URL . 'public/js/payment-widget.js', array( 'stripe-js' ), ETB_VERSION, true );
+            
+            wp_localize_script( 'etb-payment-js', 'etbPayData', array(
+                'ajax_url'  => admin_url( 'admin-ajax.php' ),
+                'nonce'     => wp_create_nonce( 'etb_booking_nonce' ),
+                'stripe_pk' => $stripe_pk,
+                'currency'  => $gen_settings['currency'] ?? '€'
+            ) );
+        }
+
+        // 4. Inclusion du template
         ob_start();
         $template_file = ETB_PATH . 'templates/payment-view.php';
         if ( file_exists( $template_file ) ) {

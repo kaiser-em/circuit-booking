@@ -95,6 +95,15 @@ class Elite_Transfer_Booking {
        
 
         $script_deps = array( 'intl-tel-input-script' );
+        
+        // Chargement de Stripe.js si activé
+        $stripe_enabled = ! empty( $gen_settings['stripe_enabled'] ) && '1' === $gen_settings['stripe_enabled'];
+        $stripe_pk      = ! empty( $gen_settings['stripe_publishable_key'] ) ? trim( $gen_settings['stripe_publishable_key'] ) : '';
+        
+        if ( $stripe_enabled && ! empty( $stripe_pk ) && is_singular() ) {
+            wp_enqueue_script( 'stripe-js', 'https://js.stripe.com/v3/', array(), null, true );
+            $script_deps[] = 'stripe-js';
+        }
 
         // Google Places : chargé seulement si une clé est renseignée
         if ( ! empty( $google_key ) ) {
@@ -122,6 +131,7 @@ class Elite_Transfer_Booking {
             'home_url'          => esc_url( home_url( '/' ) ),
             'company_whatsapp'  => ! empty( $gen_settings['company_whatsapp'] ) ? preg_replace( '/[^0-9]/', '', $gen_settings['company_whatsapp'] ) : '',
             'admin_email'       => ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' ),
+            'stripe_enabled' => $stripe_enabled, 'stripe_pk' => $stripe_pk
         ) );
     }
     
@@ -140,6 +150,7 @@ class Elite_Transfer_Booking {
         
         require_once ETB_PATH . 'includes/class-etb-pricing-engine.php';
         require_once ETB_PATH . 'includes/class-etb-meta-manager.php';
+        require_once ETB_PATH . 'includes/class-etb-stripe.php'; // <-- NOUVEAU
         require_once ETB_PATH . 'includes/class-etb-ajax.php';
         require_once ETB_PATH . 'includes/class-etb-shortcode.php';
     }

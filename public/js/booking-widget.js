@@ -1524,8 +1524,8 @@
                 formElement.innerHTML = `
                     <div class="nexora-card" style="padding: 60px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
                         <div class="etb-spinner" style="margin: 0 auto 24px auto; width: 48px; height: 48px; border: 4px solid #f1f5f9; border-top-color: #ba6827; border-radius: 50%; animation: etb-spin 1s linear infinite;"></div>
-                        <h3 style="color: #1e293b; font-size: 20px; font-weight: 800; margin: 0 0 12px 0; letter-spacing: -0.02em;">Processing your booking</h3>
-                        <p style="color: #64748b; font-size: 15px; margin: 0; line-height: 1.5;">
+                        <h3 style="color: #1e293b; font-size: 20px; font-weight: 800; margin: 0 0 12px 0; letter-spacing: -0.02em; text-align: center;">Processing your booking</h3>
+                        <p style="color: #64748b; font-size: 15px; margin: 0; line-height: 1.5; text-align: center;">
                             Please wait while we secure your vehicle and synchronize with our dispatch system.<br>This may take up to 20 seconds.
                         </p>
                     </div>
@@ -1539,8 +1539,23 @@
                 .then((result) => {
                     if (result.success) {
                         // 2. Affichage du message de succès Premium
+                        let paymentBtnHtml = '';
+                        
+                        // Si une URL de paiement existe, on l'affiche
+                        if (result.data.payment_url) {
+                            paymentBtnHtml = `
+                                <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+                                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">To guarantee your booking, please proceed to secure payment.</p>
+                                    <a href="${result.data.payment_url}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 300px; background: #ba6827; color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 700; font-size: 16px; transition: background 0.2s ease;">
+                                        Proceed to Payment
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                    </a>
+                                </div>
+                            `;
+                        }
+
                         formElement.innerHTML = `
-                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; margin: 20px 0;">
+                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin: 20px 0;">
                                 <div style="width: 72px; height: 72px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 </div>
@@ -1554,6 +1569,8 @@
                                     <span style="font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Booking Ref</span>
                                     <span style="font-size: 18px; color: #ba6827; font-weight: 800;">#${result.data.booking_id}</span>
                                 </div>
+
+                                ${paymentBtnHtml}
                             </div>
                         `;
 

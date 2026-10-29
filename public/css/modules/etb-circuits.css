@@ -6359,3 +6359,6 @@ button.co-expand-toggle-switch {
     will-change: transform;
 }
 
+.nexora-card h3 , .nexora-card p{
+    text-align: center !important ;
+}

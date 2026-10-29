@@ -1,0 +1,219 @@
+/* ==========================================================================
+   PAGE DE PAIEMENT ECB - DESIGN PREMIUM (Override Thème)
+   ========================================================================== */
+
+.etb-payment-wrapper {
+    max-width: 1100px !important;
+    margin: 40px auto !important;
+    padding: 0 20px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.etb-pay-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 30px !important;
+    align-items: flex-start !important;
+}
+
+.etb-pay-col {
+    flex: 1 1 450px !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 30px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+    box-sizing: border-box !important;
+}
+
+.etb-pay-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    margin: 0 0 5px 0 !important;
+    color: #1e293b !important;
+    line-height: 1.3 !important;
+}
+
+.etb-pay-subtitle {
+    font-size: 14px !important;
+    color: #64748b !important;
+    margin: 0 0 25px 0 !important;
+}
+
+.etb-pay-summary-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 25px !important;
+}
+
+.etb-pay-summary-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1px dashed #cbd5e1 !important;
+    padding-bottom: 15px !important;
+    margin-bottom: 15px !important;
+}
+
+.etb-pay-summary-vehicle {
+    font-size: 16px !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+}
+
+.etb-pay-summary-price {
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    color: #ba6827 !important;
+}
+
+.etb-pay-grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+}
+
+.etb-pay-label {
+    display: block !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    margin-bottom: 4px !important;
+    letter-spacing: 0.05em !important;
+}
+
+.etb-pay-value {
+    color: #1e293b !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.etb-pay-secure-text {
+    font-size: 13px !important;
+    color: #64748b !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+/* Formulaire Stripe */
+.etb-pay-form-group {
+    margin-bottom: 18px !important;
+}
+
+.etb-pay-form-label {
+    font-size: 13px !important;
+    color: #64748b !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+    font-weight: 600 !important;
+    text-transform: none !important; /* Annule le uppercase */
+}
+
+.etb-pay-input {
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    color: #1e293b !important;
+    outline: none !important;
+    transition: border-color 0.2s !important;
+}
+
+.etb-pay-input:focus {
+    border-color: #ba6827 !important;
+    box-shadow: 0 0 0 3px rgba(186, 104, 39, 0.1) !important;
+}
+
+.etb-pay-stripe-box {
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+#etb-card-number-mount {
+    margin-bottom: 10px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.etb-pay-stripe-bottom-row {
+    display: flex !important;
+    gap: 10px !important;
+}
+
+#etb-card-expiry-mount,
+#etb-card-cvc-mount {
+    flex: 1 !important;
+    min-height: 24px !important;
+}
+
+.etb-pay-alert {
+    display: none !important;
+    margin-bottom: 15px !important;
+    color: #dc2626 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 10px !important;
+    background: #fef2f2 !important;
+    border-radius: 6px !important;
+    border: 1px solid #fecaca !important;
+}
+
+.etb-pay-button {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    background: #ba6827 !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: background 0.2s, opacity 0.2s !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+.etb-pay-button:hover { background: #a45a20 !important; }
+.etb-pay-button:disabled { opacity: 0.7 !important; cursor: not-allowed !important; }
+
+/* Cartes de statut */
+.etb-pay-status-card {
+    text-align: center !important;
+    padding: 50px 30px !important;
+    background: #fff !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02) !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+}
+
+.etb-pay-status-title { font-size: 24px !important; font-weight: 800 !important; margin: 0 0 12px 0 !important; }
+.etb-pay-status-title.success { color: #16a34a !important; }
+.etb-pay-status-title.error { color: #dc2626 !important; }
+.etb-pay-status-text { color: #64748b !important; font-size: 15px !important; margin-bottom: 20px !important; }
+.etb-pay-status-btn {
+    display: inline-flex !important;
+    text-decoration: none !important;
+    background: #ba6827 !important;
+    color: #fff !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+}
+.etb-pay-status-btn:hover { background: #a45a20 !important; }
+
+@media (max-width: 768px) {
+    .etb-pay-row { flex-direction: column !important; }
+    .etb-pay-col { flex: 1 1 100% !important; width: 100% !important; }
+}
