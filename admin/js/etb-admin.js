@@ -291,14 +291,14 @@ jQuery(document).ready(function ($) {
                 <!-- Nom -->
                 <input type="text" name="co_options[${optId}][trip_facts][${factIdx}][label]" value="${factLabel}" class="widefat" style="font-weight: 600;" placeholder="Name">
                 
-                <!-- Aperçu dynamique + Menu déroulant -->
+            
+                <!-- Aperçu dynamique + Champ texte -->
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span class="etb-fa-preview" style="width: 36px; height: 36px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #ba6827; flex-shrink: 0;">
                         <i class="${factIcon}"></i>
                     </span>
-                    <select name="co_options[${optId}][trip_facts][${factIdx}][icon]" class="widefat etb-fa-icon-select" style="font-size: 12px; height: 36px; font-family: monospace;">
-                        ${iconOptions}
-                    </select>
+                    <input type="text" name="co_options[${optId}][trip_facts][${factIdx}][icon]" value="${factIcon}" class="widefat etb-fa-icon-input" style="font-size: 12px; height: 36px; font-family: monospace;" placeholder="ex: fas fa-bus">
+                </div>
                 </div>
 
                 <!-- Valeur -->
@@ -359,16 +359,17 @@ jQuery(document).ready(function ($) {
         $(this).closest('.etb-tripinfo-item').remove();
     });
 
-    // 16. NOUVEAU : Changement d'icône en direct (Mise à jour instantanée du carré visuel)
-    $(document).on('change', '.etb-fa-icon-select', function () {
-        var selectedClass = $(this).val();
-        $(this).closest('.etb-tripinfo-item').find('.etb-fa-preview i').attr('class', selectedClass);
-    });
-
-   // 16. NOUVEAU : Changement d'icône en direct (Mise à jour instantanée du carré visuel)
-    $(document).on('change', '.etb-fa-icon-select', function () {
-        var selectedClass = $(this).val();
-        $(this).closest('.etb-tripinfo-item').find('.etb-fa-preview i').attr('class', selectedClass);
+        // 16. Mise à jour en direct de l'icône quand on tape le code
+    $(document).on('input', '.etb-fa-icon-input', function () {
+        var iconClass = $(this).val().trim();
+        var $preview = $(this).closest('.etb-tripinfo-item').find('.etb-fa-preview i');
+        
+        // Si le champ est vidé, on remet une icône par défaut (sinon le carré devient vide)
+        if (iconClass === '') {
+            $preview.attr('class', 'fas fa-info-circle');
+        } else {
+            $preview.attr('class', iconClass);
+        }
     });
 
     // ==========================================================================
@@ -793,33 +794,53 @@ jQuery(document).ready(function($) {
     'use strict';
 
     let etbFormChanged = false;
+    let isSubmitting   = false;
 
-    // 1. Détecte toute modification dans les champs de la metabox du circuit
-    // On utilise $(document).on() pour que ça fonctionne aussi sur les champs ajoutés dynamiquement (timeline, options)
-    $(document).on('input change', '#co_circuit_options_meta input, #co_circuit_options_meta textarea, #co_circuit_options_meta select', function() {
-        etbFormChanged = true;
+    // 1. Détecte les modifications SEULEMENT si c'est une vraie action utilisateur
+    // (On ignore les changements déclenchés par du code JS comme les champs cachés)
+    $(document).on('input change', '#co_circuit_options_meta input:not([type="hidden"]), #co_circuit_options_meta textarea, #co_circuit_options_meta select', function(e) {
+        if (e.originalEvent) {
+            etbFormChanged = true;
+        }
     });
 
-    // 2. Réinitialise le drapeau si l'utilisateur clique sur "Mettre à jour" ou "Enregistrer"
-    $(document).on('click', '#publish, #save-post', function() {
+    // 2. Gestion de l'éditeur CLASSIQUE (WordPress ancien)
+    $('#post').on('submit', function() {
+        isSubmitting = true;
         etbFormChanged = false;
     });
 
-    // 3. Intercepte la fermeture de la page / fermeture de l'onglet
+    // 3. Gestion de l'éditeur GUTENBERG (WordPress moderne)
+    $(document).on('click', '.editor-post-publish-button, .editor-post-save-draft, .editor-post-publish-panel__toggle', function() {
+        isSubmitting = true;
+        etbFormChanged = false;
+    });
+
+    // 4. Réinitialisation après la fin de l'auto-save natif de WordPress
+    if (typeof wp !== 'undefined' && wp.autosave) {
+        $(document).on('after-autosave', function() {
+            etbFormChanged = false;
+        });
+    }
+
+    // 5. Intercepte la fermeture de la page
     $(window).on('beforeunload', function(e) {
-        if (etbFormChanged) {
-            // Message standard (la plupart des navigateurs modernes affichent leur propre texte, mais le return est requis)
+        if (etbFormChanged && !isSubmitting) {
             const message = 'Vous avez des modifications non sauvegardées dans le circuit. Voulez-vous vraiment quitter ?';
             e.returnValue = message; 
             return message;
         }
     });
 
-    // 4. Intercepte les clics sur les liens de l'admin (ex: "Retour à la liste", menu de gauche)
+    // 6. Intercepte les clics sur les liens de l'admin
     $('a').on('click', function(e) {
-        if (etbFormChanged) {
+        // On ignore les liens qui ne quittent pas la page (comme les ancres ou les liens javascript:void(0))
+        let href = $(this).attr('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+        if (etbFormChanged && !isSubmitting) {
             if (!confirm('Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter cette page ?')) {
-                e.preventDefault(); // Annule la navigation
+                e.preventDefault();
                 e.stopPropagation();
             }
         }

@@ -368,37 +368,13 @@ class ETB_Meta_Manager {
                                     <!-- Nom du champ -->
                                     <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][trip_facts][<?php echo esc_attr( $f_idx ); ?>][label]" value="<?php echo esc_attr( $f_label ); ?>" class="widefat" style="font-weight: 600;" placeholder="Name">
                                     
-                                    <!-- Colonne Icône : Carré d'aperçu dynamique + Menu déroulant -->
+                                    <!-- Colonne Icône : Carré d'aperçu dynamique + Champ texte libre -->
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="etb-fa-preview" style="width: 36px; height: 36px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #ba6827; flex-shrink: 0;">
                                             <i class="<?php echo esc_attr( $f_icon ); ?>"></i>
                                         </span>
                                         
-                                        <select name="co_options[<?php echo esc_attr( $opt_id ); ?>][trip_facts][<?php echo esc_attr( $f_idx ); ?>][icon]" class="widefat etb-fa-icon-select" style="font-size: 12px; height: 36px; font-family: monospace;">
-                                            <option value="fas fa-hotel" <?php selected( $f_icon, 'fas fa-hotel' ); ?>>fas fa-hotel</option>
-                                            <option value="fas fa-bus" <?php selected( $f_icon, 'fas fa-bus' ); ?>>fas fa-bus</option>
-                                            <option value="fas fa-car-side" <?php selected( $f_icon, 'fas fa-car-side' ); ?>>fas fa-car-side</option>
-                                            <option value="fas fa-van-shuttle" <?php selected( $f_icon, 'fas fa-van-shuttle' ); ?>>fas fa-van-shuttle</option>
-                                            <option value="fas fa-wifi" <?php selected( $f_icon, 'fas fa-wifi' ); ?>>fas fa-wifi</option>
-                                            <option value="far fa-calendar-xmark" <?php selected( $f_icon, 'far fa-calendar-xmark' ); ?>>far fa-calendar-xmark</option>
-                                            <option value="fas fa-language" <?php selected( $f_icon, 'fas fa-language' ); ?>>fas fa-language</option>
-                                            <option value="fas fa-bottle-droplet" <?php selected( $f_icon, 'fas fa-bottle-droplet' ); ?>>fas fa-bottle-droplet</option>
-                                            <option value="fas fa-hands-praying" <?php selected( $f_icon, 'fas fa-hands-praying' ); ?>>fas fa-hands-praying</option>
-                                            <option value="fas fa-user-tie" <?php selected( $f_icon, 'fas fa-user-tie' ); ?>>fas fa-user-tie</option>
-                                            <option value="fas fa-bowl-food" <?php selected( $f_icon, 'fas fa-bowl-food' ); ?>>fas fa-bowl-food</option>
-                                            <option value="fas fa-handshake-simple" <?php selected( $f_icon, 'fas fa-handshake-simple' ); ?>>fas fa-handshake-simple</option>
-                                            <option value="fab fa-cc-mastercard" <?php selected( $f_icon, 'fab fa-cc-mastercard' ); ?>>fab fa-cc-mastercard</option>
-                                            <option value="fas fa-tag" <?php selected( $f_icon, 'fas fa-tag' ); ?>>fas fa-tag</option>
-                                            <option value="fas fa-user-group" <?php selected( $f_icon, 'fas fa-user-group' ); ?>>fas fa-user-group</option>
-                                            <option value="far fa-clock" <?php selected( $f_icon, 'far fa-clock' ); ?>>far fa-clock</option>
-                                            <option value="fas fa-cloud-sun" <?php selected( $f_icon, 'fas fa-cloud-sun' ); ?>>fas fa-cloud-sun</option>
-                                            <option value="fas fa-hospital-user" <?php selected( $f_icon, 'fas fa-hospital-user' ); ?>>fas fa-hospital-user</option>
-                                            <option value="fas fa-plane-arrival" <?php selected( $f_icon, 'fas fa-plane-arrival' ); ?>>fas fa-plane-arrival</option>
-                                            <option value="fas fa-suitcase-rolling" <?php selected( $f_icon, 'fas fa-suitcase-rolling' ); ?>>fas fa-suitcase-rolling</option>
-                                            <option value="fas fa-shield-halved" <?php selected( $f_icon, 'fas fa-shield-halved' ); ?>>fas fa-shield-halved</option>
-                                            <option value="fas fa-child" <?php selected( $f_icon, 'fas fa-child' ); ?>>fas fa-child</option>
-                                            <option value="fas fa-star" <?php selected( $f_icon, 'fas fa-star' ); ?>>fas fa-star</option>
-                                        </select>
+                                        <input type="text" name="co_options[<?php echo esc_attr( $opt_id ); ?>][trip_facts][<?php echo esc_attr( $f_idx ); ?>][icon]" value="<?php echo esc_attr( $f_icon ); ?>" class="widefat etb-fa-icon-input" style="font-size: 12px; height: 36px; font-family: monospace;" placeholder="ex: fas fa-bus">
                                     </div>
 
                                     <!-- Valeur -->
