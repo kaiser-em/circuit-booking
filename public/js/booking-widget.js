@@ -1488,6 +1488,11 @@ setTimeout(formatAutofilledPhone, 300);
                 .then((response) => response.json())
                 .then((result) => {
                     if (result.success) {
+
+                        if (result.data.payment_url && !window.etbPayLaterMode) {
+                            window.location.href = result.data.payment_url;
+                            return; // On arrête le script ici pour ne pas afficher l'écran de succès
+                        }
                         // 2. Affichage du message de succès Premium
                         let paymentBtnHtml = '';
                         
@@ -1496,8 +1501,8 @@ setTimeout(formatAutofilledPhone, 300);
                             if (window.etbPayLaterMode) {
                                 // MODE PAY LATER : Message d'incitation doux
                                 paymentBtnHtml = `
-                                    <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
-                                        <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">
+                                    <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0; text-align:center;">
+                                        <p style="color: #475569; font-size: 14px; margin-bottom: 15px; text-align:center;">
                                             Your booking is reserved. You will receive an email shortly with a secure payment link.<br>
                                             <strong>Please complete payment to confirm your reservation.</strong>
                                         </p>

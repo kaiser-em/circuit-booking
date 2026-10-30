@@ -15,6 +15,21 @@
         const amount = parseFloat(document.getElementById('etb-pay-amount').value);
         const bookingId = document.getElementById('etb-pay-booking-id').value;
 
+        // Déclarations globales (une seule fois)
+        const feedback = document.getElementById('etb-standalone-pay-feedback');
+        const payBtn = document.getElementById('etb-standalone-pay-btn');
+        const payText = document.getElementById('etb-standalone-pay-text');
+        
+        // Désactiver le bouton au départ (sécurité)
+        if(payBtn) {
+            payBtn.disabled = true;
+            payBtn.style.opacity = '0.5';
+            payBtn.style.cursor = 'not-allowed';
+        }
+
+        const showError = (msg) => { feedback.textContent = msg; feedback.style.display = 'block'; };
+        const clearError = () => { feedback.style.display = 'none'; };
+
         // ══════════════════════════════════════════════════════════════
         // 1. INITIALISATION DE STRIPE ELEMENTS (CARTE BANCAIRE)
         // ══════════════════════════════════════════════════════════════
@@ -31,24 +46,29 @@
         cardExpiry.mount('#etb-card-expiry-mount');
         cardCvc.mount('#etb-card-cvc-mount');
 
-        const feedback = document.getElementById('etb-standalone-pay-feedback');
-        const showError = (msg) => { feedback.textContent = msg; feedback.style.display = 'block'; };
-        const clearError = () => { feedback.style.display = 'none'; };
-
+        // Écouter les changements pour activer/désactiver le bouton
         cardNumber.on('change', (event) => {
-            if (event.error) showError(event.error.message);
-            else clearError();
+            if (event.error) {
+                showError(event.error.message);
+                if (payBtn) { payBtn.disabled = true; payBtn.style.opacity = '0.5'; payBtn.style.cursor = 'not-allowed'; }
+            } else if (event.complete) {
+                clearError();
+                if (payBtn) { payBtn.disabled = false; payBtn.style.opacity = '1'; payBtn.style.cursor = 'pointer'; }
+            } else {
+                clearError();
+                if (payBtn) { payBtn.disabled = true; payBtn.style.opacity = '0.5'; payBtn.style.cursor = 'not-allowed'; }
+            }
         });
 
         // ══════════════════════════════════════════════════════════════
         // 2. INITIALISATION DE APPLE PAY / GOOGLE PAY (PAYMENT REQUEST)
         // ══════════════════════════════════════════════════════════════
         const paymentRequest = stripe.paymentRequest({
-            country: 'FR', // À adapter dynamiquement si besoin
+            country: 'FR',
             currency: 'eur',
             total: {
                 label: 'VIP Booking Payment',
-                amount: Math.round(amount * 100), // Stripe attend des centimes
+                amount: Math.round(amount * 100),
             },
             requestPayerName: true,
             requestPayerEmail: true,
@@ -59,7 +79,6 @@
             style: { paymentRequestButton: { theme: 'dark', height: '48px' } }
         });
 
-        // Vérifier si l'appareil supporte Apple Pay ou Google Pay
         paymentRequest.canMakePayment().then(function(result) {
             if (result) {
                 document.getElementById('etb-wallet-container').style.display = 'block';
@@ -69,7 +88,7 @@
         });
 
         // ══════════════════════════════════════════════════════════════
-        // 3. FONCTION DE FINALISATION (Partagée entre Carte et Wallet)
+        // 3. FONCTIONS DE PAIEMENT
         // ══════════════════════════════════════════════════════════════
         const settleBooking = async function(paymentIntentId) {
             try {
@@ -77,7 +96,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
-                        action: 'etb_settle_payment',
+                        action: 'etb_settle_payment', // <-- L'ACTION CORRECTE POUR CIRCUIT
                         nonce: etbPayData.nonce,
                         booking_id: bookingId,
                         payment_intent_id: paymentIntentId
@@ -92,9 +111,12 @@
                 }
             } catch (err) {
                 showError(err.message);
-                const payBtn = document.getElementById('etb-standalone-pay-btn');
-                const payText = document.getElementById('etb-standalone-pay-text');
-                if (payBtn) { payBtn.disabled = false; payText.textContent = 'Pay ' + amount.toFixed(2) + ' ' + etbPayData.currency; }
+                if (payBtn) { 
+                    payBtn.disabled = false; 
+                    payBtn.style.opacity = '1';
+                    payBtn.style.cursor = 'pointer';
+                    payText.textContent = 'Pay ' + amount.toFixed(2) + ' ' + etbPayData.currency; 
+                }
             }
         };
 
@@ -122,10 +144,8 @@
         paymentRequest.on('paymentmethod', async (ev) => {
             try {
                 clearError();
-                // On demande le PaymentIntent au serveur
                 const clientSecret = await createIntent(ev.payerName || 'Wallet User', ev.payerEmail || '');
                 
-                // On confirme le paiement avec le Wallet
                 const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
                     clientSecret,
                     { payment_method: ev.paymentMethod.id },
@@ -137,7 +157,6 @@
                     showError(confirmError.message);
                 } else {
                     ev.complete('success');
-                    // Gestion de la 3D Secure si nécessaire
                     if (paymentIntent.status === 'requires_action') {
                         const { error: actionError, paymentIntent: actionIntent } = await stripe.confirmCardPayment(clientSecret);
                         if (actionError) { showError(actionError.message); return; }
@@ -157,9 +176,6 @@
         // ══════════════════════════════════════════════════════════════
         // 5. ÉVÉNEMENT : PAIEMENT VIA CARTE BANCAIRE
         // ══════════════════════════════════════════════════════════════
-        const payBtn = document.getElementById('etb-standalone-pay-btn');
-        const payText = document.getElementById('etb-standalone-pay-text');
-        
         payBtn.addEventListener('click', async function(e) {
             e.preventDefault();
             clearError();
@@ -187,6 +203,8 @@
             } catch (err) {
                 showError(err.message);
                 payBtn.disabled = false;
+                payBtn.style.opacity = '1';
+                payBtn.style.cursor = 'pointer';
                 payText.textContent = 'Pay ' + amount.toFixed(2) + ' ' + etbPayData.currency;
             }
         });

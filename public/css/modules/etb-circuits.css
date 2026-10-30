@@ -913,8 +913,6 @@
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
-    margin-top: 22px !important;
-    padding-top: 18px !important;
     border-top: 1px solid #f1f5f9 !important;
 }
 
@@ -947,13 +945,13 @@
     background: var(--etb-theme-primary, #ba6827) !important;
     color: #ffffff !important;
     margin-left: auto !important;
-    box-shadow: 0 4px 14px rgba(186, 104, 39, 0.25) !important;
+    /*box-shadow: 0 4px 14px rgba(186, 104, 39, 0.25) !important;*/
 }
 
 .etb-booking-widget .etb-btn-next:hover {
     background: #a3591f !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 20px rgba(186, 104, 39, 0.35) !important;
+   /* box-shadow: 0 8px 20px rgba(186, 104, 39, 0.35) !important;*/
 }
 
 .etb-booking-widget .etb-btn-next:active {
@@ -6420,4 +6418,18 @@ input#iti-0__search-input{
 span.iti__selected-dial-code {
     font-size: 15px !important;
     font-weight: 600  !important;
+}
+
+
+form#etb-booking-app {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.pay-later{
+    text-align: right !important;
+    padding: 0 20px !important;
 }

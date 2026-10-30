@@ -1118,24 +1118,28 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                 </label>
                             </div>
                         </div>
-
-                        <div class="etb-step-nav etb-step-nav-split" style="flex-wrap: wrap;">
-                            <button type="button" class="etb-btn-back" data-back="2">
+                        <div class="pay-later">
+                                <!-- Lien discret : Book now and pay later -->
+                                <button type="button" id="etb-pay-later-btn" style="background: none; border: none; color: #64748b; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 6px 0; font-weight: 500;">
+                                    Book now and pay later
+                                </button>
+                        </div>
+                        <div class="etb-step-nav etb-step-nav-split" style="flex-wrap: wrap; align-items: center;">
+                            <button type="button" class="etb-btn-back" data-back="2" style="margin-right: 15px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                 <span>Back</span>
                             </button>
+                            
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-width: 250px;">
+                                
 
-                            <div style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; flex: 1;">
                                 <!-- Bouton principal : Proceed to Payment -->
                                 <button type="button" class="etb-btn-next" id="etb-final-confirm-btn" style="background: var(--etb-theme-primary, #ba6827); justify-content: center; width: 100%;">
                                     <span>Proceed to Payment</span>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                                 </button>
 
-                                <!-- Lien discret : Book now and pay later -->
-                                <button type="button" id="etb-pay-later-btn" style="background: none; border: none; color: #64748b; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 6px 0; font-weight: 500;">
-                                    Book now and pay later
-                                </button>
+                                
                             </div>
                         </div>
                     </div>

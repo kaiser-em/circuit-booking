@@ -254,7 +254,7 @@ class ETB_Ajax {
         // Sauvegarde des métadonnées
         update_post_meta( $booking_id, '_etb_customer_name', $data['name'] );
         update_post_meta( $booking_id, '_etb_customer_email', $data['email'] );
-        update_post_meta( $booking_id, '_etb_customer_phone', $data['phone'] ); // <-- AJOUT DE CETTE LIGNE
+        update_post_meta( $booking_id, '_etb_customer_phone', $data['phone'] );
         update_post_meta( $booking_id, '_etb_booking_date', $data['date'] );
         update_post_meta( $booking_id, '_etb_booking_time', $data['time'] );
         update_post_meta( $booking_id, '_etb_pickup_id', $data['pickup_id'] );
@@ -289,7 +289,6 @@ class ETB_Ajax {
         if ( ! empty( $pricing_details['promo_code'] ) && ! empty( $pricing_details['discount_amount'] ) && $pricing_details['discount_amount'] > 0 ) {
             $applied_code = strtoupper( trim( $pricing_details['promo_code'] ) );
             
-            // Recherche du coupon utilisé
             $p_query = new WP_Query( array(
                 'post_type'      => 'tour_promo',
                 'post_status'    => 'publish',
@@ -306,7 +305,7 @@ class ETB_Ajax {
                 ) );
             }
 
-                       if ( $p_query->have_posts() ) {
+            if ( $p_query->have_posts() ) {
                 $used_promo_id = $p_query->posts[0]->ID;
                 $rem = get_post_meta( $used_promo_id, '_etb_promo_remaining', true );
                 if ( '' !== $rem && is_numeric( $rem ) && (int) $rem > 0 ) {
@@ -315,33 +314,72 @@ class ETB_Ajax {
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // DISPATCH AUTOMATIQUE VERS LIMOEXPRESS (Phase 1)
-        //
-        // Corrige le bug : la métadonnée _etb_limo_status restait vide après
-        // une réservation, ce qui affichait « Non synchronisé / En attente »
-        // dans l'admin WordPress.
-        //
-        // Reproduit le pattern éprouvé de [ETB] handle_submit_checkout()
-        // (branche mono-trajets), adapté aux spécificités Circuit :
-        //   - Un circuit = prestation à durée fixe ⇒ trip_mode = 'hourly'
-        //     (LimoExpress reçoit to_location = "As Directed (À disposition)").
-        //   - Pas de Stripe en Circuit v1.0.4 ⇒ paid = false, logs vides.
-        //   - Pas de champs Blacklane (flight/waiting_board/cost_center).
-        //   - Sièges bébé déjà gérés nativement par send_booking() via les
-        //     extras dont le nom contient « bébé / bebe / baby ».
-        // ─────────────────────────────────────────────────────────────────────
+        // ─────────────────────────────────────────────────────────────
+        // GESTION DU PAIEMENT (Pay Later vs Proceed)
+        // ─────────────────────────────────────────────────────────────
+        $gen_settings     = get_option( 'etb_general_settings', array() );
+        $stripe_enabled   = ! empty( $gen_settings['stripe_enabled'] ) && '1' === $gen_settings['stripe_enabled'];
+        $is_pay_later     = ( isset( $_POST['pay_later'] ) && '1' === $_POST['pay_later'] );
+        
+        update_post_meta( $booking_id, '_etb_pay_later', $is_pay_later ? '1' : '0' );
+
+        $payment_url = '';
+        $grand_total = $pricing_details['grand_total'] ?? 0;
+
+        // Génération du lien Stripe
+        if ( $stripe_enabled && $grand_total > 0 ) {
+            $pay_token = 'q_pay_' . bin2hex( random_bytes( 16 ) );
+            
+            $pay_data = array(
+                'booking_id'   => $booking_id,
+                'client_name'  => $data['name'],
+                'client_email' => $data['email'],
+                'client_phone' => $data['phone'],
+                'amount'       => floatval( $grand_total ),
+            );
+            
+            set_transient( 'etb_pay_' . $pay_token, $pay_data, 14 * DAY_IN_SECONDS );
+            update_post_meta( $booking_id, '_etb_pay_token', $pay_token );
+
+            $payment_base_url = ! empty( $gen_settings['payment_page_url'] ) ? esc_url_raw( $gen_settings['payment_page_url'] ) : home_url( '/payment/' );
+            $payment_url = add_query_arg( 'ref', $pay_token, $payment_base_url );
+        }
+        
+        // On injecte l'URL dans $data pour que le JS puisse la lire
+        $data['payment_url'] = $payment_url;
+
+        // ─────────────────────────────────────────────────────────────
+        // CONSTRUCTION DE LA NOTE LIMOEXPRESS
+        // ─────────────────────────────────────────────────────────────
+        $payment_status_note = '';
+        $currency_symbol     = $gen_settings['currency'] ?? '€';
+
+        if ( ! empty( $payment_url ) ) {
+            $status_label = $is_pay_later ? 'PENDING (PAY LATER)' : 'PENDING (ON PAYMENT PAGE)';
+            $payment_status_note = "\n═ ⏳ PAYMENT STATUS: {$status_label} ═\n";
+            $payment_status_note .= "Amount to pay: " . number_format_i18n( $grand_total, 2 ) . " " . $currency_symbol . "\n";
+            $payment_status_note .= "🔗 SECURE PAYMENT LINK READY TO FORWARD:\n";
+            $payment_status_note .= "👉 " . $payment_url . "\n";
+            $payment_status_note .= "══════════════════════════\n\n";
+        } else {
+            $payment_status_note = "\n═ ✅ PAYMENT STATUS: NO PAYMENT REQUIRED ═\n\n";
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // DISPATCH VERS LIMOEXPRESS
+        // ─────────────────────────────────────────────────────────────
         if ( class_exists( 'ETB_Dispatcher_Manager' ) ) {
-            $data['trip_mode']         = 'hourly';
+            $data['trip_mode']         = 'hourly'; // Circuit = toujours horaire
             $data['client_note']       = ! empty( $data['note'] ) ? $data['note'] : 'Aucune';
             $data['paid']              = false;
             $data['payment_logs']      = array();
             $data['payment_intent_id'] = '';
-
-            // Préparation des frais supplémentaires pour LimoExpress
-            $limo_extra_fees = array();
             
-            // 1. Ajout du supplément Siège Enfant
+            // Injection de la note
+            $data['dispatcher_alert']  = $payment_status_note; 
+
+            // Préparation des frais supplémentaires (sièges)
+            $limo_extra_fees = array();
             if ( $child_seat_fee > 0 ) {
                 $limo_extra_fees[] = array(
                     'category' => 'child_seat_fee',
@@ -350,24 +388,16 @@ class ETB_Ajax {
                     'active'   => true,
                 );
             }
-
-            // 2. On ne passe QUE les frais que LimoExpress reconnaît (Sièges enfants).
-            // Les autres extras sont déjà inclus dans le prix de base.
             $data['extra_fees'] = $limo_extra_fees;
 
             $dispatch_result = ETB_Dispatcher_Manager::dispatch_booking( $booking_id, $data );
 
             if ( $dispatch_result['success'] ) {
-                // Ne déclarer 'synced' QUE si LimoExpress a réellement retourné un ID.
-                // En mode autonome ('none'), dispatch_booking retourne success=true
-                // mais AUCUN envoi externe n'a eu lieu : on ne doit pas afficher
-                // « Synchronisé » pour ne pas induire l'admin en erreur.
                 $limo_id_real = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
-
                 if ( ! empty( $limo_id_real ) ) {
                     update_post_meta( $booking_id, '_etb_limo_status', 'synced' );
                 } else {
-                    $active_disp = get_option( 'etb_general_settings', array() )['active_dispatcher'] ?? 'none';
+                    $active_disp = $gen_settings['active_dispatcher'] ?? 'none';
                     if ( 'none' === $active_disp ) {
                         update_post_meta( $booking_id, '_etb_limo_status', 'autonomous' );
                     }
@@ -377,35 +407,15 @@ class ETB_Ajax {
                 update_post_meta( $booking_id, '_etb_limo_error', $dispatch_result['message'] );
             }
         }
-        // ─────────────────────────────────────────────────────────────
-        // GÉNÉRATION DU LIEN DE PAIEMENT STRIPE
-        // ─────────────────────────────────────────────────────────────
-        $gen_settings = get_option( 'etb_general_settings', array() );
-        $stripe_enabled = ! empty( $gen_settings['stripe_enabled'] ) && '1' === $gen_settings['stripe_enabled'];
-        
-        // On ne génère le lien que si Stripe est activé et que le total est > 0
-        if ( $stripe_enabled && $pricing_details['grand_total'] > 0 ) {
-            $pay_token = 'q_pay_' . bin2hex( random_bytes( 16 ) );
-            
-            $pay_data = array(
-                'booking_id'   => $booking_id,
-                'client_name'  => $data['name'],
-                'client_email' => $data['email'],
-                'client_phone' => $data['phone'],
-                'amount'       => floatval( $pricing_details['grand_total'] ),
-            );
-            
-            // Sauvegarde du token en base (Transient valide 14 jours)
-            set_transient( 'etb_pay_' . $pay_token, $pay_data, 14 * DAY_IN_SECONDS );
-            update_post_meta( $booking_id, '_etb_pay_token', $pay_token );
 
-            // Construction de l'URL de la page de paiement
-            $payment_base_url = ! empty( $gen_settings['payment_page_url'] ) ? esc_url_raw( $gen_settings['payment_page_url'] ) : home_url( '/payment/' );
-            $data['payment_url'] = add_query_arg( 'ref', $pay_token, $payment_base_url );
-        } else {
-            $data['payment_url'] = ''; // Pas de paiement requis
-        }
+        // ─────────────────────────────────────────────────────────────
+        // ENVOI DES E-MAILS
+        // ─────────────────────────────────────────────────────────────
+        $this->send_booking_emails( $booking_id, $data, $pricing_details, $is_pay_later );
 
+        // ─────────────────────────────────────────────────────────────
+        // RÉPONSE JSON FINALE
+        // ─────────────────────────────────────────────────────────────
         $data['booking_id'] = $booking_id;
         wp_send_json_success( $data );
     }
@@ -557,10 +567,8 @@ class ETB_Ajax {
         ) );
     }
 
+    
     /**
-     * Finalise la réservation après confirmation du paiement
-     */
-       /**
      * Finalise la réservation après confirmation du paiement Stripe
      */
     public function handle_settle_payment() {
@@ -573,129 +581,273 @@ class ETB_Ajax {
             wp_send_json_error( array( 'message' => 'Missing data to settle payment.' ) );
         }
 
-        // 1. Sécurité : Vérifier que la réservation n'est pas déjà payée
-        $current_status = get_post_meta( $booking_id, '_etb_status', true );
-        if ( 'confirmed' === $current_status ) {
-            wp_send_json_success( array( 'redirect_url' => home_url('/?booking_success=' . $booking_id) ) );
-        }
-
-        // 2. Vérification serveur auprès de Stripe (Anti-fraude)
+        // 1. Vérification Stripe
         if ( ! class_exists( 'ETB_Stripe' ) ) {
             require_once ETB_PATH . 'includes/class-etb-stripe.php';
         }
         
         $intent_check = ETB_Stripe::retrieve_payment_intent( $intent_id );
-        
         if ( is_wp_error( $intent_check ) ) {
-            wp_send_json_error( array( 'message' => 'Erreur de vérification Stripe : ' . $intent_check->get_error_message() ) );
+            wp_send_json_error( array( 'message' => 'Stripe Error: ' . $intent_check->get_error_message() ) );
         }
 
         $intent_status = $intent_check['status'] ?? '';
         if ( ! in_array( $intent_status, array( 'succeeded', 'requires_capture' ), true ) ) {
-            wp_send_json_error( array( 'message' => 'La transaction Stripe n\'est pas valide (Statut : ' . $intent_status . ').' ) );
+            wp_send_json_error( array( 'message' => 'Stripe transaction not valid (Status: ' . $intent_status . ').' ) );
         }
 
-        // 3. Mise à jour de la réservation WordPress
+        // 2. Mise à jour de WordPress
         update_post_meta( $booking_id, '_etb_status', 'confirmed' );
         update_post_meta( $booking_id, '_etb_stripe_payment_intent_id', $intent_id );
         update_post_meta( $booking_id, '_etb_paid_at', current_time( 'mysql' ) );
 
-        // Récupération des infos pour les emails
+        // 3. Préparation du Payload COMPLET pour LimoExpress
         $gen_settings    = get_option( 'etb_general_settings', array() );
-        $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
-        $customer_email  = get_post_meta( $booking_id, '_etb_customer_email', true );
-        $customer_name   = get_post_meta( $booking_id, '_etb_customer_name', true );
-        $total_amount    = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+        $limo_uuid       = get_post_meta( $booking_id, '_etb_limo_uuid', true );
+        $limo_token      = $gen_settings['limo_api_token'] ?? '';
+        $current_note    = get_post_meta( $booking_id, '_etb_note', true );
+        
+        if ( ! empty( $limo_token ) && ! empty( $limo_uuid ) ) {
+            
+            // Construction de la nouvelle note
+            $total_amount = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+            $currency_sym = $gen_settings['currency'] ?? '€';
+            $stripe_mode  = ( ! empty( $gen_settings['stripe_mode'] ) && 'live' === $gen_settings['stripe_mode'] ) ? 'live' : 'test';
+            $stripe_url   = ( 'live' === $stripe_mode ) 
+                ? 'https://dashboard.stripe.com/payments/' . $intent_id
+                : 'https://dashboard.stripe.com/test/payments/' . $intent_id;
 
-        // 4. Synchronisation du statut "Payé" vers LimoExpress (Si actif)
-        if ( class_exists( 'ETB_LimoExpress' ) && 'limoexpress' === ( $gen_settings['active_dispatcher'] ?? 'none' ) ) {
-            $limo_uuid = get_post_meta( $booking_id, '_etb_limo_uuid', true );
-            $limo_id   = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
-            $target_uuid = ! empty( $limo_uuid ) ? $limo_uuid : $limo_id;
-            $api_token   = $gen_settings['limo_api_token'] ?? '';
+            $paid_stamp = "\n═ ✅ ONLINE PAYMENT COLLECTED ═\n"
+                . "💳 Amount Paid: " . number_format_i18n( $total_amount, 2 ) . " " . $currency_sym . "\n"
+                . "📅 Paid on: " . date( 'd M Y \a\t H:i' ) . "\n"
+                . "🔗 DIRECT STRIPE LINK:\n" . $stripe_url . "\n"
+                . "═══════════════════════════════\n\n";
 
-            if ( ! empty( $api_token ) && ! empty( $target_uuid ) ) {
-                $headers = array(
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                    'Authorization' => 'Bearer ' . $api_token,
-                );
+            $clean_note = preg_replace( '/\n═ ⏳ PAYMENT STATUS: PENDING.*?══════════════════════════════════════\n\n/s', '', (string) $current_note );
+            $updated_note = $paid_stamp . trim( $clean_note );
+            
+            update_post_meta( $booking_id, '_etb_note', $updated_note );
 
-                // Marquer comme payé
-                wp_remote_post( 'https://api.limoexpress.me/api/integration/mark-booking-as-paid', array(
-                    'headers' => $headers,
-                    'body'    => wp_json_encode( array( 'id' => $target_uuid ) ),
-                    'timeout' => 15,
-                ) );
+            // Récupération des infos nécessaires pour le payload
+            $pickup_addr  = get_post_meta( $booking_id, '_etb_pickup_address', true ) ?: 'Pickup';
+            $dropoff_addr = get_post_meta( $booking_id, '_etb_dropoff_info', true ) ?: $pickup_addr;
+            $booking_dt   = get_post_meta( $booking_id, '_etb_booking_date', true );
+            $booking_tm   = get_post_meta( $booking_id, '_etb_booking_time', true ) ?: '09:00';
+            $pickup_iso   = sprintf( '%s %s:00', $booking_dt, substr( $booking_tm, 0, 5 ) );
+
+            // Type de réservation (on prend celui des réglages ou par défaut)
+            $type_id = $gen_settings['limo_booking_type_id'] ?? '';
+            if ( strpos( $dropoff_addr, 'By the hour' ) !== false && ! empty( $gen_settings['limo_hourly_type_id'] ) ) {
+                $type_id = $gen_settings['limo_hourly_type_id'];
             }
+
+            // Statut initial (ex: Pending)
+            $status_id = $gen_settings['limo_booking_status_id'] ?? '';
+
+            // Classe de véhicule
+            $vehicle_class_id = '';
+            $booked_vehicles  = get_post_meta( $booking_id, '_etb_vehicles', true );
+            if ( ! empty( $booked_vehicles ) && is_array( $booked_vehicles ) ) {
+                foreach ( $booked_vehicles as $v_id => $qty ) {
+                    if ( $qty > 0 ) {
+                        $v_class = get_post_meta( $v_id, '_etb_limo_class_id', true );
+                        if ( ! empty( $v_class ) ) {
+                            $vehicle_class_id = trim( $v_class );
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // On construit un Payload complet pour satisfaire l'API LimoExpress
+            $update_payload = array(
+                'id'                 => (string) $limo_uuid,
+                'booking_type_id'    => (string) $type_id,
+                'booking_status_id'  => (string) $status_id,
+                'from_location'      => array( 'name' => $pickup_addr ),
+                'to_location'        => array( 'name' => $dropoff_addr ),
+                'pickup_time'        => $pickup_iso,
+                'note'               => $updated_note,
+                'paid'               => true,
+                'confirmed'          => true,
+            );
+
+            if ( ! empty( $vehicle_class_id ) ) {
+                $update_payload['vehicle_class_id'] = $vehicle_class_id;
+            }
+
+            $headers = array(
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+                'Authorization' => 'Bearer ' . $limo_token,
+            );
+
+            // 1. Envoi de la mise à jour complète (NOTE + STATUT PAYÉ)
+            wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
+                'headers' => $headers,
+                'body'    => wp_json_encode( $update_payload ),
+                'timeout' => 15,
+            ) );
+            
+            // 2. Déclenchement formel du statut "Payé" (Sécurité supplémentaire)
+            wp_remote_post( 'https://api.limoexpress.me/api/integration/mark-booking-as-paid', array(
+                'headers' => $headers,
+                'body'    => wp_json_encode( array( 'id' => $limo_uuid ) ),
+                'timeout' => 15,
+            ) );
         }
 
-        // 5. Envoi des Emails (Client + Admin)
-        $admin_email    = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
-        $company_name   = get_bloginfo( 'name' );
+        // 4. Redirection succès
+        $pay_token = get_post_meta( $booking_id, '_etb_pay_token', true );
+        $payment_base_url = ! empty( $gen_settings['payment_page_url'] ) ? esc_url_raw( $gen_settings['payment_page_url'] ) : home_url( '/payment/' );
+        $redirect_url = add_query_arg( array( 'ref' => $pay_token, 'status' => 'success' ), $payment_base_url );
+
+        wp_send_json_success( array( 'redirect_url' => $redirect_url ) );
+    }
+
+        /**
+     * Envoie les e-mails transactionnels (Client + Admin) après création de la réservation.
+     */
+        private function send_booking_emails( $booking_id, $data, $pricing_details, $is_pay_later ) {
+        $gen_settings    = get_option( 'etb_general_settings', array() );
+        $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
+        $company_name    = get_bloginfo( 'name' );
+        $admin_email     = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
+
+        $customer_name    = $data['name'];
+        $customer_email   = $data['email'];
+        $formatted_amount = number_format_i18n( $pricing_details['grand_total'], 2 ) . ' ' . $currency_symbol;
+
+        // Date & Time
+        $date_ts = strtotime( $data['date'] );
+        $formatted_date = $date_ts ? date( 'd M Y', $date_ts ) : $data['date'];
+        $time_ts = strtotime( '1970-01-01 ' . $data['time'] );
+        $formatted_time = $time_ts ? date( 'h:i A', $time_ts ) : $data['time'];
+        $datetime_display = $formatted_date . ' at ' . $formatted_time;
+
+        $circuit_title = get_the_title( $data['circuit_id'] );
+        $vehicle_title = 'Luxury Vehicle';
+        foreach ( $data['vehicles'] as $v_id => $qty ) {
+            if ( $qty > 0 ) { $vehicle_title = get_the_title( $v_id ); break; }
+        }
+
+        $payment_url    = $data['payment_url'] ?? '';
         $headers_client = ETB_Settings::get_mail_headers( $admin_email, $company_name );
         $headers_admin  = ETB_Settings::get_mail_headers( $customer_email, $customer_name );
 
-        $formatted_amount = number_format_i18n( $total_amount, 2 ) . ' ' . $currency_symbol;
-        $payment_method   = strtoupper( $intent_check['charges']['data'][0]['payment_method_details']['card']['brand'] ?? 'CARD' ) . ' ****' . ( $intent_check['charges']['data'][0]['payment_method_details']['card']['last4'] ?? '0000' );
+        // ─────────────────────────────────────────────────────────────
+        // STYLES DU THEME (Inspirés de circuit-view.php)
+        // ─────────────────────────────────────────────────────────────
+        $theme_primary = '#ba6827'; // Bronze / Orange
+        $text_dark     = '#1e293b'; // Slate 800
+        $text_light    = '#64748b'; // Slate 500
+        $bg_light      = '#f8fafc'; // Slate 50
+        $border_color  = '#e2e8f0'; // Slate 200
 
-        // --- EMAIL CLIENT : REÇU OFFICIEL ---
+        $style_body = "background-color: #f1f5f9; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: {$text_dark};";
+        $style_card = "max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid {$border_color};";
+        $style_header = "padding: 30px; text-align: center; border-bottom: 1px solid {$border_color}; background: {$bg_light};";
+        $style_title = "font-size: 24px; font-weight: 800; margin: 0 0 8px 0; color: {$text_dark}; letter-spacing: -0.02em;";
+        $style_subtitle = "font-size: 14px; color: {$theme_primary}; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin: 0;";
+        $style_content = "padding: 30px;";
+        $style_row_label = "font-size: 11px; color: {$text_light}; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 4px; display: block;";
+        $style_row_value = "font-size: 15px; font-weight: 600; color: {$text_dark}; margin: 0 0 18px 0; display: block;";
+        $style_btn = "display: inline-block; background: {$theme_primary}; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; margin-top: 10px; box-shadow: 0 4px 10px rgba(186, 104, 39, 0.2);";
+
+        // SVG Icons (Teintés aux couleurs du thème)
+        $icon_color = $theme_primary;
+        $svg_car = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M5 17h14v-5l-2-4H7l-2 4v5z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>';
+        $svg_cal = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+        $svg_pin = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+        $svg_card = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>';
+
+        // ══════════════════════════════════════════════════════════════
+        // 1. EMAIL CLIENT
+        // ══════════════════════════════════════════════════════════════
         if ( ! empty( $customer_email ) && is_email( $customer_email ) ) {
-            $subject_client = 'Official Payment Receipt #' . $booking_id . ' — ' . $company_name;
-            $message_client = '<div style="background-color: #f1f5f9; padding: 30px 15px; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; line-height: 1.6; color: #1e293b;">'
-                . '<div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">'
-                . '<div style="background: #0f172a; padding: 25px 30px;">'
-                . '<h1 style="margin: 0; color: #fbac18; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">' . esc_html( $company_name ) . '</h1>'
-                . '<p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em;">Official Paid Receipt #' . $booking_id . '</p>'
+            $subject_client = $is_pay_later ? 'Reservation Confirmed - Payment Pending' : 'Action Required: Complete Your Booking';
+            
+            $btn_html = '';
+            if ( ! empty( $payment_url ) ) {
+                $btn_html = '<div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid '.$border_color.';"><a href="' . esc_url( $payment_url ) . '" style="' . $style_btn . '">Proceed to Payment</a></div>';
+            }
+
+            $message_client = '<div style="' . $style_body . '">'
+                . '<div style="' . $style_card . '">'
+                // Header
+                . '<div style="' . $style_header . '">'
+                . '<p style="' . $style_subtitle . '">' . esc_html( $company_name ) . '</p>'
+                . '<h1 style="' . $style_title . '">' . ( $is_pay_later ? 'Booking Reserved' : 'Complete Your Payment' ) . '</h1>'
                 . '</div>'
-                . '<div style="padding: 30px;">'
-                . '<p style="font-size: 15px; margin-top: 0; margin-bottom: 16px;">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>'
-                . '<p style="font-size: 14px; margin-bottom: 20px;">Your payment has been successfully authorized. Your mission is now confirmed and locked in dispatch.</p>'
-                . '<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">'
-                . '<p style="margin: 0 0 4px 0; font-size: 13px; color: #166534;">Total Amount Paid:</p>'
-                . '<p style="margin: 0; font-size: 26px; font-weight: 900; color: #15803d;">' . $formatted_amount . '</p>'
-                . '<p style="margin: 10px 0 0 0; font-size: 13px; color: #166534;">Method: ' . esc_html( $payment_method ) . '</p>'
+                // Body
+                . '<div style="' . $style_content . '">'
+                . '<p style="font-size: 16px; margin-top: 0; color: '.$text_dark.';">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>'
+                . '<p style="font-size: 15px; color: '.$text_light.'; margin-bottom: 25px;">' . ( $is_pay_later ? 'Your reservation is saved. Please complete the payment to confirm your ride.' : 'We saved your reservation. Please finalize your payment to secure your vehicle.' ) . '</p>'
+                
+                // Récap (Fond gris clair, texte empilé)
+                . '<div style="background: '.$bg_light.'; border-radius: 12px; border: 1px solid '.$border_color.'; padding: 24px; margin-bottom: 10px;">'
+                
+                . '<div style="margin-bottom: 16px;">'
+                . '<span style="' . $style_row_label . '">' . $svg_car . ' Vehicle</span>'
+                . '<span style="' . $style_row_value . '">' . esc_html( $vehicle_title ) . '</span>'
                 . '</div>'
-                . '<p style="font-size: 13px; color: #475569; margin: 0;">Your chauffeur will send an SMS update prior to pickup. Thank you for your trust.</p>'
+                
+                . '<div style="margin-bottom: 16px;">'
+                . '<span style="' . $style_row_label . '">' . $svg_cal . ' Date & Time</span>'
+                . '<span style="' . $style_row_value . '">' . esc_html( $datetime_display ) . '</span>'
                 . '</div>'
-                . '<div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 30px; text-align: center; font-size: 11.5px; color: #64748b;">'
-                . '<p style="margin: 0;">' . esc_html( $company_name ) . ' — VIP Chauffeur & Private Transfers</p>'
+                
+                . '<div style="margin-bottom: 16px;">'
+                . '<span style="' . $style_row_label . '">' . $svg_pin . ' Pickup Location</span>'
+                . '<span style="' . $style_row_value . '">' . esc_html( $data['pickup_address'] ) . '</span>'
                 . '</div>'
+                
+                . '<div style="margin-bottom: 0;">'
+                . '<span style="' . $style_row_label . '">' . $svg_card . ' Total Amount</span>'
+                . '<span style="font-size: 22px; font-weight: 800; color: '.$theme_primary.'; margin: 0; display: block;">' . $formatted_amount . '</span>'
                 . '</div>'
-                . '</div>';
+                
+                . '</div>' // Fin fond gris
+                
+                . $btn_html
+                . '</div>'
+                // Footer
+                . '<div style="background: '.$bg_light.'; border-top: 1px solid '.$border_color.'; padding: 20px; text-align: center;">'
+                . '<p style="margin: 0; font-size: 12px; color: '.$text_light.';">' . esc_html( $company_name ) . ' — VIP Chauffeur & Private Transfers</p>'
+                . '</div>'
+                . '</div></div>';
 
             wp_mail( $customer_email, $subject_client, $message_client, $headers_client );
         }
 
-        // --- EMAIL ADMIN : ALERTE PAIEMENT ---
+        // ══════════════════════════════════════════════════════════════
+        // 2. EMAIL ADMIN (Le lien est TOUJOURS affiché)
+        // ══════════════════════════════════════════════════════════════
         if ( ! empty( $admin_email ) && is_email( $admin_email ) ) {
-            $subject_admin = '💰 [PAYMENT RECEIVED] ' . $formatted_amount . ' collected for Booking #' . $booking_id;
-            $message_admin = '<div style="background-color: #f1f5f9; padding: 30px 15px; font-family: sans-serif;">'
-                . '<div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 30px;">'
-                . '<h2 style="color: #16a34a; margin-top: 0;">Payment Successfully Collected</h2>'
-                . '<p><strong>Booking:</strong> #' . $booking_id . '</p>'
-                . '<p><strong>Client:</strong> ' . esc_html( $customer_name ) . ' (' . esc_html( $customer_email ) . ')</p>'
-                . '<p><strong>Amount:</strong> ' . $formatted_amount . '</p>'
-                . '<p><strong>Method:</strong> ' . esc_html( $payment_method ) . '</p>'
-                . '<p><strong>Stripe Intent:</strong> ' . esc_html( $intent_id ) . '</p>'
+            $payment_tag = $is_pay_later ? 'PAY LATER' : ( empty($payment_url) ? 'CONFIRMED' : 'PENDING PAYMENT' );
+            $subject_admin = '[NEW BOOKING] ' . $payment_tag . ' - ' . esc_html( $customer_name );
+            
+            $admin_link = ! empty( $payment_url ) ? '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid '.$border_color.';"><span style="' . $style_row_label . '">Payment Link</span><a href="' . esc_url( $payment_url ) . '" style="color: '.$theme_primary.'; word-break: break-all; font-size: 14px;">' . esc_url( $payment_url ) . '</a></div>' : '';
+
+            $message_admin = '<div style="' . $style_body . '">'
+                . '<div style="' . $style_card . '">'
+                . '<div style="' . $style_header . '; text-align: left; padding: 20px 30px;">'
+                . '<h2 style="' . $style_title . '; font-size: 20px; margin: 0;">New Booking: <span style="color: '.$theme_primary.';">' . $payment_tag . '</span></h2>'
+                . '</div>'
+                . '<div style="' . $style_content . '">'
+                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Customer</span><span style="' . $style_row_value . '">' . esc_html( $customer_name ) . ' (' . esc_html( $data['phone'] ) . ')</span></div>'
+                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Circuit</span><span style="' . $style_row_value . '">' . esc_html( $circuit_title ) . '</span></div>'
+                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Vehicle</span><span style="' . $style_row_value . '">' . esc_html( $vehicle_title ) . '</span></div>'
+                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Date & Time</span><span style="' . $style_row_value . '">' . esc_html( $datetime_display ) . '</span></div>'
+                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Total Due</span><span style="' . $style_row_value . '">' . $formatted_amount . '</span></div>'
+                . $admin_link
+                . '</div>'
                 . '</div>'
                 . '</div>';
 
             wp_mail( $admin_email, $subject_admin, $message_admin, $headers_admin );
         }
-
-        // 6. Succès : Redirection vers la page de paiement avec statut de succès
-        $ref_token = get_post_meta( $booking_id, '_etb_pay_token', true );
-        $payment_base_url = ! empty( $gen_settings['payment_page_url'] ) ? esc_url_raw( $gen_settings['payment_page_url'] ) : home_url( '/payment/' );
-        
-        $redirect_url = add_query_arg( array(
-            'ref'    => $ref_token,
-            'status' => 'success'
-        ), $payment_base_url );
-
-        wp_send_json_success( array(
-            'redirect_url' => $redirect_url
-        ) );
     }
+
 
 }
