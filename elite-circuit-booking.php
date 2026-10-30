@@ -3,7 +3,7 @@
  * Plugin Name: Elite Circuit Booking
  * Plugin URI: 
  * Description: Circuits touristiques et excursions : fiches circuit, options de départ, réservation.
- * Version:     1.0.4
+ * Version:     1.0.5
  * Author:      Reich C
  * Text Domain: elite-transfer-booking
  */
@@ -18,7 +18,7 @@ if ( defined( 'ETB_VERSION' ) ) {
     } );
 } else {
 
-define( 'ETB_VERSION', '1.0.4' );
+define( 'ETB_VERSION', '1.0.5' );
 define( 'ETB_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ETB_URL', plugin_dir_url( __FILE__ ) );
 
@@ -81,11 +81,12 @@ class Elite_Transfer_Booking {
         // 2. Module socle : Tokens globaux (ZÉRO dépendance bloquante)
         wp_enqueue_style( 'etb-tokens', ETB_URL . 'public/css/modules/etb-tokens.css', array(), ETB_VERSION );
 
-        // 3. Modules thématiques
-        wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
-        wp_enqueue_style( 'intl-tel-input-style', 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.css', array(), '18.2.1' );
-        wp_enqueue_style( 'flatpickr-style', 'https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css', array(), '4.6.13' );
-        wp_enqueue_style( 'etb-circuits', ETB_URL . 'public/css/modules/etb-circuits.css', array( 'etb-tokens', 'font-awesome-6', 'intl-tel-input-style', 'flatpickr-style' ), ETB_VERSION );    
+        // 3. Modules thématiques (CHARGEMENT LOCAL - Zéro CDN)
+        wp_enqueue_style( 'font-awesome-6', ETB_URL . 'public/css/fontawesome/all.min.css', array(), '6.5.1' );
+        wp_enqueue_style( 'intl-tel-input-style', ETB_URL . 'public/css/intlTelInput.min.css', array(), '18.2.1' );
+        wp_enqueue_style( 'flatpickr-style', ETB_URL . 'public/css/flatpickr.min.css', array(), '4.6.13' );
+        
+        wp_enqueue_style( 'etb-circuits', ETB_URL . 'public/css/modules/etb-circuits.css', array( 'etb-tokens', 'font-awesome-6', 'intl-tel-input-style', 'flatpickr-style' ), ETB_VERSION );        
         
         $gen_settings    = get_option( 'etb_general_settings', array() );
         $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
@@ -111,11 +112,11 @@ class Elite_Transfer_Booking {
             $script_deps[] = 'google-maps-places';
         }
 
-        // Librairie internationale de téléphone (245 pays)
-        wp_enqueue_script( 'intl-tel-input-script', 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js', array(), '18.2.1', true );
+        // Librairie internationale de téléphone (245 pays) - LOCAL
+    wp_enqueue_script( 'intl-tel-input-script', ETB_URL . 'public/js/intlTelInputWithUtils.min.js', array(), '29.5.7', true );
         
-        // Librairie Flatpickr pour le calendrier
-        wp_enqueue_script( 'flatpickr-script', 'https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js', array(), '4.6.13', true );
+        // Librairie Flatpickr pour le calendrier - LOCAL
+        wp_enqueue_script( 'flatpickr-script', ETB_URL . 'public/js/flatpickr.min.js', array(), '4.6.13', true );
         $script_deps[] = 'flatpickr-script';
 
         wp_enqueue_script( 'etb-booking-script', ETB_URL . 'public/js/booking-widget.js', $script_deps, ETB_VERSION, true );
@@ -131,7 +132,9 @@ class Elite_Transfer_Booking {
             'home_url'          => esc_url( home_url( '/' ) ),
             'company_whatsapp'  => ! empty( $gen_settings['company_whatsapp'] ) ? preg_replace( '/[^0-9]/', '', $gen_settings['company_whatsapp'] ) : '',
             'admin_email'       => ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' ),
-            'stripe_enabled' => $stripe_enabled, 'stripe_pk' => $stripe_pk
+            'stripe_enabled' => $stripe_enabled, 'stripe_pk' => $stripe_pk,
+
+            
         ) );
     }
     

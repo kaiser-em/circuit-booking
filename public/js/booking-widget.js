@@ -148,28 +148,80 @@
         const pickupErrorEl = root.querySelector('#etb-pickup-error');
         const globalSubmitErrorEl = root.querySelector('#etb-global-submit-error') || document.querySelector('#etb-global-submit-error');
 
-        const phoneInput   = root.querySelector('input[name="etb_phone"]');
+        const phoneInput = root.querySelector('input[name="etb_phone"]');
         const phoneErrorEl = root.querySelector('#etb-phone-error');
 
-        // Téléphone international : drapeau, indicatif, formatage (intl-tel-input)
         let phoneIti = null;
+
+         // Gestion du remplissage automatique Chrome / Edge
+            const formatAutofilledPhone = () => {
+                const value = phoneInput.value.trim();
+
+                if (!value) return;
+
+                phoneIti.setNumber(value);
+            };
+
         if (phoneInput && typeof window.intlTelInput !== 'undefined') {
-            phoneIti = window.intlTelInput(phoneInput, {
-                initialCountry: 'auto',
-                preferredCountries: ['fr', 'mc', 'gb', 'us', 'ch', 'ae', 'de', 'it'],
-                excludeCountries: ['gg', 'je', 'im'],
-                separateDialCode: true,
-                autoPlaceholder: 'aggressive',
-                utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js',
-                geoIpLookup: function (callback) {
-                    fetch('https://ipapi.co/json/')
-                        .then(function (res) { return res.json(); })
-                        .then(function (data) { callback(data && data.country_code ? data.country_code.toLowerCase() : 'fr'); })
-                        .catch(function () { callback('fr'); });
+
+            // Détection du pays
+            const getCountry = async () => {
+                try {
+                    const res = await fetch('https://ipapi.co/json/');
+                    if (!res.ok) throw new Error('IP lookup failed');
+
+                    const data = await res.json();
+                    return data.country_code
+                        ? data.country_code.toLowerCase()
+                        : 'fr';
+
+                } catch (error) {
+                    return 'fr';
                 }
-            });
+            };
+
+            const initPhoneInput = async () => {
+
+                const countryCode = await getCountry();
+
+                phoneIti = window.intlTelInput(phoneInput, {
+
+                    initialCountry: countryCode,
+
+                    countryOrder: ['fr', 'mc', 'gb', 'us', 'ch', 'ae', 'de', 'it'],
+
+                    excludeCountries: ['gg', 'je', 'im'],
+
+                    separateDialCode: true,
+
+                    // Formatage automatique pendant la saisie
+                    formatAsYouType: true,
+
+                    // Placeholder dynamique
+                    placeholderNumberType: 'MOBILE'
+                });
+
+                // Attendre que les utilitaires soient disponibles
+                try {
+                    await phoneIti.promise;
+                    console.log('ETB Phone: Utils chargés');
+
+                } catch (error) {
+                    console.error('ETB Phone: Erreur Utils', error);
+                }
+            };
+
+            initPhoneInput();
         }
 
+
+
+// Détecter les changements du navigateur
+phoneInput.addEventListener('change', formatAutofilledPhone);
+phoneInput.addEventListener('blur', formatAutofilledPhone);
+
+// Vérifier après initialisation
+setTimeout(formatAutofilledPhone, 300);
         const isPhoneValid = () => {
             if (!phoneInput) return true;
             if (phoneInput.value.trim() === '') return false;
@@ -1351,110 +1403,7 @@
         if (luggageInput) luggageInput.addEventListener('input', refreshAll);
         if (nameInput) nameInput.addEventListener('input', refreshAll);
         if (emailInput) emailInput.addEventListener('input', refreshAll);
-        if (phoneInput) {
-            // Pays où le 0 initial fait partie du numéro : on ne le retire jamais
-            const KEEP_ZERO = ['it', 'va', 'sm'];
-
-            const stripTrunkZero = function (digits, iso2) {
-                return (digits.startsWith('0') && KEEP_ZERO.indexOf(iso2) === -1) ? digits.substring(1) : digits;
-            };
-
-            const formatPhoneDigitsByCountry = function (digits, iso2) {
-                if (!digits) return '';
-                iso2 = (iso2 || 'fr').toLowerCase();
-
-                // 1. Formatage officiel libphonenumber (utils.js), propre à chaque pays
-                if (phoneIti && typeof window.intlTelInputUtils !== 'undefined') {
-                    try {
-                        const countryData = phoneIti.getSelectedCountryData();
-                        const dialCode    = countryData ? ('+' + countryData.dialCode) : '';
-                        const formatted   = window.intlTelInputUtils.formatNumber(
-                            dialCode + digits,
-                            iso2,
-                            window.intlTelInputUtils.numberFormat.NATIONAL
-                        );
-                        if (formatted) {
-                            return (KEEP_ZERO.indexOf(iso2) === -1 ? formatted.replace(/^0/, '') : formatted).trim();
-                        }
-                    } catch (e) {}
-                }
-
-                // 2. Repli si utils.js n'est pas encore chargé : blocs de 3 chiffres
-                if (digits.length > 6) {
-                    return digits.slice(0, 3) + ' ' + digits.slice(3, 6) + ' ' + digits.slice(6);
-                }
-                return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
-            };
-
-            const handlePhoneInputLive = function (e) {
-                                // Ne pas reformater pendant l'effacement, mais rafraîchir la validation
-                if (e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward')) {
-                    refreshAll();
-                    return;
-                }
-                if (!phoneIti) { refreshAll(); return; }
-
-                const cursorPosition = this.selectionStart;
-                const oldLength      = this.value.length;
-                let val              = this.value;
-
-                // 1. Numéro international complet collé (+ ou 00)
-                if (val.includes('+') || val.startsWith('00')) {
-                    let cleanPasted = val.replace(/[^\d+]/g, '');
-                    if (cleanPasted.startsWith('00')) cleanPasted = '+' + cleanPasted.substring(2);
-
-                    // +44 reste sur le Royaume-Uni, +1 sur les États-Unis
-                    if (cleanPasted.startsWith('+44')) {
-                        phoneIti.setCountry('gb');
-                    } else if (cleanPasted.startsWith('+1')) {
-                        phoneIti.setCountry('us');
-                    } else {
-                        phoneIti.setNumber(cleanPasted);
-                    }
-
-                    const countryData = phoneIti.getSelectedCountryData();
-                    const dialCode    = countryData ? countryData.dialCode : '';
-                    const iso2        = countryData ? countryData.iso2 : 'fr';
-                    let nationalDigits = cleanPasted.replace(/\D/g, '');
-                    if (dialCode && nationalDigits.startsWith(dialCode)) {
-                        nationalDigits = nationalDigits.substring(dialCode.length);
-                    }
-                    nationalDigits = stripTrunkZero(nationalDigits, iso2).substring(0, 15);
-                    this.value = formatPhoneDigitsByCountry(nationalDigits, iso2);
-                    refreshAll();
-                    return;
-                }
-
-                // 2. Saisie normale : chiffres uniquement, sans le 0 initial, plafond E.164
-                val = val.replace(/\(0\)/g, '');
-                const countryData = phoneIti.getSelectedCountryData();
-                const iso2        = countryData ? countryData.iso2 : 'fr';
-                let digits        = stripTrunkZero(val.replace(/\D/g, ''), iso2).substring(0, 15);
-
-                // 3. Formatage en direct, puis restauration du curseur
-                const formatted = formatPhoneDigitsByCountry(digits, iso2);
-                this.value = formatted;
-                if (cursorPosition !== null) {
-                    const newCursor = Math.max(0, cursorPosition + (formatted.length - oldLength));
-                    this.setSelectionRange(newCursor, newCursor);
-                }
-                refreshAll();
-            };
-
-            phoneInput.addEventListener('input', handlePhoneInputLive);
-
-            // Reformatage automatique quand on change de drapeau
-            phoneInput.addEventListener('countrychange', function () {
-                const iso2   = phoneIti ? phoneIti.getSelectedCountryData().iso2 : 'fr';
-                const digits = stripTrunkZero(phoneInput.value.replace(/\D/g, ''), iso2);
-                phoneInput.value = formatPhoneDigitsByCountry(digits, iso2);
-                refreshAll();
-            });
-        }
-
-
-
-
+        
 
         // ------------------------------------------------------------------------
         // 8. SOUMISSION FINALE AJAX (FETCH)
@@ -1502,6 +1451,7 @@
 
                 formData.append('action', 'etb_submit_booking');
                 formData.append('nonce', etbAjax.nonce);
+                formData.append('pay_later', window.etbPayLaterMode ? '1' : '0'); // NOUVEAU
 
                 const formElement = root.querySelector('form') || root;
 
@@ -1543,19 +1493,35 @@
                         
                         // Si une URL de paiement existe, on l'affiche
                         if (result.data.payment_url) {
-                            paymentBtnHtml = `
-                                <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
-                                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">To guarantee your booking, please proceed to secure payment.</p>
-                                    <a href="${result.data.payment_url}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 300px; background: #ba6827; color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 700; font-size: 16px; transition: background 0.2s ease;">
-                                        Proceed to Payment
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                                    </a>
-                                </div>
-                            `;
+                            if (window.etbPayLaterMode) {
+                                // MODE PAY LATER : Message d'incitation doux
+                                paymentBtnHtml = `
+                                    <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+                                        <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">
+                                            Your booking is reserved. You will receive an email shortly with a secure payment link.<br>
+                                            <strong>Please complete payment to confirm your reservation.</strong>
+                                        </p>
+                                        <a href="${result.data.payment_url}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 300px; background: #f8fafc; border: 1px solid #cbd5e1; color: #1e293b; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; transition: background 0.2s ease;">
+                                            Pay Now (optional)
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                // MODE PROCEED : Bouton principal
+                                paymentBtnHtml = `
+                                    <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #e2e8f0;">
+                                        <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">To guarantee your booking, please proceed to secure payment.</p>
+                                        <a href="${result.data.payment_url}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 300px; background: #ba6827; color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 700; font-size: 16px; transition: background 0.2s ease;">
+                                            Proceed to Payment
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                        </a>
+                                    </div>
+                                `;
+                            }
                         }
 
                         formElement.innerHTML = `
-                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin: 20px 0;">
+                            <div class="nexora-card" style="padding: 40px 30px; text-align: center; border-radius: 16px;>
                                 <div style="width: 72px; height: 72px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 </div>
@@ -1965,15 +1931,31 @@
             setActiveStep(1, true); // true = Ne pas scroller au chargement
         };
 
-        // Lier le bouton de confirmation de l'étape 3 au bouton de soumission global
+        // Lier les 2 boutons de l'étape 3 (Proceed to Payment + Pay Later)
+        let isPayLaterMode = false;
+
         const finalConfirmBtn = document.getElementById('etb-final-confirm-btn');
-        const sidebarSubmitBtn = document.getElementById('etb-submit-button');
-        if (finalConfirmBtn && sidebarSubmitBtn) {
+        if (finalConfirmBtn) {
             finalConfirmBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                sidebarSubmitBtn.click();
+                isPayLaterMode = false;
+                window.etbPayLaterMode = false; // On force le paiement immédiat
+                const submitBtn = document.getElementById('etb-submit-button');
+                if (submitBtn) submitBtn.click();
             });
         }
+
+        const payLaterBtn = document.getElementById('etb-pay-later-btn');
+        if (payLaterBtn) {
+            payLaterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                isPayLaterMode = true;
+                window.etbPayLaterMode = true; // On force le mode pay later
+                const submitBtn = document.getElementById('etb-submit-button');
+                if (submitBtn) submitBtn.click();
+            });
+        }
+
 
         // --- GESTION DES FILTRES DE VÉHICULES ---
         const filterBtns = document.querySelectorAll('.nexora-filter-btn'); // On cible tout le document

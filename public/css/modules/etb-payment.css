@@ -217,3 +217,121 @@
     .etb-pay-row { flex-direction: column !important; }
     .etb-pay-col { flex: 1 1 100% !important; width: 100% !important; }
 }
+
+/* ==========================================================================
+   FACTURE / INVOICE DESIGN (Colonne de gauche)
+   ========================================================================== */
+
+.etb-invoice-section {
+    margin-bottom: 20px;
+}
+
+.etb-invoice-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #f8fafc !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    margin-bottom: 15px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.etb-invoice-duration {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #ba6827 !important;
+    background: #fff8ec !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+}
+
+.etb-invoice-trip-details {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.etb-invoice-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+}
+
+.etb-invoice-row .etb-pay-label {
+    width: 140px !important; /* Aligne les labels */
+    margin-bottom: 0 !important;
+    padding-top: 2px !important;
+}
+
+.etb-invoice-row .etb-pay-value {
+    flex: 1 !important;
+    text-align: right !important;
+}
+
+.etb-invoice-title {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    margin: 0 0 15px 0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Lignes de prix */
+.etb-price-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 14px !important;
+    color: #475569 !important;
+    margin-bottom: 10px !important;
+}
+
+.etb-price-row small {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+}
+
+/* Total */
+.etb-price-total {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 15px !important;
+    padding-top: 15px !important;
+    border-top: 2px solid #0f172a !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+
+.etb-price-total-val {
+    font-size: 20px !important;
+    color: #ba6827 !important;
+}
+
+/* ==========================================================================
+   WALLET BUTTONS (Apple Pay / Google Pay)
+   ========================================================================== */
+
+#etb-wallet-mount {
+    /* Assure que le bouton a une hauteur agréable */
+    min-height: 48px;
+}
+
+/* On stylise le bouton Stripe natif pour qu'il prenne toute la largeur */
+#etb-wallet-mount iframe {
+    height: 48px !important;
+}
+
+.etb-processing-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: etb-spin 1s ease-in-out infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}

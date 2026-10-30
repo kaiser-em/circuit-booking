@@ -774,9 +774,9 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                             <span class="etb-progress-num">3</span><span class="etb-progress-label">Confirm</span>
                         </div>
                     </div>
-
+                    <!--
                     <div id="etb-global-submit-error" class="etb-global-error" role="alert" aria-live="assertive" style="display:none; margin: 0 0 20px 0; padding: 14px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px; line-height: 1.5;"></div>
-
+                     -->
                                         <!-- ÉTAPE 1 : TRIP DETAILS -->
                     <div class="etb-step etb-step-1" data-step="1">
                         
@@ -999,7 +999,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                     <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Phone Number *</label>
                                     <!-- Le JS s'occupe d'initialiser intl-tel-input sur ce champ -->
                                     <div class="nexora-input-wrapper">
-                                        <input type="tel" name="etb_phone" id="etb-phone" class="etb-phone-input" placeholder="+33 6 12 34 56 78" autocomplete="tel">
+                                        <input type="tel" name="etb_phone" id="etb-phone" class="etb-phone-input" autocomplete="tel">
                                     </div>
                                     <p class="etb-error-message" id="etb-phone-error" style="display:none; margin-top:6px; margin-bottom:0;">⚠ Please enter a valid phone number.</p>
                                 </div>
@@ -1119,15 +1119,24 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                             </div>
                         </div>
 
-                        <div class="etb-step-nav etb-step-nav-split">
+                        <div class="etb-step-nav etb-step-nav-split" style="flex-wrap: wrap;">
                             <button type="button" class="etb-btn-back" data-back="2">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                 <span>Back</span>
                             </button>
-                            <!-- Le bouton de soumission finale (ou tu peux laisser celui de la sidebar) -->
-                            <button type="button" class="etb-btn-next" id="etb-final-confirm-btn" style="background: var(--etb-theme-primary, #ba6827);">
-                                <span>Confirm Booking</span>
-                            </button>
+
+                            <div style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; flex: 1;">
+                                <!-- Bouton principal : Proceed to Payment -->
+                                <button type="button" class="etb-btn-next" id="etb-final-confirm-btn" style="background: var(--etb-theme-primary, #ba6827); justify-content: center; width: 100%;">
+                                    <span>Proceed to Payment</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                </button>
+
+                                <!-- Lien discret : Book now and pay later -->
+                                <button type="button" id="etb-pay-later-btn" style="background: none; border: none; color: #64748b; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 6px 0; font-weight: 500;">
+                                    Book now and pay later
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </form>
