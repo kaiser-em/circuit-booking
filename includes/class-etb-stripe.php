@@ -129,6 +129,6 @@ class ETB_Stripe {
             return new WP_Error( 'stripe_invalid_id', 'Identifiant PaymentIntent manquant.' );
         }
 
-        return self::request( 'payment_intents/' . urlencode( $clean_id ), 'GET' );
+        return self::request( 'payment_intents/' . urlencode( $clean_id ) . '?expand[]=latest_charge', 'GET' );
     }
 }

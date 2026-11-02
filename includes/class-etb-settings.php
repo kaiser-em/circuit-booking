@@ -84,6 +84,7 @@ class ETB_Settings {
 
         // ── SAUVEGARDE DES CHAMPS STRIPE ──
         $new_input['stripe_enabled']         = isset( $input['stripe_enabled'] ) ? '1' : '0';
+        $new_input['stripe_capture_method'] = ( isset( $input['stripe_capture_method'] ) && 'automatic' === $input['stripe_capture_method'] ) ? 'automatic' : 'manual';
         $new_input['stripe_mode']            = ( isset( $input['stripe_mode'] ) && 'live' === $input['stripe_mode'] ) ? 'live' : 'test';
         $new_input['stripe_publishable_key'] = ! empty( $input['stripe_publishable_key'] ) ? sanitize_text_field( trim( $input['stripe_publishable_key'] ) ) : '';
         $new_input['stripe_secret_key']      = ! empty( $input['stripe_secret_key'] ) ? sanitize_text_field( trim( $input['stripe_secret_key'] ) ) : '';
@@ -364,6 +365,18 @@ class ETB_Settings {
                                                 <input type="checkbox" name="etb_general_settings[stripe_enabled]" value="1" <?php checked( $options['stripe_enabled'] ?? '0', '1' ); ?> style="width:18px; height:18px;">
                                                 <span style="font-weight:600; color:#0f172a;">Activer les paiements en ligne</span>
                                             </label>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <th scope="row">Mode de capture Stripe</th>
+                                        <td>
+                                            <?php $capture_mode = $options['stripe_capture_method'] ?? 'manual'; ?>
+                                            <select name="etb_general_settings[stripe_capture_method]" style="font-weight:600;">
+                                                <option value="manual" <?php selected( $capture_mode, 'manual' ); ?>> Empreinte (Pré-autorisation, débit différé)</option>
+                                                <option value="automatic" <?php selected( $capture_mode, 'automatic' ); ?>>⚡ Immédiat (Débit de la carte dès la validation)</option>
+                                            </select>
+                                            <p class="description">"Empreinte" bloque l'argent et nécessite une capture manuelle (ou via le code C-3). "Immédiat" débite le client à la seconde où il paie.</p>
                                         </td>
                                     </tr>
                                     <tr>

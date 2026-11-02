@@ -13,6 +13,7 @@ class ETB_Ajax {
         add_action( 'wp_ajax_nopriv_etb_create_payment_intent', array( $this, 'handle_create_payment_intent' ) );
         add_action( 'wp_ajax_etb_settle_payment', array( $this, 'handle_settle_payment' ) );
         add_action( 'wp_ajax_nopriv_etb_settle_payment', array( $this, 'handle_settle_payment' ) );
+        add_action( 'etb_abandoned_cart_cron', array( $this, 'send_abandoned_cart_email' ) );
 
 
     }
@@ -405,6 +406,7 @@ class ETB_Ajax {
             } else {
                 update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
                 update_post_meta( $booking_id, '_etb_limo_error', $dispatch_result['message'] );
+                $this->send_limo_error_alert( $booking_id, 'Échec lors de la création initiale de la réservation.', $dispatch_result['message'] );
             }
         }
 
@@ -412,6 +414,11 @@ class ETB_Ajax {
         // ENVOI DES E-MAILS
         // ─────────────────────────────────────────────────────────────
         $this->send_booking_emails( $booking_id, $data, $pricing_details, $is_pay_later );
+
+        // ÉTAPE 3 : Programmation de la relance si le client a choisi "Proceed to Payment"
+        if ( ! $is_pay_later ) {
+            wp_schedule_single_event( time() + 1800, 'etb_abandoned_cart_cron', array( $booking_id ) );
+        }
 
         // ─────────────────────────────────────────────────────────────
         // RÉPONSE JSON FINALE
@@ -503,6 +510,15 @@ class ETB_Ajax {
             'pricing'            => $pricing,
         );
 
+        // ─────────────────────────────────────────────────────────────
+        // ÉTAPE 4 : Alerte de paiement dans la note LimoExpress
+        // ─────────────────────────────────────────────────────────────
+        if ( $is_paid ) {
+            $data['dispatcher_alert'] = "\n═ ✅ STATUT DE PAIEMENT : PAYÉ EN LIGNE ═\n\n";
+        } else {
+            $data['dispatcher_alert'] = "\n═ ⚠️ STATUT DE PAIEMENT : NON PAYÉ (En attente) ═\n\n";
+        }
+
         if ( ! class_exists( 'ETB_Dispatcher_Manager' ) ) {
             wp_send_json_error( array( 'message' => 'Gestionnaire de dispatch introuvable.' ) );
         }
@@ -534,14 +550,54 @@ class ETB_Ajax {
     public function handle_create_payment_intent() {
         check_ajax_referer( 'etb_booking_nonce', 'nonce' );
 
+        // ─────────────────────────────────────────────────────────────
+        // C-1 SÉCURITÉ : le montant N'EST JAMAIS celui envoyé par le client.
+        // On recalcule côté serveur depuis la source de vérité (_etb_total_price
+        // + _etb_tip_amount éventuel) et on rejette toute tentative de manipulation.
+        // ─────────────────────────────────────────────────────────────
         $booking_id = absint( $_POST['booking_id'] ?? 0 );
-        $amount     = floatval( $_POST['amount'] ?? 0 );
         $name       = sanitize_text_field( $_POST['name'] ?? 'VIP Customer' );
         $email      = sanitize_email( $_POST['email'] ?? '' );
 
-        if ( ! $booking_id || $amount <= 0 ) {
-            wp_send_json_error( array( 'message' => 'Invalid booking or amount.' ) );
+        if ( ! $booking_id ) {
+            wp_send_json_error( array( 'message' => 'Booking ID manquant.' ) );
         }
+
+        // Vérification d'existence et d'état du booking
+        $booking_post = get_post( $booking_id );
+        if ( ! $booking_post || 'tour_booking' !== $booking_post->post_type ) {
+            wp_send_json_error( array( 'message' => 'Réservation introuvable.' ) );
+        }
+
+        // Blocage si le booking est déjà payé/annulé (évite les doubles intents)
+        $current_status = get_post_meta( $booking_id, '_etb_status', true );
+        if ( in_array( $current_status, array( 'confirmed', 'cancelled', 'completed' ), true ) ) {
+            wp_send_json_error( array( 'message' => 'Cette réservation est déjà traitée.' ) );
+        }
+        if ( ! empty( get_post_meta( $booking_id, '_etb_stripe_payment_intent_id', true ) ) ) {
+            wp_send_json_error( array( 'message' => 'Un paiement existe déjà pour cette réservation.' ) );
+        }
+
+        // Calcul du montant serveur : base + pourboire éventuel
+        $base_total  = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+        $tip_amount  = floatval( get_post_meta( $booking_id, '_etb_tip_amount', true ) );
+        $server_total = round( $base_total + max( 0.0, $tip_amount ), 2 );
+
+        if ( $server_total <= 0 ) {
+            wp_send_json_error( array( 'message' => 'Montant de réservation invalide.' ) );
+        }
+
+        // Comparaison informative (on ne bloque PAS si écart, on log)
+        $client_amount = floatval( $_POST['amount'] ?? 0 );
+        if ( abs( $client_amount - $server_total ) > 0.01 ) {
+            error_log( sprintf(
+                '[ETB Stripe] Écart montant détecté booking #%d — client: %.2f, serveur: %.2f (tentative ignorée)',
+                $booking_id, $client_amount, $server_total
+            ) );
+        }
+
+// ON UTILISE LE MONTANT SERVEUR (pas le montant client)
+$amount = $server_total;
 
         // Création du client Stripe
         $customer_res = ETB_Stripe::create_customer( $name, $email );
@@ -551,7 +607,9 @@ class ETB_Ajax {
         }
 
         // Création du PaymentIntent (avec capture manuelle si tu veux faire comme Blacklane)
-        $intent_res = ETB_Stripe::create_payment_intent( $amount, 'eur', $customer_id, array( 'booking_id' => $booking_id ), 'manual' );
+        $gen_settings = get_option( 'etb_general_settings', array() );
+        $capture_mode = ! empty( $gen_settings['stripe_capture_method'] ) ? $gen_settings['stripe_capture_method'] : 'manual';
+        $intent_res   = ETB_Stripe::create_payment_intent( $amount, 'eur', $customer_id, array( 'booking_id' => $booking_id ), $capture_mode );
 
         if ( is_wp_error( $intent_res ) ) {
             wp_send_json_error( array( 'message' => $intent_res->get_error_message() ) );
@@ -598,6 +656,34 @@ class ETB_Ajax {
 
         // 2. Mise à jour de WordPress
         update_post_meta( $booking_id, '_etb_status', 'confirmed' );
+
+        // ÉTAPE 3 : Annulation de la relance (le client a payé)
+        wp_clear_scheduled_hook( 'etb_abandoned_cart_cron', array( $booking_id ) );
+        // Extraction du moyen de paiement exact (Visa, Apple Pay, Google Pay...)
+        $payment_method_label = 'Online Payment';
+        if ( ! empty( $intent_check['latest_charge']['payment_method_details'] ) ) {
+            $pm_details = $intent_check['latest_charge']['payment_method_details'];
+            $pm_type    = $pm_details['type'] ?? 'card';
+
+            if ( 'card' === $pm_type ) {
+                $brand  = isset( $pm_details['card']['brand'] ) ? ucfirst( $pm_details['card']['brand'] ) : 'Card';
+                $last4  = isset( $pm_details['card']['last4'] ) ? $pm_details['card']['last4'] : '';
+                $wallet = $pm_details['card']['wallet']['type'] ?? '';
+
+                if ( 'apple_pay' === $wallet ) {
+                    $payment_method_label = 'Apple Pay (•••• ' . $last4 . ')';
+                } elseif ( 'google_pay' === $wallet ) {
+                    $payment_method_label = 'Google Pay (•••• ' . $last4 . ')';
+                } else {
+                    $payment_method_label = $brand . ' •••• ' . $last4;
+                }
+            } elseif ( 'apple_pay' === $pm_type ) {
+                $payment_method_label = 'Apple Pay';
+            } elseif ( 'google_pay' === $pm_type ) {
+                $payment_method_label = 'Google Pay';
+            }
+        }
+        update_post_meta( $booking_id, '_etb_payment_method_label', $payment_method_label );
         update_post_meta( $booking_id, '_etb_stripe_payment_intent_id', $intent_id );
         update_post_meta( $booking_id, '_etb_paid_at', current_time( 'mysql' ) );
 
@@ -623,7 +709,22 @@ class ETB_Ajax {
                 . "🔗 DIRECT STRIPE LINK:\n" . $stripe_url . "\n"
                 . "═══════════════════════════════\n\n";
 
-            $clean_note = preg_replace( '/\n═ ⏳ PAYMENT STATUS: PENDING.*?══════════════════════════════════════\n\n/s', '', (string) $current_note );
+            // H-2 : Approche d'ingénierie robuste (String Slicing)
+            $current_note_str = (string) $current_note;
+            $start_marker     = '═ ⏳ PAYMENT STATUS: PENDING';
+            $end_marker       = '═DÉTAILS RÉSERVATION═';
+
+            $start_pos = strpos( $current_note_str, $start_marker );
+            $end_pos   = strpos( $current_note_str, $end_marker );
+
+            if ( false !== $start_pos && false !== $end_pos && $start_pos < $end_pos ) {
+                // On garde ce qu'il y a avant le statut PENDING (souvent vide) 
+                // et on recolle avec ce qu'il y a à partir de "DÉTAILS RÉSERVATION"
+                $clean_note = substr( $current_note_str, 0, $start_pos ) . substr( $current_note_str, $end_pos );
+            } else {
+                // Si les marqueurs ne sont pas trouvés, on garde la note intacte par sécurité
+                $clean_note = $current_note_str;
+            }
             $updated_note = $paid_stamp . trim( $clean_note );
             
             update_post_meta( $booking_id, '_etb_note', $updated_note );
@@ -683,19 +784,61 @@ class ETB_Ajax {
             );
 
             // 1. Envoi de la mise à jour complète (NOTE + STATUT PAYÉ)
-            wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
+            $res_update = wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
                 'headers' => $headers,
                 'body'    => wp_json_encode( $update_payload ),
                 'timeout' => 15,
             ) );
             
-            // 2. Déclenchement formel du statut "Payé" (Sécurité supplémentaire)
-            wp_remote_post( 'https://api.limoexpress.me/api/integration/mark-booking-as-paid', array(
+            // 2. Déclenchement formel du statut "Payé"
+            $res_mark_paid = wp_remote_post( 'https://api.limoexpress.me/api/integration/mark-booking-as-paid', array(
                 'headers' => $headers,
                 'body'    => wp_json_encode( array( 'id' => $limo_uuid ) ),
                 'timeout' => 15,
             ) );
+
+            // ─────────────────────────────────────────────────────────────
+            // H-1 : VÉRIFICATION DES RÉPONSES LIMOEXPRESS
+            // On ne bloque pas le client (il a payé), mais on logge l'erreur admin.
+            // ─────────────────────────────────────────────────────────────
+            $sync_error = '';
+
+            if ( is_wp_error( $res_update ) ) {
+                $sync_error .= 'Update error: ' . $res_update->get_error_message() . ' | ';
+            } else {
+                $code_update = wp_remote_retrieve_response_code( $res_update );
+                if ( $code_update < 200 || $code_update >= 300 ) {
+                    $sync_error .= 'Update HTTP ' . $code_update . ' | ';
+                }
+            }
+
+            if ( is_wp_error( $res_mark_paid ) ) {
+                $sync_error .= 'Mark Paid error: ' . $res_mark_paid->get_error_message() . ' | ';
+            } else {
+                $code_paid = wp_remote_retrieve_response_code( $res_mark_paid );
+                if ( $code_paid < 200 || $code_paid >= 300 ) {
+                    $sync_error .= 'Mark Paid HTTP ' . $code_paid . ' | ';
+                }
+            }
+
+            if ( ! empty( $sync_error ) ) {
+                // On enregistre l'échec pour que l'admin le voie dans la fiche de la réservation
+                update_post_meta( $booking_id, '_etb_limo_status', 'payment_sync_failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', 'Paiement Stripe OK, mais échec synchro LimoExpress : ' . $sync_error );
+                error_log( '[ETB Limo] Échec de synchro post-paiement pour le booking #' . $booking_id . ' : ' . $sync_error );
+                
+                // ALERTE EMAIL ADMIN
+                $this->send_limo_error_alert( $booking_id, 'Le client a payé, mais la mise à jour LimoExpress a échoué.', $sync_error );
+                
+            } else {
+                // Si tout va bien, on s'assure que le statut est à jour (optionnel mais propre)
+                update_post_meta( $booking_id, '_etb_limo_status', 'synced' );
+            }
         }
+
+                // ÉTAPE 1 : Envoi du Reçu de Paiement final au client
+        $this->send_payment_receipt_email( $booking_id );
+        
 
         // 4. Redirection succès
         $pay_token = get_post_meta( $booking_id, '_etb_pay_token', true );
@@ -705,16 +848,17 @@ class ETB_Ajax {
         wp_send_json_success( array( 'redirect_url' => $redirect_url ) );
     }
 
-        /**
+    /**
      * Envoie les e-mails transactionnels (Client + Admin) après création de la réservation.
      */
-        private function send_booking_emails( $booking_id, $data, $pricing_details, $is_pay_later ) {
+    private function send_booking_emails( $booking_id, $data, $pricing_details, $is_pay_later ) {
         $gen_settings    = get_option( 'etb_general_settings', array() );
         $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
         $company_name    = get_bloginfo( 'name' );
         $admin_email     = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
 
         $customer_name    = $data['name'];
+        $display_id = $this->get_formatted_booking_id( $booking_id );
         $customer_email   = $data['email'];
         $formatted_amount = number_format_i18n( $pricing_details['grand_total'], 2 ) . ' ' . $currency_symbol;
 
@@ -725,7 +869,8 @@ class ETB_Ajax {
         $formatted_time = $time_ts ? date( 'h:i A', $time_ts ) : $data['time'];
         $datetime_display = $formatted_date . ' at ' . $formatted_time;
 
-        $circuit_title = get_the_title( $data['circuit_id'] );
+        // Circuit & Véhicule
+        $circuit_title = ! empty( $data['circuit_id'] ) ? get_the_title( $data['circuit_id'] ) : 'VIP Circuit';
         $vehicle_title = 'Luxury Vehicle';
         foreach ( $data['vehicles'] as $v_id => $qty ) {
             if ( $qty > 0 ) { $vehicle_title = get_the_title( $v_id ); break; }
@@ -735,85 +880,59 @@ class ETB_Ajax {
         $headers_client = ETB_Settings::get_mail_headers( $admin_email, $company_name );
         $headers_admin  = ETB_Settings::get_mail_headers( $customer_email, $customer_name );
 
-        // ─────────────────────────────────────────────────────────────
-        // STYLES DU THEME (Inspirés de circuit-view.php)
-        // ─────────────────────────────────────────────────────────────
-        $theme_primary = '#ba6827'; // Bronze / Orange
-        $text_dark     = '#1e293b'; // Slate 800
-        $text_light    = '#64748b'; // Slate 500
-        $bg_light      = '#f8fafc'; // Slate 50
-        $border_color  = '#e2e8f0'; // Slate 200
+        $theme_primary = '#ba6827';
+        $text_dark     = '#1e293b';
+        $text_light    = '#64748b';
+        $bg_light      = '#f8fafc';
+        $border_color  = '#e2e8f0';
 
-        $style_body = "background-color: #f1f5f9; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: {$text_dark};";
-        $style_card = "max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid {$border_color};";
-        $style_header = "padding: 30px; text-align: center; border-bottom: 1px solid {$border_color}; background: {$bg_light};";
-        $style_title = "font-size: 24px; font-weight: 800; margin: 0 0 8px 0; color: {$text_dark}; letter-spacing: -0.02em;";
-        $style_subtitle = "font-size: 14px; color: {$theme_primary}; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin: 0;";
-        $style_content = "padding: 30px;";
-        $style_row_label = "font-size: 11px; color: {$text_light}; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 4px; display: block;";
-        $style_row_value = "font-size: 15px; font-weight: 600; color: {$text_dark}; margin: 0 0 18px 0; display: block;";
-        $style_btn = "display: inline-block; background: {$theme_primary}; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; margin-top: 10px; box-shadow: 0 4px 10px rgba(186, 104, 39, 0.2);";
-
-        // SVG Icons (Teintés aux couleurs du thème)
-        $icon_color = $theme_primary;
-        $svg_car = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M5 17h14v-5l-2-4H7l-2 4v5z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>';
-        $svg_cal = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-        $svg_pin = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
-        $svg_card = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'.$icon_color.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>';
+        // Styles Responsives (Mobile First)
+        $style_body   = "background-color: #f1f5f9; padding: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: {$text_dark};";
+        $style_card   = "max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid {$border_color};";
+        $style_header = "padding: 20px; text-align: center; border-bottom: 1px solid {$border_color}; background: {$bg_light};";
+        $style_btn    = "display: inline-block; background: {$theme_primary}; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; margin-top: 10px; text-align: center; width: 100%; box-sizing: border-box;";
+        
+        $style_label  = "font-size: 11px; color: {$text_light}; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; display: block; margin-bottom: 4px;";
+        $style_value  = "font-size: 14px; font-weight: 600; color: {$text_dark}; display: block; margin-bottom: 15px;";
 
         // ══════════════════════════════════════════════════════════════
-        // 1. EMAIL CLIENT
+        // 1. EMAIL CLIENT (Envoyé UNIQUEMENT si "Pay Later")
         // ══════════════════════════════════════════════════════════════
-        if ( ! empty( $customer_email ) && is_email( $customer_email ) ) {
-            $subject_client = $is_pay_later ? 'Reservation Confirmed - Payment Pending' : 'Action Required: Complete Your Booking';
+        if ( $is_pay_later && ! empty( $customer_email ) && is_email( $customer_email ) ) {
+            $subject_client = $is_pay_later ? 'Reservation Confirmed ' . $display_id . ' - Payment Pending' : 'Action Required: Complete Your Booking ' . $display_id;
+
             
             $btn_html = '';
             if ( ! empty( $payment_url ) ) {
-                $btn_html = '<div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid '.$border_color.';"><a href="' . esc_url( $payment_url ) . '" style="' . $style_btn . '">Proceed to Payment</a></div>';
+                $btn_html = '<div style="margin-top: 25px; text-align: center;"><a href="' . esc_url( $payment_url ) . '" style="' . $style_btn . '">Proceed to Payment</a></div>';
             }
 
             $message_client = '<div style="' . $style_body . '">'
                 . '<div style="' . $style_card . '">'
-                // Header
                 . '<div style="' . $style_header . '">'
-                . '<p style="' . $style_subtitle . '">' . esc_html( $company_name ) . '</p>'
-                . '<h1 style="' . $style_title . '">' . ( $is_pay_later ? 'Booking Reserved' : 'Complete Your Payment' ) . '</h1>'
+                . '<p style="font-size: 14px; color: ' . $theme_primary . '; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin: 0;">' . esc_html( $company_name ) . '</p>'
+                . '<h1 style="font-size: 20px; font-weight: 800; margin: 8px 0 0 0; color: ' . $text_dark . ';">' . ( $is_pay_later ? 'Booking Received' : 'Complete Your Payment' ) . '</h1>'
+                . '<span>'. esc_html( $limo_id ) . '</span>'
                 . '</div>'
-                // Body
-                . '<div style="' . $style_content . '">'
-                . '<p style="font-size: 16px; margin-top: 0; color: '.$text_dark.';">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>'
-                . '<p style="font-size: 15px; color: '.$text_light.'; margin-bottom: 25px;">' . ( $is_pay_later ? 'Your reservation is saved. Please complete the payment to confirm your ride.' : 'We saved your reservation. Please finalize your payment to secure your vehicle.' ) . '</p>'
+                . '<div style="padding: 20px;">'
+                . '<p style="font-size: 15px; margin-top: 0; color: ' . $text_dark . ';">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>'
+                . '<p style="font-size: 14px; color: ' . $text_light . '; margin-bottom: 20px;">' . ( $is_pay_later ? 'Your reservation is saved. Please complete the payment to confirm your ride.' : 'We saved your reservation. Please finalize your payment to secure your vehicle.' ) . '</p>'
                 
-                // Récap (Fond gris clair, texte empilé)
-                . '<div style="background: '.$bg_light.'; border-radius: 12px; border: 1px solid '.$border_color.'; padding: 24px; margin-bottom: 10px;">'
-                
-                . '<div style="margin-bottom: 16px;">'
-                . '<span style="' . $style_row_label . '">' . $svg_car . ' Vehicle</span>'
-                . '<span style="' . $style_row_value . '">' . esc_html( $vehicle_title ) . '</span>'
+                // Nom du circuit mis en avant
+                . '<h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 15px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">' . esc_html( strtoupper( $circuit_title ) ) . '</h3>'
+
+                // Bloc détails
+                . '<div style="background: ' . $bg_light . '; border-radius: 8px; border: 1px solid ' . $border_color . '; padding: 15px;">'
+                . '<div><span style="' . $style_label . '">Date & Time</span><span style="' . $style_value . '">' . esc_html( $datetime_display ) . '</span></div>'
+                . '<div><span style="' . $style_label . '">Vehicle</span><span style="' . $style_value . '">' . esc_html( $vehicle_title ) . '</span></div>'
+                . '<div><span style="' . $style_label . '">Pickup</span><span style="' . $style_value . '">' . esc_html( $data['pickup_address'] ) . '</span></div>'
+                . '<div style="margin-bottom: 0;"><span style="' . $style_label . '">Total Amount</span><span style="font-size: 20px; font-weight: 800; color: ' . $theme_primary . '; display: block;">' . $formatted_amount . '</span></div>'
                 . '</div>'
-                
-                . '<div style="margin-bottom: 16px;">'
-                . '<span style="' . $style_row_label . '">' . $svg_cal . ' Date & Time</span>'
-                . '<span style="' . $style_row_value . '">' . esc_html( $datetime_display ) . '</span>'
-                . '</div>'
-                
-                . '<div style="margin-bottom: 16px;">'
-                . '<span style="' . $style_row_label . '">' . $svg_pin . ' Pickup Location</span>'
-                . '<span style="' . $style_row_value . '">' . esc_html( $data['pickup_address'] ) . '</span>'
-                . '</div>'
-                
-                . '<div style="margin-bottom: 0;">'
-                . '<span style="' . $style_row_label . '">' . $svg_card . ' Total Amount</span>'
-                . '<span style="font-size: 22px; font-weight: 800; color: '.$theme_primary.'; margin: 0; display: block;">' . $formatted_amount . '</span>'
-                . '</div>'
-                
-                . '</div>' // Fin fond gris
                 
                 . $btn_html
                 . '</div>'
-                // Footer
-                . '<div style="background: '.$bg_light.'; border-top: 1px solid '.$border_color.'; padding: 20px; text-align: center;">'
-                . '<p style="margin: 0; font-size: 12px; color: '.$text_light.';">' . esc_html( $company_name ) . ' — VIP Chauffeur & Private Transfers</p>'
+                . '<div style="background: ' . $bg_light . '; border-top: 1px solid ' . $border_color . '; padding: 15px; text-align: center;">'
+                . '<p style="margin: 0; font-size: 12px; color: ' . $text_light . ';">' . esc_html( $company_name ) . ' — The Mediterranean coastline within your reach</p>'
                 . '</div>'
                 . '</div></div>';
 
@@ -821,25 +940,32 @@ class ETB_Ajax {
         }
 
         // ══════════════════════════════════════════════════════════════
-        // 2. EMAIL ADMIN (Le lien est TOUJOURS affiché)
+        // 2. EMAIL ADMIN (Notification simple)
         // ══════════════════════════════════════════════════════════════
         if ( ! empty( $admin_email ) && is_email( $admin_email ) ) {
             $payment_tag = $is_pay_later ? 'PAY LATER' : ( empty($payment_url) ? 'CONFIRMED' : 'PENDING PAYMENT' );
-            $subject_admin = '[NEW BOOKING] ' . $payment_tag . ' - ' . esc_html( $customer_name );
+            $subject_admin  = '[NEW BOOKING] ' . $display_id . ' - ' . $payment_tag . ' - ' . esc_html( $customer_name );
             
-            $admin_link = ! empty( $payment_url ) ? '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid '.$border_color.';"><span style="' . $style_row_label . '">Payment Link</span><a href="' . esc_url( $payment_url ) . '" style="color: '.$theme_primary.'; word-break: break-all; font-size: 14px;">' . esc_url( $payment_url ) . '</a></div>' : '';
+            $admin_link = ! empty( $payment_url ) ? '<div style="margin-top: 15px; text-align: center;"><a href="' . esc_url( $payment_url ) . '" style="' . $style_btn . '">View Payment Link</a></div>' : '';
 
             $message_admin = '<div style="' . $style_body . '">'
                 . '<div style="' . $style_card . '">'
-                . '<div style="' . $style_header . '; text-align: left; padding: 20px 30px;">'
-                . '<h2 style="' . $style_title . '; font-size: 20px; margin: 0;">New Booking: <span style="color: '.$theme_primary.';">' . $payment_tag . '</span></h2>'
+                . '<div style="' . $style_header . '; text-align: left;">'
+                . '<h2 style="font-size: 18px; margin: 0; color: ' . $text_dark . ';">New Booking: <span style="color: ' . $theme_primary . ';">' . $payment_tag . '</span></h2>'
                 . '</div>'
-                . '<div style="' . $style_content . '">'
-                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Customer</span><span style="' . $style_row_value . '">' . esc_html( $customer_name ) . ' (' . esc_html( $data['phone'] ) . ')</span></div>'
-                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Circuit</span><span style="' . $style_row_value . '">' . esc_html( $circuit_title ) . '</span></div>'
-                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Vehicle</span><span style="' . $style_row_value . '">' . esc_html( $vehicle_title ) . '</span></div>'
-                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Date & Time</span><span style="' . $style_row_value . '">' . esc_html( $datetime_display ) . '</span></div>'
-                . '<div style="margin-bottom: 16px;"><span style="' . $style_row_label . '">Total Due</span><span style="' . $style_row_value . '">' . $formatted_amount . '</span></div>'
+                . '<div style="padding: 10px;">'
+                . '<div style="margin-bottom: 15px;"><span style="' . $style_label . '">Mission ID</span><span style="' . $style_value . '">' . esc_html( $display_id ) . '</span></div>'
+                
+                // Nom du circuit
+                . '<h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 15px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">' . esc_html( strtoupper( $circuit_title ) ) . '</h3>'
+
+                . '<div style="background: ' . $bg_light . '; border-radius: 8px; border: 1px solid ' . $border_color . '; padding: 15px;">'
+                . '<div><span style="' . $style_label . '">Customer</span><span style="' . $style_value . '">' . esc_html( $customer_name ) . ' (' . esc_html( $data['phone'] ) . ')</span></div>'
+                . '<div><span style="' . $style_label . '">Vehicle</span><span style="' . $style_value . '">' . esc_html( $vehicle_title ) . '</span></div>'
+                . '<div><span style="' . $style_label . '">Date & Time</span><span style="' . $style_value . '">' . esc_html( $datetime_display ) . '</span></div>'
+                . '<div style="margin-bottom: 0;"><span style="' . $style_label . '">Total Due</span><span style="font-size: 20px; font-weight: 800; color: ' . $text_dark . '; display: block;">' . $formatted_amount . '</span></div>'
+                . '</div>'
+                
                 . $admin_link
                 . '</div>'
                 . '</div>'
@@ -849,5 +975,243 @@ class ETB_Ajax {
         }
     }
 
+
+        /**
+     * Envoie un email d'alerte à l'admin en cas d'échec de synchro LimoExpress.
+     */
+    private function send_limo_error_alert( $booking_id, $context_message, $error_detail ) {
+        $gen_settings = get_option( 'etb_general_settings', array() );
+        $admin_email  = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
+        
+        if ( empty( $admin_email ) || ! is_email( $admin_email ) ) return;
+
+        $customer_name = get_post_meta( $booking_id, '_etb_customer_name', true ) ?: 'Client Inconnu';
+        $total_price   = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+        $currency      = ! empty( $gen_settings['currency'] ) ? $gen_settings['currency'] : '€';
+        $edit_link     = admin_url( 'post.php?post=' . $booking_id . '&action=edit' );
+
+        $subject = '🚨 ALERTE : Échec LimoExpress - Réservation #' . $booking_id;
+        
+        $message = '<h2>Échec de synchronisation LimoExpress</h2>';
+        $message .= '<p><strong>Contexte :</strong> ' . esc_html( $context_message ) . '</p>';
+        $message .= '<p><strong>Erreur :</strong> <code style="color:red;">' . esc_html( $error_detail ) . '</code></p>';
+        $message .= '<hr>';
+        $message .= '<p><strong>Client :</strong> ' . esc_html( $customer_name ) . '</p>';
+        $message .= '<p><strong>Montant :</strong> ' . number_format_i18n( $total_price, 2 ) . ' ' . esc_html( $currency ) . '</p>';
+        $message .= '<p><a href="' . esc_url( $edit_link ) . '" style="display:inline-block; padding:10px 10px; background:#dc2626; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold;">Voir la réservation dans WordPress</a></p>';
+
+        $headers = ETB_Settings::get_mail_headers( $admin_email, 'Système LimoExpress' );
+        wp_mail( $admin_email, $subject, $message, $headers );
+    }
+
+
+        /**
+     * Envoie le reçu de paiement final au client après succès Stripe.
+     */
+        /**
+     * Envoie le reçu de paiement final au client après succès Stripe.
+     */
+    private function send_payment_receipt_email( $booking_id ) {
+        $gen_settings    = get_option( 'etb_general_settings', array() );
+        $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
+        $payment_method_label = get_post_meta( $booking_id, '_etb_payment_method_label', true ) ?: 'Card / Wallet';
+        $company_name    = get_bloginfo( 'name' );
+        $admin_email     = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
+
+        $customer_email   = get_post_meta( $booking_id, '_etb_customer_email', true );
+        $display_id = $this->get_formatted_booking_id( $booking_id );
+        $customer_name    = get_post_meta( $booking_id, '_etb_customer_name', true );
+        $booking_date     = get_post_meta( $booking_id, '_etb_booking_date', true );
+        $booking_time     = get_post_meta( $booking_id, '_etb_booking_time', true );
+        $pickup_address   = get_post_meta( $booking_id, '_etb_pickup_address', true );
+        $dropoff_info     = get_post_meta( $booking_id, '_etb_dropoff_info', true ) ?: $pickup_address;
+        $total_price      = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+        $vehicles         = get_post_meta( $booking_id, '_etb_vehicles', true ) ?: array();
+        $adults           = absint( get_post_meta( $booking_id, '_etb_adults', true ) );
+        $children         = absint( get_post_meta( $booking_id, '_etb_children', true ) );
+        $luggage          = absint( get_post_meta( $booking_id, '_etb_luggage', true ) );
+        $flight_number    = get_post_meta( $booking_id, '_etb_flight_number', true );
+        $baby_seats       = absint( get_post_meta( $booking_id, '_etb_baby_seat_count', true ) );
+        $booster_seats    = absint( get_post_meta( $booking_id, '_etb_booster_seat_count', true ) );
+        $limo_id          = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+        $intent_id        = get_post_meta( $booking_id, '_etb_stripe_payment_intent_id', true );
+        
+        $circuit_id       = get_post_meta( $booking_id, '_etb_circuit_id', true );
+        $circuit_title    = $circuit_id ? get_the_title( $circuit_id ) : 'VIP Circuit';
+
+        if ( empty( $customer_email ) || ! is_email( $customer_email ) ) return;
+
+        $formatted_amount = number_format_i18n( $total_price, 2 ) . ' ' . $currency_symbol;
+        $date_ts          = strtotime( $booking_date );
+        $formatted_date   = $date_ts ? date( 'd M Y', $date_ts ) : $booking_date;
+        $time_ts          = strtotime( '1970-01-01 ' . $booking_time );
+        $formatted_time   = $time_ts ? date( 'h:i A', $time_ts ) : $booking_time;
+        $datetime_display = $formatted_date . ' at ' . $formatted_time;
+
+        $vehicle_title = 'Luxury Vehicle';
+        foreach ( $vehicles as $v_id => $qty ) {
+            if ( $qty > 0 ) { $vehicle_title = get_the_title( $v_id ); break; }
+        }
+
+        // Avant : $subject_client = 'Receipt - Booking #' . $booking_id . ' Confirmed & Paid';
+        // Après :
+        $subject_client = 'Receipt - Mission ' . $display_id . ' Confirmed & Paid';
+        $headers_client = ETB_Settings::get_mail_headers( $admin_email, $company_name );
+
+        // Construction du bloc des préférences
+        $preferences_html = '';
+        if ( $baby_seats > 0 ) $preferences_html .= '<li>👶 ' . $baby_seats . ' Baby Seat(s)</li>';
+        if ( $booster_seats > 0 ) $preferences_html .= '<li>🧒 ' . $booster_seats . ' Booster Seat(s)</li>';
+        if ( ! empty( $flight_number ) ) $preferences_html .= '<li>✈️ Flight Number: ' . esc_html( $flight_number ) . '</li>';
+        if ( ! empty( $limo_id ) ) $preferences_html .= '<li>🚘 Mission Ref: ' . esc_html( $limo_id ) . '</li>';
+
+        // HTML de l'email avec Responsive Design (Mobile First)
+        $message_client = '
+        <div style="background-color: #f1f5f9; padding: 10px; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b;">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                
+                <div style="padding: 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
+                    <h1 style="font-size: 20px; font-weight: 800; margin: 0; color: #1e293b;">Payment Received</h1>
+                </div>
+
+                <div style="padding: 20px;">
+                    <p style="font-size: 15px; margin-top: 0; color: #1e293b;">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Your payment has been successfully authorized and confirmed. Your mission is locked in dispatch.</p>
+                    
+                    <!-- BLOC VERT : DÉTAILS DU PAIEMENT -->
+                    <div style="background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                        <div style="margin-bottom: 15px;">
+                            <span style="font-size: 13px; color: #4b5563; display: block;">Total Amount Paid:</span>
+                            <span style="font-size: 26px; font-weight: 800; color: #15803d; display: block;">' . $formatted_amount . '</span>
+                        </div>
+                        <div style="border-top: 1px solid #c8e6c9; padding-top: 15px; margin-bottom: 15px;">
+                            <span style="font-size: 13px; color: #4b5563; display: block;">Payment Method:</span>
+                           <span style="font-size: 15px; font-weight: 600; color: #1e293b; display: block;">' . esc_html( $payment_method_label ) . '</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 13px; color: #4b5563; display: block;">Transaction ID:</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #15803d; display: block; word-break: break-all;">' . esc_html( $intent_id ) . '</span>
+                        </div>
+                    </div>
+
+                    <!-- DÉTAILS DU CIRCUIT -->
+                    <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 15px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">' . esc_html( strtoupper( $circuit_title ) ) . '</h3>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Date & Time</span><br>
+                            <span style="font-size: 14px; font-weight: 600;">' . esc_html( $datetime_display ) . '</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Vehicle</span><br>
+                            <span style="font-size: 14px; font-weight: 600;">' . esc_html( $vehicle_title ) . '</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Pickup</span><br>
+                            <span style="font-size: 14px; font-weight: 600;">' . esc_html( $pickup_address ) . '</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Drop-off</span><br>
+                            <span style="font-size: 14px; font-weight: 600;">' . esc_html( $dropoff_info ) . '</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Passengers & Luggage</span><br>
+                            <span style="font-size: 14px; font-weight: 600;">' . $adults . ' Adults, ' . $children . ' Children • ' . $luggage . ' Luggage</span>
+                        </div>
+                    </div>';
+
+        if ( ! empty( $preferences_html ) ) {
+            $message_client .= '
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 20px 0 10px 0;">Client Preferences:</h3>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #1e293b;">' . $preferences_html . '</ul>';
+        }
+
+        $message_client .= '
+                </div>
+                <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">' . esc_html( $company_name ) . ' — The Mediterranean coastline within your reach</p>
+                </div>
+            </div>
+        </div>';
+
+        wp_mail( $customer_email, $subject_client, $message_client, $headers_client );
+    }
+
+        /**
+     * ÉTAPE 3 : Envoie un email de relance si la réservation est toujours en attente.
+     */
+    public function send_abandoned_cart_email( $booking_id ) {
+        // 1. Vérification du statut
+        $status = get_post_meta( $booking_id, '_etb_status', true );
+        if ( 'confirmed' === $status || 'completed' === $status ) {
+            return; // Le client a déjà payé, on ne fait rien.
+        }
+
+        $gen_settings    = get_option( 'etb_general_settings', array() );
+        $currency_symbol = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
+        $company_name    = get_bloginfo( 'name' );
+        $admin_email     = ! empty( $gen_settings['admin_email'] ) && is_email( $gen_settings['admin_email'] ) ? sanitize_email( $gen_settings['admin_email'] ) : get_option( 'admin_email' );
+
+        $customer_email = get_post_meta( $booking_id, '_etb_customer_email', true );
+        $display_id = $this->get_formatted_booking_id( $booking_id );
+        $customer_name  = get_post_meta( $booking_id, '_etb_customer_name', true );
+        $total_price    = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+        $pay_token      = get_post_meta( $booking_id, '_etb_pay_token', true );
+        $circuit_id     = get_post_meta( $booking_id, '_etb_circuit_id', true );
+        $circuit_title  = $circuit_id ? get_the_title( $circuit_id ) : 'VIP Circuit';
+
+        if ( empty( $customer_email ) || ! is_email( $customer_email ) || empty( $pay_token ) ) {
+            return;
+        }
+
+        $formatted_amount = number_format_i18n( $total_price, 2 ) . ' ' . $currency_symbol;
+        $payment_base_url = ! empty( $gen_settings['payment_page_url'] ) ? esc_url_raw( $gen_settings['payment_page_url'] ) : home_url( '/payment/' );
+        $payment_url      = add_query_arg( 'ref', $pay_token, $payment_base_url );
+
+        $subject_client = 'Did you forget to complete your booking? ' . $display_id;
+        $headers_client = ETB_Settings::get_mail_headers( $admin_email, $company_name );
+
+        $theme_primary = '#ba6827';
+        $text_dark     = '#1e293b';
+        $text_light    = '#64748b';
+        
+        $message_client = '
+        <div style="background-color: #f1f5f9; padding: 10px; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: ' . $text_dark . ';">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                <div style="padding: 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
+                    <h1 style="font-size: 20px; font-weight: 800; margin: 0; color: #1e293b;">Action Required</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="font-size: 15px; margin-top: 0; color: #1e293b;">Dear <strong>' . esc_html( $customer_name ) . '</strong>,</p>
+                    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">We noticed you started your booking but didn\'t finish the payment. Your reservation is not secured yet!</p>
+                    
+                    <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 15px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">' . esc_html( strtoupper( $circuit_title ) ) . '</h3>
+                    
+                    <div style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 15px; text-align: center;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px;">Amount Pending</span>
+                        <span style="font-size: 22px; font-weight: 800; color: ' . $theme_primary . '; display: block; margin-bottom: 15px;">' . $formatted_amount . '</span>
+                        <a href="' . esc_url( $payment_url ) . '" style="display: inline-block; background: ' . $theme_primary . '; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box;">Complete My Payment</a>
+                    </div>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 20px; text-align: center;">If you have any questions, reply to this email.</p>
+                </div>
+                <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">' . esc_html( $company_name ) . ' — The Mediterranean coastline within your reach</p>
+                </div>
+            </div>
+        </div>';
+
+        wp_mail( $customer_email, $subject_client, $message_client, $headers_client );
+    }
+
+        /**
+     * Retourne l'ID formaté pour l'affichage (LimoExpress en priorité, sinon WP).
+     */
+    private function get_formatted_booking_id( $booking_id ) {
+        $limo_id = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+        if ( ! empty( $limo_id ) && 'OK' !== $limo_id ) {
+            return '#' . $limo_id; // ex: #350/2026
+        }
+        return '#WP-' . $booking_id; // Fallback ex: #WP-606
+    }
 
 }

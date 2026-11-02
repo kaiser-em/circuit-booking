@@ -31,6 +31,8 @@ if ( $has_valid_booking ) {
     $stripe_intent   = get_post_meta( $booking_id, '_etb_stripe_payment_intent_id', true );
     $is_already_paid = ( 'confirmed' === $current_status || ! empty( $stripe_intent ) );
     $settled_amount  = floatval( get_post_meta( $booking_id, '_etb_total_price', true ) );
+    $limo_id_ref = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+    $display_frontend_id = ! empty( $limo_id_ref ) && 'OK' !== $limo_id_ref ? '#' . $limo_id_ref : '#WP-' . $booking_id;
 }
 
 // 2. Récupération exhaustive des détails
@@ -109,7 +111,7 @@ if ( $booking_date ) {
             </div>
             <h2 class="etb-pay-status-title success" style="font-size: 32px; margin-bottom: 12px;">Payment Successful!</h2>
             <p class="etb-pay-status-text" style="font-size: 16px; color: #166534; max-width: 500px; margin: 0 auto 30px auto;">
-                Your booking <strong>#<?php echo esc_html( $booking_id ); ?></strong> has been confirmed and paid successfully.<br>
+                Your booking <strong><?php echo esc_html( $display_frontend_id ); ?></strong> has been confirmed and paid successfully.<br>
                 A detailed receipt has been sent to your email.
             </p>
             <div style="display: flex; gap: 15px; justify-content: center;">
@@ -223,9 +225,7 @@ if ( $booking_date ) {
                     </div>
                 </div>
 
-                <p class="etb-pay-secure-text" style="margin-top: 20px;">
-                    <span class="dashicons dashicons-lock"></span> Secure 256-bit SSL Encrypted Payment
-                </p>
+                
             </div>
             
             <!-- COLONNE DROITE : PAIEMENT (Inchangé) -->
@@ -274,6 +274,7 @@ if ( $booking_date ) {
                     <div id="etb-standalone-pay-feedback" class="etb-pay-alert"></div>
 
                     <button type="button" id="etb-standalone-pay-btn" class="etb-pay-button">
+                        <span class="dashicons dashicons-lock lock"></span>
                         <span id="etb-standalone-pay-text">Pay <?php echo esc_html( $formatted_amount ); ?></span>
                     </button>
                 </form>

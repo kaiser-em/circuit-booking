@@ -1756,7 +1756,7 @@ setTimeout(formatAutofilledPhone, 300);
 
             // Tableau des messages d'erreur par étape
             const stepErrors = {
-                1: 'Please select a vehicle and provide a pickup address to continue.',
+                1: 'Please provide a pickup address to continue.',
                 2: 'Please complete all required fields before continuing.'
             };
 

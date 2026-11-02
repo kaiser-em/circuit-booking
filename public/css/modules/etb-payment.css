@@ -335,3 +335,8 @@
     margin-right: 8px;
     vertical-align: middle;
 }
+
+.dashicons.dashicons-lock.lock{
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+}

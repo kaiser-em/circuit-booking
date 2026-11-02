@@ -494,9 +494,9 @@ class ETB_LimoExpress {
             'baby_seat_count'        => (int) $total_child_seats, // Somme totale pour le champ officiel LimoExpress
             'round_trip'             => ! empty( $data['option_id'] ),
             'note'                   => $dispatcher_note,
-            'note_for_driver'        => substr( $note_for_driver, 0, 500 ),
-            'flight_number'          => ! empty( $data['flight_number'] ) ? substr( trim( $data['flight_number'] ), 0, 50 ) : '',
-            'waiting_board_text'     => ! empty( $data['waiting_board_text'] ) ? substr( trim( $data['waiting_board_text'] ), 0, 50 ) : '',
+            'note_for_driver'        => mb_substr( $note_for_driver, 0, 500, 'UTF-8' ),
+            'flight_number'          => ! empty( $data['flight_number'] ) ? mb_substr( trim( $data['flight_number'] ), 0, 50, 'UTF-8' ) : '',
+            'waiting_board_text'     => ! empty( $data['waiting_board_text'] ) ? mb_substr( trim( $data['waiting_board_text'] ), 0, 50, 'UTF-8' ) : '',
             'passengers'             => $passengers_array,
             'checkpoints'            => $checkpoints,
             'extra_fees'             => $extra_fees,
@@ -504,87 +504,144 @@ class ETB_LimoExpress {
             'payment_logs'           => ! empty( $data['payment_logs'] ) && is_array( $data['payment_logs'] ) ? $data['payment_logs'] : array(),
         );
 
-        // 10. Requête HTTP PUT vers LimoExpress
-        $response = wp_remote_request( self::API_ENDPOINT, array(
-            'method'    => 'PUT',
-            'headers'   => array(
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-                'Authorization' => 'Bearer ' . $api_token,
-            ),
-            'body'      => wp_json_encode( $payload ),
-            'timeout'   => 15,
-            'sslverify' => true,
-        ) );
+        // ─────────────────────────────────────────────────────────────
+        // 10. ENVOI VERS LIMOEXPRESS (Création ou Mise à jour)
+        // ─────────────────────────────────────────────────────────────
+        $existing_uuid = get_post_meta( $booking_id, '_etb_limo_uuid', true );
+        $is_update     = ! empty( $existing_uuid );
 
-        if ( is_wp_error( $response ) ) {
-            update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
-            update_post_meta( $booking_id, '_etb_limo_error', 'Erreur WP HTTP: ' . $response->get_error_message() );
-            return false;
-        }
+        if ( $is_update ) {
+            // ── CAS 1 : MISE À JOUR (le booking existe déjà dans LimoExpress) ──
+            $update_payload          = $payload;
+            $update_payload['id']    = (string) $existing_uuid;
+            // Le payload contient déjà les notes mises à jour ($dispatcher_note et $note_for_driver)
 
-        $status_code = wp_remote_retrieve_response_code( $response );
-        $raw_body    = wp_remote_retrieve_body( $response );
-        $body        = json_decode( $raw_body, true );
+            $response = wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
+                'headers' => array(
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                    'Authorization' => 'Bearer ' . $api_token,
+                ),
+                'body'    => wp_json_encode( $update_payload ),
+                'timeout' => 15,
+            ) );
 
-        if ( $status_code >= 200 && $status_code < 300 ) {
-            // Priorité absolue au format officiel LimoExpress (ex: 203/2026)
-            $limo_id   = ! empty( $body['data']['internal_number'] ) ? sanitize_text_field( $body['data']['internal_number'] ) : ( $body['data']['number'] ?? $body['data']['id'] ?? 'OK' );
-            $limo_uuid = ! empty( $body['data']['id'] ) ? sanitize_text_field( $body['data']['id'] ) : '';
-            $limo_hex  = ! empty( $body['data']['number'] ) ? sanitize_text_field( $body['data']['number'] ) : '';
-
-            update_post_meta( $booking_id, '_etb_limo_status', 'synced' );
-            update_post_meta( $booking_id, '_etb_limo_booking_id', $limo_id ); // Enregistre "203/2026"
-            if ( ! empty( $limo_hex ) ) {
-                update_post_meta( $booking_id, '_etb_limo_hex_id', $limo_hex );
-            }
-            if ( ! empty( $limo_uuid ) ) {
-                update_post_meta( $booking_id, '_etb_limo_uuid', $limo_uuid );
+            if ( is_wp_error( $response ) ) {
+                update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', 'Erreur WP HTTP (update): ' . $response->get_error_message() );
+                return false;
             }
 
-            // Uniformisation de la note dans LimoExpress avec le numéro officiel généré (ex: #208/2026)
-            if ( ! empty( $limo_id ) && 'OK' !== $limo_id && ! empty( $limo_uuid ) ) {
-                $updated_driver_note     = str_replace( sprintf( 'DOSSIER #%d', $booking_id ), sprintf( 'MISSION #%s', $limo_id ), $note_for_driver );
-                $updated_dispatcher_note = str_replace( sprintf( 'DOSSIER #%d', $booking_id ), sprintf( 'MISSION #%s', $limo_id ), $dispatcher_note );
+            $status_code = wp_remote_retrieve_response_code( $response );
+            $raw_body    = wp_remote_retrieve_body( $response );
+            $body        = json_decode( $raw_body, true );
 
-                // Enregistrement local
-                update_post_meta( $booking_id, '_etb_note', $updated_dispatcher_note );
-
-                // Mise à jour complète avec tous les champs requis par l'API LimoExpress
-                $full_update_payload                     = $payload;
-                $full_update_payload['id']              = (string) $limo_uuid;
-                $full_update_payload['note']            = $updated_dispatcher_note;
-                $full_update_payload['note_for_driver'] = mb_substr( $updated_driver_note, 0, 500 );
-
-                wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
-                    'headers' => array(
-                        'Content-Type'  => 'application/json',
-                        'Accept'        => 'application/json',
-                        'Authorization' => 'Bearer ' . $api_token,
-                    ),
-                    'body'    => wp_json_encode( $full_update_payload ),
-                    'timeout' => 15,
-                ) );
-            }
-            
-            delete_post_meta( $booking_id, '_etb_limo_error' );
-            return true;
-        } else {
-            $err_details = '';
-            if ( isset( $body['errors'] ) && is_array( $body['errors'] ) ) {
-                $err_parts = array();
-                foreach ( $body['errors'] as $f => $m ) {
-                    $err_parts[] = sprintf( '[%s: %s]', $f, is_array( $m ) ? implode( ', ', $m ) : $m );
-                }
-                $err_details = implode( ' ', $err_parts );
-            } elseif ( isset( $body['message'] ) ) {
-                $err_details = $body['message'];
+            if ( $status_code >= 200 && $status_code < 300 ) {
+                // Mise à jour réussie : on synchronise la note locale
+                update_post_meta( $booking_id, '_etb_note', $dispatcher_note );
+                delete_post_meta( $booking_id, '_etb_limo_error' );
+                return true;
             } else {
-                $err_details = substr( strip_tags( $raw_body ), 0, 200 );
+                // Échec de la mise à jour : on extrait l'erreur
+                $err_details = '';
+                if ( isset( $body['errors'] ) && is_array( $body['errors'] ) ) {
+                    $err_parts = array();
+                    foreach ( $body['errors'] as $f => $m ) {
+                        $err_parts[] = sprintf( '[%s: %s]', $f, is_array( $m ) ? implode( ', ', $m ) : $m );
+                    }
+                    $err_details = implode( ' ', $err_parts );
+                } elseif ( isset( $body['message'] ) ) {
+                    $err_details = $body['message'];
+                } else {
+                    $err_details = mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' );
+                }
+                update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', sprintf( 'HTTP %s (update): %s', $status_code, $err_details ) );
+                return false;
             }
-            update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
-            update_post_meta( $booking_id, '_etb_limo_error', sprintf( 'HTTP %s: %s', $status_code, $err_details ) );
-            return false;
+
+        } else {
+            // ── CAS 2 : CRÉATION (le booking n'existe pas encore dans LimoExpress) ──
+            $response = wp_remote_request( self::API_ENDPOINT, array(
+                'method'    => 'PUT',
+                'headers'   => array(
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                    'Authorization' => 'Bearer ' . $api_token,
+                ),
+                'body'      => wp_json_encode( $payload ),
+                'timeout'   => 15,
+                'sslverify' => true,
+            ) );
+
+            if ( is_wp_error( $response ) ) {
+                update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', 'Erreur WP HTTP: ' . $response->get_error_message() );
+                return false;
+            }
+
+            $status_code = wp_remote_retrieve_response_code( $response );
+            $raw_body    = wp_remote_retrieve_body( $response );
+            $body        = json_decode( $raw_body, true );
+
+            if ( $status_code >= 200 && $status_code < 300 ) {
+                // Priorité absolue au format officiel LimoExpress (ex: 203/2026)
+                $limo_id   = ! empty( $body['data']['internal_number'] ) ? sanitize_text_field( $body['data']['internal_number'] ) : ( $body['data']['number'] ?? $body['data']['id'] ?? 'OK' );
+                $limo_uuid = ! empty( $body['data']['id'] ) ? sanitize_text_field( $body['data']['id'] ) : '';
+                $limo_hex  = ! empty( $body['data']['number'] ) ? sanitize_text_field( $body['data']['number'] ) : '';
+
+                update_post_meta( $booking_id, '_etb_limo_status', 'synced' );
+                update_post_meta( $booking_id, '_etb_limo_booking_id', $limo_id );
+                if ( ! empty( $limo_hex ) ) {
+                    update_post_meta( $booking_id, '_etb_limo_hex_id', $limo_hex );
+                }
+                if ( ! empty( $limo_uuid ) ) {
+                    update_post_meta( $booking_id, '_etb_limo_uuid', $limo_uuid );
+                }
+
+                // Uniformisation de la note dans LimoExpress avec le numéro officiel généré
+                if ( ! empty( $limo_id ) && 'OK' !== $limo_id && ! empty( $limo_uuid ) ) {
+                    $updated_driver_note     = str_replace( sprintf( 'DOSSIER #%d', $booking_id ), sprintf( 'MISSION #%s', $limo_id ), $note_for_driver );
+                    $updated_dispatcher_note = str_replace( sprintf( 'DOSSIER #%d', $booking_id ), sprintf( 'MISSION #%s', $limo_id ), $dispatcher_note );
+
+                    update_post_meta( $booking_id, '_etb_note', $updated_dispatcher_note );
+
+                    $full_update_payload                     = $payload;
+                    $full_update_payload['id']              = (string) $limo_uuid;
+                    $full_update_payload['note']            = $updated_dispatcher_note;
+                    $full_update_payload['note_for_driver'] = mb_substr( $updated_driver_note, 0, 500, 'UTF-8' );
+
+                    wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
+                        'headers' => array(
+                            'Content-Type'  => 'application/json',
+                            'Accept'        => 'application/json',
+                            'Authorization' => 'Bearer ' . $api_token,
+                        ),
+                        'body'    => wp_json_encode( $full_update_payload ),
+                        'timeout' => 15,
+                    ) );
+                }
+                
+                delete_post_meta( $booking_id, '_etb_limo_error' );
+                return true;
+            } else {
+                // Échec de la création : extraction de l'erreur
+                $err_details = '';
+                if ( isset( $body['errors'] ) && is_array( $body['errors'] ) ) {
+                    $err_parts = array();
+                    foreach ( $body['errors'] as $f => $m ) {
+                        $err_parts[] = sprintf( '[%s: %s]', $f, is_array( $m ) ? implode( ', ', $m ) : $m );
+                    }
+                    $err_details = implode( ' ', $err_parts );
+                } elseif ( isset( $body['message'] ) ) {
+                    $err_details = $body['message'];
+                } else {
+                    $err_details = mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' );
+                }
+                update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
+                update_post_meta( $booking_id, '_etb_limo_error', sprintf( 'HTTP %s: %s', $status_code, $err_details ) );
+                return false;
+            }
         }
     }
 

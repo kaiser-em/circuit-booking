@@ -998,7 +998,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                 <div class="etb-field" style="margin-top: 15px;">
                                     <label style="font-size:13px; color:#64748b; margin-bottom:6px; display:block;">Phone Number *</label>
                                     <!-- Le JS s'occupe d'initialiser intl-tel-input sur ce champ -->
-                                    <div class="nexora-input-wrapper">
+                                    <div class="nexora-input-wrapper phone">
                                         <input type="tel" name="etb_phone" id="etb-phone" class="etb-phone-input" autocomplete="tel">
                                     </div>
                                     <p class="etb-error-message" id="etb-phone-error" style="display:none; margin-top:6px; margin-bottom:0;">⚠ Please enter a valid phone number.</p>
