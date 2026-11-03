@@ -421,9 +421,17 @@ class ETB_Ajax {
         }
 
         // ─────────────────────────────────────────────────────────────
-        // RÉPONSE JSON FINALE
+        // RÉPONSE JSON FINALE (Avec l'ID LimoExpress si dispo)
         // ─────────────────────────────────────────────────────────────
         $data['booking_id'] = $booking_id;
+        
+        $limo_id_final = get_post_meta( $booking_id, '_etb_limo_booking_id', true );
+        if ( ! empty( $limo_id_final ) && 'OK' !== $limo_id_final ) {
+            $data['display_ref'] = '#' . $limo_id_final; // ex: #350/2026
+        } else {
+            $data['display_ref'] = '#WP-' . $booking_id; // Fallback
+        }
+
         wp_send_json_success( $data );
     }
 
@@ -784,14 +792,14 @@ $amount = $server_total;
             );
 
             // 1. Envoi de la mise à jour complète (NOTE + STATUT PAYÉ)
-            $res_update = wp_remote_post( 'https://api.limoexpress.me/api/integration/bookings', array(
+            $res_update = wp_remote_post( ETB_LimoExpress::get_api_base() . 'bookings', array(
                 'headers' => $headers,
                 'body'    => wp_json_encode( $update_payload ),
                 'timeout' => 15,
             ) );
             
             // 2. Déclenchement formel du statut "Payé"
-            $res_mark_paid = wp_remote_post( 'https://api.limoexpress.me/api/integration/mark-booking-as-paid', array(
+            $res_mark_paid = wp_remote_post( ETB_LimoExpress::get_api_base() . 'mark-booking-as-paid', array(
                 'headers' => $headers,
                 'body'    => wp_json_encode( array( 'id' => $limo_uuid ) ),
                 'timeout' => 15,
@@ -899,7 +907,7 @@ $amount = $server_total;
         // 1. EMAIL CLIENT (Envoyé UNIQUEMENT si "Pay Later")
         // ══════════════════════════════════════════════════════════════
         if ( $is_pay_later && ! empty( $customer_email ) && is_email( $customer_email ) ) {
-            $subject_client = $is_pay_later ? 'Reservation Confirmed ' . $display_id . ' - Payment Pending' : 'Action Required: Complete Your Booking ' . $display_id;
+            $subject_client = $is_pay_later ? 'Reservation Received ' . $display_id . ' - Payment Pending' : 'Action Required: Complete Your Booking ' . $display_id;
 
             
             $btn_html = '';

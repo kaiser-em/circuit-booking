@@ -82,7 +82,7 @@ class Elite_Transfer_Booking {
         wp_enqueue_style( 'etb-tokens', ETB_URL . 'public/css/modules/etb-tokens.css', array(), ETB_VERSION );
 
         // 3. Modules thématiques (CHARGEMENT LOCAL - Zéro CDN)
-        wp_enqueue_style( 'font-awesome-6', ETB_URL . 'public/css/fontawesome/all.min.css', array(), '6.5.1' );
+        wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
         wp_enqueue_style( 'intl-tel-input-style', ETB_URL . 'public/css/intlTelInput.min.css', array(), '18.2.1' );
         wp_enqueue_style( 'flatpickr-style', ETB_URL . 'public/css/flatpickr.min.css', array(), '4.6.13' );
         

@@ -1538,7 +1538,7 @@ setTimeout(formatAutofilledPhone, 300);
                                 
                                 <div style="display: inline-flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 50px;">
                                     <span style="font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Booking Ref</span>
-                                    <span style="font-size: 18px; color: #ba6827; font-weight: 800;">#${result.data.booking_id}</span>
+                                    <span style="font-size: 18px; color: #ba6827; font-weight: 800;">${result.data.display_ref}</span>
                                 </div>
 
                                 ${paymentBtnHtml}

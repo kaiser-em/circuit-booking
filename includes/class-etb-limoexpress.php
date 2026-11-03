@@ -7,6 +7,14 @@ class ETB_LimoExpress {
      * Endpoint officiel LimoExpress
      */
     const API_ENDPOINT = 'https://api.limoexpress.me/api/integration/booking-with-fees/';
+        /**
+     * Récupère l'URL de base de l'API depuis les réglages.
+     */
+    public static function get_api_base() {
+        $settings = get_option( 'etb_general_settings', array() );
+        $base = ! empty( $settings['limo_api_url'] ) ? trim( $settings['limo_api_url'] ) : 'https://api.limoexpress.me/api/integration/';
+        return rtrim( $base, '/' ) . '/';
+    }
 
     /**
      * Branche le module LimoExpress sur le socle ETB (Hooks WordPress)
@@ -22,6 +30,7 @@ class ETB_LimoExpress {
     public static function sanitize_settings( $new_input, $raw_input ) {
         if ( isset( $new_input['active_dispatcher'] ) && 'limoexpress' === $new_input['active_dispatcher'] ) {
             $new_input['limo_api_token']          = ! empty( $raw_input['limo_api_token'] ) ? sanitize_text_field( trim( $raw_input['limo_api_token'] ) ) : '';
+            $new_input['limo_api_url']            = ! empty( $raw_input['limo_api_url'] ) ? esc_url_raw( trim( $raw_input['limo_api_url'] ) ) : 'https://api.limoexpress.me/api/integration/';
             $new_input['limo_client_id']          = ! empty( $raw_input['limo_client_id'] ) ? sanitize_text_field( trim( $raw_input['limo_client_id'] ) ) : '';
             $new_input['limo_booking_type_id']    = ! empty( $raw_input['limo_booking_type_id'] ) ? sanitize_text_field( trim( $raw_input['limo_booking_type_id'] ) ) : '';
             $new_input['limo_hourly_type_id']      = ! empty( $raw_input['limo_hourly_type_id'] ) ? sanitize_text_field( trim( $raw_input['limo_hourly_type_id'] ) ) : '';
@@ -46,8 +55,8 @@ class ETB_LimoExpress {
         ?>
         <tr class="etb-dispatcher-row limoexpress-row">
             <th scope="row" colspan="2">
-                <div style="background: #fff0f0; border-left: 4px solid #dc2626; padding: 12px; margin-top: 10px;">
-                    <h4 style="margin: 0 0 5px 0; color: #991b1b;">🔴 Configuration LimoExpress</h4>
+                <div style="background: #f0f5ff; border-left: 4px solid #6eb0f2; padding: 12px; margin-top: 10px;">
+                    <h4 style="margin: 0 0 5px 0; color: #082672;">Configuration LimoExpress</h4>
                     <p style="margin: 0; font-size: 13px;">Module connecté. Remplissez votre jeton pour charger automatiquement vos données.</p>
                 </div>
             </th>
@@ -57,6 +66,13 @@ class ETB_LimoExpress {
             <td>
                 <input type="password" name="etb_general_settings[limo_api_token]" value="<?php echo esc_attr( $options['limo_api_token'] ?? '' ); ?>" class="regular-text" placeholder="Collez votre Token ici...">
                 <p class="description">Généré dans LimoExpress (Administration &gt; Organization &gt; Advanced Settings &gt; API Integration).</p>
+            </td>
+        </tr>
+        <tr class="etb-dispatcher-row limoexpress-row">
+            <th scope="row">URL de l'API LimoExpress</th>
+            <td>
+                <input type="url" name="etb_general_settings[limo_api_url]" value="<?php echo esc_attr( $options['limo_api_url'] ?? 'https://api.limoexpress.me/api/integration/' ); ?>" class="regular-text" placeholder="https://api.limoexpress.me/api/integration/">
+                <p class="description">Ne modifiez ceci que si LimoExpress change son URL d'API.</p>
             </td>
         </tr>
 
@@ -547,13 +563,13 @@ class ETB_LimoExpress {
                 if ( isset( $body['errors'] ) && is_array( $body['errors'] ) ) {
                     $err_parts = array();
                     foreach ( $body['errors'] as $f => $m ) {
-                        $err_parts[] = sprintf( '[%s: %s]', $f, is_array( $m ) ? implode( ', ', $m ) : $m );
+                        $err_parts[] = sprintf( '[%s: %s]', sanitize_text_field( $f ), is_array( $m ) ? sanitize_text_field( implode( ', ', $m ) ) : sanitize_text_field( $m ) );
                     }
                     $err_details = implode( ' ', $err_parts );
                 } elseif ( isset( $body['message'] ) ) {
-                    $err_details = $body['message'];
+                    $err_details = sanitize_text_field( $body['message'] );
                 } else {
-                    $err_details = mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' );
+                    $err_details = sanitize_text_field( mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' ) );
                 }
                 update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
                 update_post_meta( $booking_id, '_etb_limo_error', sprintf( 'HTTP %s (update): %s', $status_code, $err_details ) );
@@ -626,17 +642,17 @@ class ETB_LimoExpress {
                 return true;
             } else {
                 // Échec de la création : extraction de l'erreur
-                $err_details = '';
+                 $err_details = '';
                 if ( isset( $body['errors'] ) && is_array( $body['errors'] ) ) {
                     $err_parts = array();
                     foreach ( $body['errors'] as $f => $m ) {
-                        $err_parts[] = sprintf( '[%s: %s]', $f, is_array( $m ) ? implode( ', ', $m ) : $m );
+                        $err_parts[] = sprintf( '[%s: %s]', sanitize_text_field( $f ), is_array( $m ) ? sanitize_text_field( implode( ', ', $m ) ) : sanitize_text_field( $m ) );
                     }
                     $err_details = implode( ' ', $err_parts );
                 } elseif ( isset( $body['message'] ) ) {
-                    $err_details = $body['message'];
+                    $err_details = sanitize_text_field( $body['message'] );
                 } else {
-                    $err_details = mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' );
+                    $err_details = sanitize_text_field( mb_substr( strip_tags( $raw_body ), 0, 200, 'UTF-8' ) );
                 }
                 update_post_meta( $booking_id, '_etb_limo_status', 'failed' );
                 update_post_meta( $booking_id, '_etb_limo_error', sprintf( 'HTTP %s: %s', $status_code, $err_details ) );
@@ -662,7 +678,7 @@ class ETB_LimoExpress {
             return array();
         }
 
-        $response = wp_remote_get( 'https://api.limoexpress.me/api/integration/clients', array(
+        $response = wp_remote_get( self::get_api_base() . 'clients?per_page=100', array(
             'headers' => array(
                 'Accept'        => 'application/json',
                 'Authorization' => 'Bearer ' . $token,
@@ -684,6 +700,7 @@ class ETB_LimoExpress {
                         'id'    => sanitize_text_field( $c['id'] ),
                         'name'  => sanitize_text_field( $c['name'] ),
                         'email' => ! empty( $c['email'] ) ? sanitize_email( $c['email'] ) : '',
+                        'phone' => ! empty( $c['phone'] ) ? sanitize_text_field( $c['phone'] ) : '',
                     );
                 }
             }
@@ -845,14 +862,8 @@ class ETB_LimoExpress {
     public static function get_or_create_client( $data, $settings, $booking_id = 0 ) {
         $token = $settings['limo_api_token'] ?? '';
         
-        // Client de secours par défaut (résolution dynamique sans hardcode)
+        // Client de secours configuré dans les réglages (SÉCURITÉ : on ne prend plus le 1er client au hasard)
         $default_fallback_id = ! empty( $settings['limo_client_id'] ) ? trim( $settings['limo_client_id'] ) : '';
-        if ( empty( $default_fallback_id ) ) {
-            $available_clients = self::get_clients();
-            if ( ! empty( $available_clients[0]['id'] ) ) {
-                $default_fallback_id = trim( $available_clients[0]['id'] );
-            }
-        }
 
         if ( empty( $token ) || empty( $data['name'] ) ) {
             return $default_fallback_id;
@@ -867,18 +878,56 @@ class ETB_LimoExpress {
         }
 
         $customer_email = ! empty( $data['email'] ) ? strtolower( trim( $data['email'] ) ) : '';
+        $customer_phone = ! empty( $data['phone'] ) ? preg_replace( '/[^0-9]/', '', $data['phone'] ) : '';
+        $customer_phone_suffix = $customer_phone ? substr( $customer_phone, -9 ) : '';
 
-        // 2. Recherche par e-mail dans la liste existante
-        if ( ! empty( $customer_email ) ) {
-            $existing_clients = self::get_clients();
+        // 2. Recherche par e-mail ou téléphone
+        if ( ! empty( $customer_email ) || ! empty( $customer_phone_suffix ) ) {
+            // On force le rafraîchissement avec 100 clients
+            $existing_clients = self::get_clients( true ); 
+            
             if ( ! empty( $existing_clients ) && is_array( $existing_clients ) ) {
                 foreach ( $existing_clients as $client ) {
-                    if ( ! empty( $client['email'] ) && strtolower( $client['email'] ) === $customer_email ) {
+                    $c_email = ! empty( $client['email'] ) ? strtolower( trim( $client['email'] ) ) : '';
+                    $c_phone = ! empty( $client['phone'] ) ? preg_replace( '/[^0-9]/', '', $client['phone'] ) : '';
+                    $c_phone_suffix = $c_phone ? substr( $c_phone, -9 ) : '';
+
+                    $email_match = ( ! empty( $customer_email ) && $c_email === $customer_email );
+                    $phone_match = ( ! empty( $customer_phone_suffix ) && $c_phone_suffix === $customer_phone_suffix );
+
+                    if ( $email_match || $phone_match ) {
                         $found_uuid = trim( $client['id'] );
                         if ( $booking_id ) {
                             update_post_meta( $booking_id, '_etb_limo_client_id', $found_uuid );
                         }
                         return $found_uuid;
+                    }
+                }
+            }
+            
+            // 3. Si toujours pas trouvé, on interroge directement l'API LimoExpress par Email
+            if ( ! empty( $customer_email ) ) {
+                $search_url = self::get_api_base() . 'clients?search=' . urlencode( $customer_email );
+                $search_res = wp_remote_get( $search_url, array(
+                    'headers' => array(
+                        'Accept'        => 'application/json',
+                        'Authorization' => 'Bearer ' . $token,
+                    ),
+                    'timeout' => 10,
+                ) );
+                
+                if ( ! is_wp_error( $search_res ) && 200 === wp_remote_retrieve_response_code( $search_res ) ) {
+                    $search_body = json_decode( wp_remote_retrieve_body( $search_res ), true );
+                    if ( ! empty( $search_body['data'] ) && is_array( $search_body['data'] ) ) {
+                        foreach ( $search_body['data'] as $s_client ) {
+                            if ( ! empty( $s_client['email'] ) && strtolower( trim( $s_client['email'] ) ) === $customer_email ) {
+                                $found_uuid = trim( $s_client['id'] );
+                                if ( $booking_id ) {
+                                    update_post_meta( $booking_id, '_etb_limo_client_id', $found_uuid );
+                                }
+                                return $found_uuid;
+                            }
+                        }
                     }
                 }
             }
