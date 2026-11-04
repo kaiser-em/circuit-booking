@@ -937,7 +937,7 @@
     letter-spacing: 0 !important;
     cursor: pointer !important;
     border: none !important;
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    transition: background 0.3s cubic-bezier(0.25, 1, 0.5, 1), transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)  !important;
     min-width: 140px !important;
 }
 
@@ -1127,7 +1127,7 @@
     justify-content: center !important;
     padding: 0 !important;
     flex-shrink: 0 !important;
-    transition: all 0.2s ease !important;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
 }
 
 .etb-booking-widget .etb-vehicle-header-change:hover {
@@ -1282,7 +1282,7 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 0 0 2px 0 !important;
-    transition: all 0.15s ease !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
 }
 
 .co-circuit-wrapper .etb-qty-control .etb-qty-btn:hover,
@@ -1360,8 +1360,9 @@
     border: 1.5px solid #e8e8e8 !important;
     background: #fafafa !important;
     color: var(--etb-primary) !important;
-    transition: all 0.2s ease !important;
+    transition: border-color 0.2s ease, background 0.2s, box-shadow 0.2s ease !important;
 }
+
 .etb-field input{
      max-height: 43px !important;
 }
@@ -5267,7 +5268,7 @@
 
 /* 3. L'INSTAGRAM EMBED : Centré et Taille Maîtrisée */
 .co-step-social-embed {
-    max-width: 400px !important; /* Taille max pour ressembler à un mobile */
+    /*max-width: 400px !important;  Taille max pour ressembler à un mobile */
     margin: 0 auto !important; /* Centré */
     background: transparent !important; /* Plus de fond blanc moche */
     box-shadow: none !important;
@@ -5708,7 +5709,7 @@
     aspect-ratio: 21 / 9 !important; /* Format bannière cinéma */
     border-radius: 12px !important;
     overflow: hidden !important;
-    margin-bottom: 30px !important;
+    margin-bottom: 10px !important;
     background: #f1f5f9 !important;
 }
 
@@ -6453,4 +6454,8 @@ button.iti__selected-country {
 
 .nexora-input-wrapper.phone{
     padding: 4px 12px 4px 0 !important;
+}
+
+.nexora-section-header.trip-x{
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;
 }

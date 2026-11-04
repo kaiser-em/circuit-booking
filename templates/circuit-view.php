@@ -386,7 +386,17 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                                                             <?php if ( $has_images ) : ?>
                                                                 <div class="co-step-hero-wrapper">
                                                                     <?php echo wp_get_attachment_image( $step_photos[0], 'large', false, array('loading' => 'lazy', 'class' => 'co-hero-img') ); ?>
-                                                                </div>
+                                                                </div> <!-- 👈 On ferme le wrapper de l'image ICI -->
+                                                                
+                                                                <?php 
+                                                                // 👇 La légende est maintenant EN DEHORS du wrapper (elle ne sera plus rognée)
+                                                                $caption_text = ! empty( $step['caption'] ) ? $step['caption'] : '';
+                                                                if ( $caption_text ) : 
+                                                                ?>
+                                                                    <div class="co-hero-caption" style="font-size: 13.5px; color: #64748b; font-style: italic; text-align: center; margin-top: 0px; margin-bottom: 25px; line-height: 1.5; display: block; width: 100%;">
+                                                                        <?php echo esc_html( $caption_text ); ?>
+                                                                    </div>
+                                                                <?php endif; ?>
                                                             <?php endif; ?>
 
                                                             <div class="co-step-intro-wrapper">
@@ -697,7 +707,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                             <span class="etb-selection-check"><i class="dashicons dashicons-yes"></i></span>
                             
                             <div class="etb-vehicle-image-wrapper">
-                                <img src="<?php echo esc_url( $img_url ); ?>" class="etb-vehicle-image etb-img-static" alt="<?php echo esc_attr( $vehicle->post_title ); ?>">
+                                <img src="<?php echo esc_url( $img_url ); ?>" class="etb-vehicle-image etb-img-static" loading="lazy" alt="<?php echo esc_attr( $vehicle->post_title ); ?>">
                             </div>
                             
                             <div class="etb-card-content">
@@ -742,7 +752,7 @@ if ( ! empty( $options ) && is_array( $options ) ) {
             <div class="co-booking-form-reveal is-hidden" id="etb-booking-form-wrapper" style="margin-top: 30px;">
                  
                 <!-- En-tête avec bouton de retour -->
-                <div class="nexora-section-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div class="nexora-section-header trip-x">
                     <div>
                         <h2 class="nexora-main-title">Configure your trip</h2>
                         <p class="nexora-sub-title">Please enter your trip details below.</p>

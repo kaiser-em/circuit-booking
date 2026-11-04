@@ -1192,37 +1192,34 @@ class ETB_Meta_Manager {
     }
 
 
-    public function render_booking_box( $post ) {
+        public function render_booking_box( $post ) {
         wp_nonce_field( 'etb_save_meta', 'etb_nonce' );
 
         $name           = get_post_meta( $post->ID, '_etb_customer_name', true );
         $email          = get_post_meta( $post->ID, '_etb_customer_email', true );
+        $phone          = get_post_meta( $post->ID, '_etb_customer_phone', true );
         $date           = get_post_meta( $post->ID, '_etb_booking_date', true );
         $time           = get_post_meta( $post->ID, '_etb_booking_time', true );
         $pickup_address = get_post_meta( $post->ID, '_etb_pickup_address', true );
-        $pickup_id      = get_post_meta( $post->ID, '_etb_pickup_id', true );
-        $pickup         = $pickup_address ?: ( $pickup_id ? get_the_title( $pickup_id ) : 'Non spécifié' );
         $dropoff_info   = get_post_meta( $post->ID, '_etb_dropoff_info', true );
         $adults         = get_post_meta( $post->ID, '_etb_adults', true ) ?: 0;
         $children       = get_post_meta( $post->ID, '_etb_children', true ) ?: 0;
         $luggage        = get_post_meta( $post->ID, '_etb_luggage', true ) ?: 0;
 
         $circuit_id        = get_post_meta( $post->ID, '_etb_circuit_id', true );
+        $circuit_title     = $circuit_id ? get_the_title( $circuit_id ) : 'Transfert standard';
         $circuit_option_id = get_post_meta( $post->ID, '_etb_circuit_option_id', true );
         $duration_hours    = get_post_meta( $post->ID, '_etb_duration_hours', true ) ?: 1;
 
-       // Récupération de l'état LimoExpress
         $limo_status = get_post_meta( $post->ID, '_etb_limo_status', true );
         $limo_id     = get_post_meta( $post->ID, '_etb_limo_booking_id', true );
         $limo_error  = get_post_meta( $post->ID, '_etb_limo_error', true );
 
-        $option_label = 'Transfert standard (1.0h)';
-        if ( ! empty( $circuit_option_id ) ) {
-            $fallback_label = sprintf( 'Option : %s (%sh)', $circuit_option_id, $duration_hours );
-            $option_label   = ETB_Pricing_Engine::get_circuit_option_label( $circuit_option_id, $circuit_id, $fallback_label );
+        $option_label = 'Transfert standard';
+        if ( ! empty( $circuit_option_id ) && class_exists('ETB_Pricing_Engine') ) {
+            $option_label = ETB_Pricing_Engine::get_circuit_option_label( $circuit_option_id, $circuit_id, 'Option : ' . $circuit_option_id );
         }
 
-        
         $vehicles  = get_post_meta( $post->ID, '_etb_vehicles', true ) ?: array();
         $extras    = get_post_meta( $post->ID, '_etb_extras', true ) ?: array();
         $note      = get_post_meta( $post->ID, '_etb_note', true );
@@ -1230,303 +1227,228 @@ class ETB_Meta_Manager {
         $promo     = get_post_meta( $post->ID, '_etb_promo_code', true );
         $discount  = get_post_meta( $post->ID, '_etb_discount_amount', true );
         $status    = get_post_meta( $post->ID, '_etb_status', true ) ?: 'pending';
-        ?>
-        <style>
-            .etb-admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
-            .etb-admin-card { background: #f8f9fa; border: 1px solid #c3c4c7; padding: 12px 15px; border-radius: 4px; }
-            .etb-admin-card h4 { margin: 0 0 10px 0; border-bottom: 1px solid #dcdcde; padding-bottom: 5px; font-size: 14px; }
-            .etb-status-box { background: #e7f5ff; border: 1px solid #74c0fc; padding: 12px; border-radius: 4px; margin-bottom: 15px; }
-        </style>
+        $gen_settings = get_option( 'etb_general_settings', array() );
+        $currency = $gen_settings['currency'] ?? '€';
 
-        <?php 
         $invoice_url = wp_nonce_url( 
             admin_url( 'admin-post.php?action=etb_print_invoice&booking_id=' . $post->ID ), 
             'etb_print_invoice_' . $post->ID 
         );
         ?>
-        <div class="etb-status-box" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div>
-                <label for="etb_status"><strong>Statut de la réservation :</strong></label>
-                <select name="etb_status" id="etb_status" style="margin-left: 10px; font-weight: bold;">
+
+        <!-- ==========================================
+             BARRE SUPÉRIEURE : STATUS + LIMO + PRINT
+             ========================================== -->
+        <div class="etb-admin-action-bar" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+            
+            <!-- Statut -->
+            <div class="etb-admin-status-wrap">
+                
+                <select name="etb_status" id="etb_status" class="etb-admin-select-status">
                     <option value="pending" <?php selected( $status, 'pending' ); ?>>⏳ En attente</option>
                     <option value="confirmed" <?php selected( $status, 'confirmed' ); ?>>✅ Confirmée</option>
                     <option value="completed" <?php selected( $status, 'completed' ); ?>>🏁 Terminée</option>
                     <option value="cancelled" <?php selected( $status, 'cancelled' ); ?>>❌ Annulée</option>
                 </select>
             </div>
+
+            <!-- LimoExpress -->
+            <div class="etb-admin-limo-flex" style="display: flex; align-items: center; gap: 15px;">
+                <div id="etb-limo-status-badge">
+                    <?php if ( $limo_status === 'synced' && ! empty( $limo_id ) ) : ?>
+                        <span class="etb-admin-badge etb-admin-badge-green">✅ LimoExpress: Course #<?php echo esc_html( $limo_id ); ?></span>
+                    <?php elseif ( $limo_status === 'failed' ) : ?>
+                        <span class="etb-admin-badge etb-admin-badge-red">❌ Échec: <?php echo esc_html( $limo_error ?: 'Erreur' ); ?></span>
+                    <?php else : ?>
+                        <span class="etb-admin-badge etb-admin-badge-gray">⏳ Non synchronisé</span>
+                    <?php endif; ?>
+                </div>
+                <?php $is_already_synced = ( 'synced' === $limo_status && ! empty( $limo_id ) ); ?>
+                <button type="button" class="etb-admin-btn-secondary" id="etb-btn-resync-limo" 
+                        data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
+                        data-nonce="<?php echo esc_attr( wp_create_nonce( 'etb_resync_nonce_' . $post->ID ) ); ?>"
+                        data-is-synced="<?php echo $is_already_synced ? '1' : '0'; ?>"
+                        data-limo-id="<?php echo esc_attr( $limo_id ); ?>">
+                    <?php echo $is_already_synced ? '🔄 Resync' : '🔄 Sync LimoExpress'; ?>
+                </button>
+                <span id="etb-resync-spinner" class="spinner" style="float: none; margin: 0;"></span>
+                <span id="etb-resync-feedback" style="font-weight: 600; font-size: 12px; display: none;"></span>
+            </div>
+
+            <!-- Bouton Imprimer -->
             <div>
-                <a href="<?php echo esc_url( $invoice_url ); ?>" target="_blank" class="button button-primary" style="background: #0f172a; border-color: #0f172a; font-weight: 600;">
-                    📄 Voir / Imprimer la Facture
+                <a href="<?php echo esc_url( $invoice_url ); ?>" target="_blank" class="etb-admin-btn-primary">
+                    📄 Facture
                 </a>
             </div>
         </div>
 
-        <div class="etb-admin-grid">
-            <div class="etb-admin-card">
-                <h4>👤 Client</h4>
-                <p><strong>Nom :</strong> <?php echo esc_html( $name ?: 'Non renseigné' ); ?></p>
-                <p><strong>E-mail :</strong> <?php echo esc_html( $email ?: 'Non renseigné' ); ?></p>
-                 <p><strong>Téléphone :</strong> <?php echo esc_html( get_post_meta( $post->ID, '_etb_customer_phone', true ) ?: 'Non renseigné' ); ?></p>
+        <!-- ==========================================
+             BLOC 1 : CLIENT & CIRCUIT (PLEINE LARGEUR)
+             ========================================== -->
+        <div class="etb-admin-card" style="margin-bottom: 20px;">
+            <h4>👤 Détails Client & Circuit</h4>
+            <div class="etb-admin-grid-2col" style="gap: 30px;">
+                
+                <!-- Colonne Client -->
+                <div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Nom</span><span class="etb-admin-value"><?php echo esc_html( $name ?: 'Non renseigné' ); ?></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Email</span><span class="etb-admin-value"><?php echo esc_html( $email ?: 'Non renseigné' ); ?></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Téléphone</span><span class="etb-admin-value"><?php echo esc_html( $phone ?: 'Non renseigné' ); ?></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Passagers</span><span class="etb-admin-value"><?php echo esc_html( $adults ); ?> Ad. / <?php echo esc_html( $children ); ?> Enf. • <?php echo esc_html( $luggage ); ?> Bagages</span></div>
+                </div>
+
+                <!-- Colonne Circuit -->
+                <div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Circuit / Prestation</span><span class="etb-admin-value"><strong style="color: #ba6827;"><?php echo esc_html( $circuit_title ); ?></strong> <br><small><?php echo esc_html( $option_label ); ?></small></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Date & Heure</span><span class="etb-admin-value"><?php echo esc_html( $date ); ?> à <?php echo esc_html( $time ); ?></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Pickup</span><span class="etb-admin-value"><?php echo esc_html( $pickup_address ); ?></span></div>
+                    <div class="etb-admin-row"><span class="etb-admin-label">Dropoff</span><span class="etb-admin-value"><?php echo $dropoff_info ? nl2br( esc_html( $dropoff_info ) ) : '<em>Identique</em>'; ?></span></div>
+                </div>
             </div>
+        </div>
 
-            <div class="etb-admin-card">
-                <h4>📍 Trajet & Passagers</h4>
-                <p><strong>Prestation :</strong> <?php echo $circuit_option_id ? '<span style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">' . esc_html( $option_label ) . '</span>' : '<span style="color: #64748b;"><em>Transfert standard (1.0h)</em></span>'; ?></p>
-
-
-                <div style="margin-bottom: 12px; padding: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px;">
-                    <p style="margin: 0 0 8px 0;"><strong>LimoExpress :</strong> 
-                        <span id="etb-limo-status-badge">
-                                                        <?php if ( $limo_status === 'synced' && ! empty( $limo_id ) ) : ?>
-                                <span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">✅ Synchronisé (Course #<?php echo esc_html( $limo_id ); ?>)</span>
-                            <?php elseif ( $limo_status === 'autonomous' ) : ?>
-                                <span style="background: #e0f2fe; color: #075985; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">🔵 Mode autonome (aucun dispatch externe)</span>
-                            <?php elseif ( $limo_status === 'failed' ) : ?>
-                                <span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">❌ Échec : <?php echo esc_html( $limo_error ?: 'Erreur de connexion' ); ?></span>
-                            <?php else : ?>
-                                <span style="color: #94a3b8;"><em>Non synchronisé / En attente</em></span>
-                            <?php endif; ?>
-                        </span>
-                    </p>
-
-
-                    <!-- Bouton de transfert manuel avec bouclier anti-doublon -->
-                    <div>
-                        <?php 
-                        $is_already_synced = ( 'synced' === $limo_status && ! empty( $limo_id ) );
-                        $btn_label         = $is_already_synced ? '⚠️ Forcer un re-transfert LimoExpress' : '🔄 Transférer vers LimoExpress';
-                        ?>
-                        <button type="button" 
-                                class="button button-secondary" 
-                                id="etb-btn-resync-limo" 
-                                data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
-                                data-nonce="<?php echo esc_attr( wp_create_nonce( 'etb_resync_nonce_' . $post->ID ) ); ?>"
-                                data-is-synced="<?php echo $is_already_synced ? '1' : '0'; ?>"
-                                data-limo-id="<?php echo esc_attr( $limo_id ); ?>">
-                            <?php echo esc_html( $btn_label ); ?>
-                        </button>
-                        <span id="etb-resync-spinner" class="spinner" style="float: none; margin: 0 5px; vertical-align: middle;"></span>
-                        <span id="etb-resync-feedback" style="font-weight: 600; font-size: 12px;"></span>
+        <!-- ==========================================
+             BLOC 2 : DÉTAILS & TARIFICATION (PLEINE LARGEUR)
+             ========================================== -->
+        <div class="etb-admin-card" style="margin-bottom: 20px;">
+            <h4>🚙 Détails complets & Tarification</h4>
+            
+            <div class="etb-admin-grid-2col">
+                <!-- Véhicules & Options -->
+                <div>
+                    <div class="etb-admin-row">
+                        <span class="etb-admin-label">Véhicule(s)</span>
+                        <ul class="etb-admin-list">
+                            <?php
+                            $has_vehicles = false;
+                            foreach ( $vehicles as $v_id => $qty ) {
+                                if ( $qty > 0 ) { $has_vehicles = true; echo '<li>• ' . esc_html( get_the_title( $v_id ) ) . ' &times; ' . absint( $qty ) . '</li>'; }
+                            }
+                            if ( ! $has_vehicles ) echo '<li><em>Aucun</em></li>';
+                            ?>
+                        </ul>
+                    </div>
+                    <div class="etb-admin-row">
+                        <span class="etb-admin-label">Extras</span>
+                        <ul class="etb-admin-list">
+                            <?php
+                            $has_extras = false;
+                            foreach ( $extras as $e_id => $qty ) {
+                                if ( $qty > 0 ) { $has_extras = true; echo '<li>• ' . esc_html( get_the_title( $e_id ) ) . ' &times; ' . absint( $qty ) . '</li>'; }
+                            }
+                            if ( ! $has_extras ) echo '<li><em>Aucun</em></li>';
+                            ?>
+                        </ul>
                     </div>
                 </div>
 
-                <script>
-                jQuery(document).ready(function($) {
-                    $('#etb-btn-resync-limo').on('click', function(e) {
-                        e.preventDefault();
-                        var $btn = $(this);
-                        var isSynced = $btn.data('is-synced');
-                        var limoId = $btn.data('limo-id');
+                <!-- Note & Code Promo -->
+                <div>
+                    <?php if ( $promo ) : ?>
+                        <div class="etb-admin-row"><span class="etb-admin-label">Code Promo</span><span class="etb-admin-value" style="color: #16a34a;"><?php echo esc_html( $promo ); ?> (-<?php echo number_format_i18n( (float) $discount, 2 ); ?> <?php echo esc_html( $currency ); ?>)</span></div>
+                    <?php endif; ?>
+                    <?php if ( $note ) : ?>
+                        <div style="margin-top: 10px;">
+                            <span class="etb-admin-label">Note du client :</span>
+                            <div class="etb-admin-note-box"><?php echo nl2br( esc_html( $note ) ); ?></div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
 
-                        // Bouclier Anti-Doublon : confirmation obligatoire si déjà synchronisé
-                        if (isSynced == '1' || isSynced === 1) {
-                            var confirmMsg = "⚠️ ATTENTION ANTI-DOUBLON :\n\nCette commande est DÉJÀ synchronisée dans LimoExpress (Course #" + limoId + ").\n\nVoulez-vous vraiment générer une DEUXIÈME course en doublon ?";
-                            if (!confirm(confirmMsg)) {
-                                return; // Annule immédiatement sans envoyer de requête
-                            }
-                        }
-
-                        var postId = $btn.data('post-id');
-                        var nonce = $btn.data('nonce');
-                        var $spinner = $('#etb-resync-spinner');
-                        var $feedback = $('#etb-resync-feedback');
-
-                        $btn.prop('disabled', true);
-                        $spinner.addClass('is-active');
-                        $feedback.text('').css('color', '');
-
-                        $.post(ajaxurl, {
-                            action: 'etb_resync_booking',
-                            booking_id: postId,
-                            nonce: nonce
-                        }, function(res) {
-                            $btn.prop('disabled', false);
-                            $spinner.removeClass('is-active');
-                            if (res.success) {
-                                $feedback.text('✓ Synchronisé avec succès (Course #' + res.data.limo_id + ')').css('color', '#15803d');
-                                $('#etb-limo-status-badge').html('<span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">✅ Synchronisé (Course #' + res.data.limo_id + ')</span>');
-                                
-                                // Mise à jour de l'état du bouton pour protéger les clics suivants
-                                $btn.text('⚠️ Forcer un re-transfert LimoExpress').data('is-synced', '1').data('limo-id', res.data.limo_id);
-                            } else {
-                                $feedback.text('⚠ ' + (res.data.message || 'Erreur')).css('color', '#dc2626');
-                                $('#etb-limo-status-badge').html('<span style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">❌ Échec : ' + (res.data.message || 'Erreur') + '</span>');
-                            }
-                        }).fail(function() {
-                            $btn.prop('disabled', false);
-                            $spinner.removeClass('is-active');
-                            $feedback.text('⚠ Erreur réseau.').css('color', '#dc2626');
-                        });
-                    });
-                });
-                </script>
-                <p><strong>Lieu de départ :</strong> <?php echo esc_html( $pickup ); ?></p>
-                <p><strong>Lieu de dépose :</strong> <?php echo $dropoff_info ? nl2br( esc_html( $dropoff_info ) ) : '<em>Identique au lieu de départ</em>'; ?></p>
-                <p><strong>Date & Heure :</strong> <?php echo esc_html( $date ); ?> à <?php echo esc_html( $time ); ?></p>
-                <p><strong>Passagers :</strong> <?php echo esc_html( $adults ); ?> adulte(s), <?php echo esc_html( $children ); ?> enfant(s)</p>
-                <p><strong>Bagages :</strong> <?php echo esc_html( $luggage ); ?></p>
-                
-                <?php 
-                $baby_seats    = get_post_meta( $post->ID, '_etb_baby_seat_count', true ) ?: 0;
-                $booster_seats = get_post_meta( $post->ID, '_etb_booster_seat_count', true ) ?: 0;
-                $child_fee     = get_post_meta( $post->ID, '_etb_child_seat_fee', true ) ?: 0;
-                if ( $baby_seats > 0 || $booster_seats > 0 ) : ?>
-                    <p><strong>Sièges enfants :</strong> 
-                        <?php echo esc_html( $baby_seats ); ?> Baby, <?php echo esc_html( $booster_seats ); ?> Booster
-                        <?php if ( $child_fee > 0 ) : ?>
-                            <span style="color: #e65a15; font-weight: bold;">(+<?php echo number_format_i18n( $child_fee, 2 ); ?> €)</span>
-                        <?php endif; ?>
-                    </p>
-                <?php endif; ?>
+            <!-- Total en bas -->
+            <div class="etb-admin-total-box" style="margin-top: 20px; border-top: 2px solid #e2e8f0; border-radius: 0 0 8px 8px; background: #f8fafc;">
+                <span class="etb-admin-label">Montant Total</span>
+                <span class="etb-admin-total-price" style="color: #0f172a; font-size: 26px;"><?php echo number_format_i18n( (float) $total, 2 ); ?> <?php echo esc_html( $currency ); ?></span>
             </div>
         </div>
 
-        <div class="etb-admin-grid">
-            <div class="etb-admin-card">
-                <h4>🚘 Véhicules & Options</h4>
-                <p><strong>Véhicule(s) :</strong></p>
-                <ul>
-                    <?php
-                    $has_vehicles = false;
-                    foreach ( $vehicles as $v_id => $qty ) {
-                        if ( $qty > 0 ) {
-                            $has_vehicles = true;
-                            echo '<li>• ' . esc_html( get_the_title( $v_id ) ) . ' &times; ' . absint( $qty ) . '</li>';
-                        }
-                    }
-                    if ( ! $has_vehicles ) echo '<li><em>Aucun véhicule sélectionné</em></li>';
-                    ?>
-                </ul>
-
-                <p><strong>Option(s) :</strong></p>
-                <ul>
-                    <?php
-                    $has_extras = false;
-                    foreach ( $extras as $e_id => $qty ) {
-                        if ( $qty > 0 ) {
-                            $has_extras = true;
-                            echo '<li>• ' . esc_html( get_the_title( $e_id ) ) . ' &times; ' . absint( $qty ) . '</li>';
-                        }
-                    }
-                    if ( ! $has_extras ) echo '<li><em>Aucune option sélectionnée</em></li>';
-                    ?>
-                </ul>
-            </div>
-
-            <div class="etb-admin-card">
-                <h4>💳 Tarification & Note</h4>
-                <?php 
-                $gen_settings = get_option( 'etb_general_settings', array() );
-                $currency     = ! empty( $gen_settings['currency'] ) ? sanitize_text_field( $gen_settings['currency'] ) : '€';
-                ?>
-                <?php if ( $promo ) : ?>
-                    <p><strong>Code Promo :</strong> <?php echo esc_html( $promo ); ?> (-<?php echo number_format_i18n( (float) $discount, 2 ); ?> <?php echo esc_html( $currency ); ?>)</p>
-                <?php endif; ?>
-                <p style="font-size: 16px; color: #1d2327;"><strong>Montant Total :</strong> <span style="color: #22c55e; font-weight: bold;"><?php echo number_format_i18n( (float) $total, 2 ); ?> <?php echo esc_html( $currency ); ?></span></p>
-                
-                <?php if ( $note ) : ?>
-                    <hr>
-                    <p><strong>Demande spéciale :</strong></p>
-                    <p style="font-style: italic; background: #fff; padding: 8px; border: 1px solid #e2e8f0; border-radius: 3px;"><?php echo nl2br( esc_html( $note ) ); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-
-         <?php 
-        // ==========================================================================
-        // NOUVEAUTÉ : AFFICHAGE DU DÉTAIL DU CIRCUIT (TIMELINE & INCLUSIONS)
-        // ==========================================================================
-        if ( ! empty( $circuit_option_id ) ) {
+        <!-- ==========================================
+             BLOC 3 : TIMELINE DU CIRCUIT
+             ========================================== -->
+        <?php 
+        if ( ! empty( $circuit_option_id ) && class_exists('ETB_Pricing_Engine') ) {
             $circuit_data = ETB_Pricing_Engine::find_circuit_option_data( $circuit_option_id, $circuit_id );
-            
             if ( $circuit_data ) {
                 $timeline   = $circuit_data['timeline'] ?? array();
                 $inclusions = ! empty( $circuit_data['inclusions'] ) ? explode( "\n", trim( $circuit_data['inclusions'] ) ) : array();
                 $exclusions = ! empty( $circuit_data['exclusions'] ) ? explode( "\n", trim( $circuit_data['exclusions'] ) ) : array();
-                $badges     = array_filter( array( $circuit_data['badge_1'] ?? '', $circuit_data['badge_2'] ?? '', $circuit_data['badge_3'] ?? '', $circuit_data['badge_4'] ?? '' ) );
-
-                // Calcul du décalage horaire pour la timeline
                 $base_time   = $circuit_data['departure_time'] ?? '09:00';
                 $booked_time = $time ?: $base_time;
                 $delta_sec   = strtotime( $booked_time ) - strtotime( $base_time );
                 ?>
-                
-                <div class="etb-admin-card" style="margin-top: 20px; border-top: 3px solid #0284c7;">
-                    <h4 style="color: #0284c7; font-size: 16px;">🗺️ Programme & Détails du Circuit : <?php echo esc_html( $circuit_data['city_name'] ?? '' ); ?></h4>
-                    
-                    <!-- Badges -->
-                    <?php if ( ! empty( $badges ) ) : ?>
-                        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                            <?php foreach ( $badges as $badge ) : ?>
-                                <span style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 50px; font-size: 12px; color: #334155;">
-                                    <?php echo esc_html( $badge ); ?>
-                                </span>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px;">
+                <div class="etb-admin-card etb-admin-circuit-program">
+                    <h4>🗺️ Programme : <?php echo esc_html( $circuit_data['city_name'] ?? '' ); ?></h4>
+                    <div class="etb-admin-grid-2col" style="margin-top: 15px;">
                         <!-- Timeline -->
                         <div>
-                            <h5 style="margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; color: #475569;">📍 Itinéraire (Heures adaptées)</h5>
+                            <h5 class="etb-admin-subtitle">📍 Itinéraire</h5>
                             <?php if ( ! empty( $timeline ) ) : ?>
-                                <ul style="margin: 0; padding: 0; list-style: none; border-left: 2px dashed #cbd5e1; padding-left: 15px;">
+                                <ul class="etb-admin-timeline">
                                     <?php foreach ( $timeline as $step ) : 
                                         $step_base_ts  = strtotime( $step['time'] ?? '09:00' );
                                         $adjusted_time = date( 'H:i', $step_base_ts + $delta_sec );
                                     ?>
-                                        <li style="margin-bottom: 15px; position: relative;">
-                                            <span style="position: absolute; left: -22px; top: 2px; width: 10px; height: 10px; background: #e65a15; border-radius: 50%; border: 2px solid #fff;"></span>
-                                            <strong style="color: #e65a15; font-size: 13px;"><?php echo esc_html( $adjusted_time ); ?></strong> - 
-                                            <strong style="color: #0f172a; font-size: 14px;"><?php echo esc_html( $step['title'] ?? '' ); ?></strong>
-                                            <?php if ( ! empty( $step['desc'] ) ) : ?>
-                                                <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;"><?php echo nl2br( esc_html( $step['desc'] ) ); ?></p>
-                                            <?php endif; ?>
+                                        <li class="etb-admin-timeline-item">
+                                            <span class="etb-admin-timeline-dot"></span>
+                                            <div class="etb-admin-timeline-content">
+                                                <strong class="etb-admin-timeline-time"><?php echo esc_html( $adjusted_time ); ?></strong>
+                                                <span class="etb-admin-timeline-title"><?php echo esc_html( $step['title'] ?? '' ); ?></span>
+                                            </div>
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
                             <?php else : ?>
-                                <p style="color: #64748b; font-style: italic;">Aucune étape définie.</p>
+                                <p class="etb-admin-empty-text">Aucune étape.</p>
                             <?php endif; ?>
                         </div>
-
-                        <!-- Inclus / Non Inclus -->
+                        <!-- Inclusions -->
                         <div>
-                            <div style="margin-bottom: 20px;">
-                                <h5 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #16a34a;">✅ Inclus</h5>
-                                <?php if ( ! empty( $inclusions ) ) : ?>
-                                    <ul style="margin: 0; padding: 0; list-style: none; font-size: 13px; color: #334155;">
-                                        <?php foreach ( $inclusions as $item ) : if ( trim( $item ) ) : ?>
-                                            <li style="margin-bottom: 5px;">✓ <?php echo esc_html( trim( $item ) ); ?></li>
-                                        <?php endif; endforeach; ?>
-                                    </ul>
-                                <?php else : ?>
-                                    <span style="color: #94a3b8; font-style: italic;">Non spécifié</span>
-                                <?php endif; ?>
-                            </div>
-
-                            <div>
-                                <h5 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #dc2626;">❌ Non inclus</h5>
-                                <?php if ( ! empty( $exclusions ) ) : ?>
-                                    <ul style="margin: 0; padding: 0; list-style: none; font-size: 13px; color: #334155;">
-                                        <?php foreach ( $exclusions as $item ) : if ( trim( $item ) ) : ?>
-                                            <li style="margin-bottom: 5px;">✕ <?php echo esc_html( trim( $item ) ); ?></li>
-                                        <?php endif; endforeach; ?>
-                                    </ul>
-                                <?php else : ?>
-                                    <span style="color: #94a3b8; font-style: italic;">Non spécifié</span>
-                                <?php endif; ?>
-                            </div>
+                            <h5 class="etb-admin-subtitle etb-text-green">✅ Inclus</h5>
+                            <ul class="etb-admin-list">
+                                <?php foreach ( $inclusions as $item ) : if ( trim( $item ) ) : ?>
+                                    <li>✓ <?php echo esc_html( trim( $item ) ); ?></li>
+                                <?php endif; endforeach; ?>
+                            </ul>
                         </div>
                     </div>
                 </div>
-                <?php
-            }
-        }
-        ?>
+            <?php }
+        } ?>
 
-
+        <!-- Script LimoExpress -->
+        <script>
+        jQuery(document).ready(function($) {
+            $('#etb-btn-resync-limo').on('click', function(e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var isSynced = $btn.data('is-synced');
+                var limoId = $btn.data('limo-id');
+                if (isSynced == '1') {
+                    if (!confirm("⚠️ Cette commande est DÉJÀ synchronisée (Course #" + limoId + ").\nForcer un re-transfert créera un doublon. Continuer ?")) return;
+                }
+                $btn.prop('disabled', true);
+                $('#etb-resync-spinner').addClass('is-active');
+                $('#etb-resync-feedback').hide();
+                $.post(ajaxurl, {
+                    action: 'etb_resync_booking',
+                    booking_id: $btn.data('post-id'),
+                    nonce: $btn.data('nonce')
+                }, function(res) {
+                    $btn.prop('disabled', false);
+                    $('#etb-resync-spinner').removeClass('is-active');
+                    if (res.success) {
+                        $('#etb-resync-feedback').text('✓ Sync OK').css('color', '#15803d').show();
+                        $('#etb-limo-status-badge').html('<span class="etb-admin-badge etb-admin-badge-green">✅ LimoExpress: Course #' + res.data.limo_id + '</span>');
+                        $btn.text('🔄 Resync').data('is-synced', '1');
+                    } else {
+                        $('#etb-resync-feedback').text('⚠ ' + res.data.message).css('color', '#dc2626').show();
+                    }
+                });
+            });
+        });
+        </script>
         <?php
     }
 

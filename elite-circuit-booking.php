@@ -57,7 +57,8 @@ class Elite_Transfer_Booking {
             $post = get_queried_object();
             if ( $post instanceof WP_Post ) {
                 $needs = has_shortcode( $post->post_content, 'tour_booking' )
-                      || has_shortcode( $post->post_content, 'circuit_view' );
+                      || has_shortcode( $post->post_content, 'circuit_view' )
+                      || has_shortcode( $post->post_content, 'etb_enquiry_form' ); // 👈 Ajouté ici
             }
         }
 
@@ -113,7 +114,7 @@ class Elite_Transfer_Booking {
         }
 
         // Librairie internationale de téléphone (245 pays) - LOCAL
-    wp_enqueue_script( 'intl-tel-input-script', ETB_URL . 'public/js/intlTelInputWithUtils.min.js', array(), '29.5.7', true );
+        wp_enqueue_script( 'intl-tel-input-script', ETB_URL . 'public/js/intlTelInputWithUtils.min.js', array(), '29.5.7', true );
         
         // Librairie Flatpickr pour le calendrier - LOCAL
         wp_enqueue_script( 'flatpickr-script', ETB_URL . 'public/js/flatpickr.min.js', array(), '4.6.13', true );
@@ -121,6 +122,7 @@ class Elite_Transfer_Booking {
 
         wp_enqueue_script( 'etb-booking-script', ETB_URL . 'public/js/booking-widget.js', $script_deps, ETB_VERSION, true );
        
+        
 
         // Transmission des variables sécurisées à JavaScript
         wp_localize_script( 'etb-booking-script', 'etbAjax', array(
@@ -136,6 +138,14 @@ class Elite_Transfer_Booking {
 
             
         ) );
+
+
+                // 👇 AJOUT : Chargement conditionnel du formulaire d'enquête
+        $queried_obj = get_queried_object();
+        if ( $queried_obj instanceof WP_Post && has_shortcode( $queried_obj->post_content, 'etb_enquiry_form' ) ) {
+            wp_enqueue_style( 'etb-enquiry-style', ETB_URL . 'public/css/modules/etb-enquiry.css', array(), ETB_VERSION );
+            wp_enqueue_script( 'etb-enquiry-script', ETB_URL . 'public/js/enquiry-form.js', array(), ETB_VERSION, true );
+        }
     }
     
     private function __construct() {
@@ -156,14 +166,20 @@ class Elite_Transfer_Booking {
         require_once ETB_PATH . 'includes/class-etb-stripe.php'; // <-- NOUVEAU
         require_once ETB_PATH . 'includes/class-etb-ajax.php';
         require_once ETB_PATH . 'includes/class-etb-shortcode.php';
+        require_once ETB_PATH . 'includes/class-etb-enquiry.php'; // <-- AJOUT
     }
 
     private function init_hooks() {
-    add_action( 'init', array( $this, 'register_cpts' ), 0 );
-    add_action( 'init', array( $this, 'register_circuit_taxonomy' ), 1 );
-    add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_public_assets' ), 99 );
-    add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-}
+        add_action( 'init', array( $this, 'register_cpts' ), 0 );
+        add_action( 'init', array( $this, 'register_circuit_taxonomy' ), 1 );
+        add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_public_assets' ), 99 );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+
+        // 👇 AJOUT : Filtres pour optimiser la vitesse (PageSpeed)
+        add_filter( 'script_loader_tag', array( $this, 'add_defer_attribute' ), 10, 2 );
+        add_filter( 'style_loader_tag', array( $this, 'make_styles_non_blocking' ), 10, 4 );
+    
+    }
 
     public function register_cpts() {
         $cpt_manager = new ETB_CPT_Manager();
@@ -171,9 +187,9 @@ class Elite_Transfer_Booking {
     }
 
     /**
- * Enregistre la taxonomie « Catégories de circuits ».
- * Chargée après le CPT (priorité init 1) pour garantir que 'circuit' existe.
- */
+     * Enregistre la taxonomie « Catégories de circuits ».
+     * Chargée après le CPT (priorité init 1) pour garantir que 'circuit' existe.
+     */
     public function register_circuit_taxonomy() {
         if ( ! post_type_exists( 'circuit' ) ) {
             return;
@@ -213,6 +229,7 @@ class Elite_Transfer_Booking {
         new ETB_Pricing_Engine();
         new ETB_Ajax();
         new ETB_Shortcode();
+        new ETB_Enquiry(); // <-- AJOUT
         
         // Branchement du module LimoExpress sur la Prise Universelle ETB
         if ( class_exists( 'ETB_LimoExpress' ) ) {
@@ -222,14 +239,18 @@ class Elite_Transfer_Booking {
 
     public function enqueue_admin_assets( $hook ) {
         global $post_type;
-        if ( 'circuit' === $post_type ) {
-            // Active la médiathèque officielle WordPress pour la galerie photo du circuit
-            wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
+        
+        // 👇 AJOUT : On inclut tour_booking pour avoir le CSS sur les réservations
+        $etb_post_types = array( 'circuit', 'tour_booking', 'tour_vehicle', 'tour_extra', 'tour_pickup', 'tour_promo' );
 
+        if ( in_array( $post_type, $etb_post_types, true ) ) {
+            // Active la médiathèque officielle WordPress
             wp_enqueue_media();
 
+            // Charge FontAwesome pour l'admin
+            wp_enqueue_style( 'font-awesome-6', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', array(), '6.5.1' );
+
             if ( file_exists( ETB_PATH . 'admin/css/etb-admin.css' ) ) {
-                // On déclare Elementor comme dépendance pour que notre CSS soit chargé APRÈS le sien
                 $style_deps = wp_style_is( 'elementor-admin-css', 'registered' ) ? array( 'elementor-admin-css' ) : array();
                 wp_enqueue_style( 'etb-admin-style', ETB_URL . 'admin/css/etb-admin.css', $style_deps, ETB_VERSION );
             }
@@ -237,6 +258,46 @@ class Elite_Transfer_Booking {
                 wp_enqueue_script( 'etb-admin-script', ETB_URL . 'admin/js/etb-admin.js', array( 'jquery', 'jquery-ui-sortable' ), ETB_VERSION, true );
             }
         }
+    }
+
+
+        /**
+     * Optimisation PageSpeed : Ajoute l'attribut defer aux scripts du plugin
+     */
+    public function add_defer_attribute( $tag, $handle ) {
+        $defer_scripts = array( 'etb-booking-script', 'flatpickr-script', 'intl-tel-input-script' );
+        
+        if ( in_array( $handle, $defer_scripts ) ) {
+            return str_replace( ' src', ' defer="defer" src', $tag );
+        }
+        
+        // Recommandation Stripe : charger en async
+        if ( 'stripe-js' === $handle ) {
+            return str_replace( ' src', ' async="async" src', $tag );
+        }
+        
+        return $tag;
+    }
+
+    /**
+     * Optimisation PageSpeed : Rend les CSS du plugin non bloquants (preload)
+     */
+    public function make_styles_non_blocking( $html, $handle, $href, $media ) {
+        // On ne cible que les styles de notre plugin (et FontAwesome)
+        $non_blocking_styles = array( 
+            'etb-circuits', 
+            'etb-tokens', 
+            'flatpickr-style', 
+            'intl-tel-input-style', 
+            'font-awesome-6' 
+        );
+
+        if ( in_array( $handle, $non_blocking_styles ) ) {
+            $html  = "<link rel='preload' id='{$handle}-css' href='{$href}' as='style' media='all' onload=\"this.onload=null;this.rel='stylesheet'\">\n";
+            $html .= "<noscript><link rel='stylesheet' id='{$handle}-css-noscript' href='{$href}' media='all' /></noscript>\n";
+        }
+
+        return $html;
     }
 
 }

@@ -68,6 +68,11 @@ class ETB_Settings {
         // Numéro WhatsApp de l'entreprise
         $new_input['company_whatsapp'] = ! empty( $input['company_whatsapp'] ) ? sanitize_text_field( trim( $input['company_whatsapp'] ) ) : '';
 
+                // Listes pour le formulaire de demande (Enquiry)
+        $new_input['enquiry_trip_types']   = ! empty( $input['enquiry_trip_types'] ) ? sanitize_textarea_field( $input['enquiry_trip_types'] ) : '';
+        $new_input['enquiry_destinations'] = ! empty( $input['enquiry_destinations'] ) ? sanitize_textarea_field( $input['enquiry_destinations'] ) : '';
+        $new_input['enquiry_budgets']      = ! empty( $input['enquiry_budgets'] ) ? sanitize_textarea_field( $input['enquiry_budgets'] ) : '';
+
         // Autocomplétion d'adresses : Google Places
         $new_input['address_provider']    = 'google'; // Circuit : Google Places uniquement
         $new_input['google_maps_api_key'] = ! empty( $input['google_maps_api_key'] ) ? sanitize_text_field( trim( $input['google_maps_api_key'] ) ) : '';
@@ -188,9 +193,12 @@ class ETB_Settings {
                 <span class="etb-badge">Premium</span>
             </div>
 
+           
+
             <!-- NATIVE WP TABS FOR TOP LEVEL -->
             <h2 class="nav-tab-wrapper" style="margin-bottom: 20px; border-bottom: 1px solid #cbd5e1;">
                 <a href="?post_type=tour_booking&page=etb-settings&tab=general" class="nav-tab <?php echo $active_tab === 'general' ? 'nav-tab-active' : ''; ?>" style="font-weight: 600;">Réglages Généraux</a>
+                 <a href="?post_type=tour_booking&page=etb-settings&tab=enquiry" class="nav-tab <?php echo $active_tab === 'enquiry' ? 'nav-tab-active' : ''; ?>" style="font-weight: 600;">Enquiry Form</a>
                 <a href="?post_type=tour_booking&page=etb-settings&tab=form" class="nav-tab <?php echo $active_tab === 'form' ? 'nav-tab-active' : ''; ?>" style="font-weight: 600;">Configuration Formulaire</a>
             </h2>
 
@@ -472,6 +480,41 @@ class ETB_Settings {
                     });
                     </script>
                     <?php
+
+                                    } elseif ( $active_tab === 'enquiry' ) {
+                    settings_fields( 'etb_general_settings_group' ); // On utilise le même groupe
+                    $options = get_option( 'etb_general_settings', array() );
+                    ?>
+                    <div class="etb-admin-wrap" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 35px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03); max-width: 800px;">
+                        <h2 class="etb-section-title">Enquiry Form Settings</h2>
+                        <p class="description" style="margin-bottom: 25px;">Configure the dropdown lists. <strong>One item per line.</strong></p>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Trip Types</th>
+                                <td>
+                                    <textarea name="etb_general_settings[enquiry_trip_types]" rows="5" class="widefat" style="font-family: monospace;"><?php echo esc_textarea( $options['enquiry_trip_types'] ?? "Sightseeing\nWine tours\nPrivate Transfer\nYacht Charter" ); ?></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destinations</th>
+                                <td>
+                                    <textarea name="etb_general_settings[enquiry_destinations]" rows="5" class="widefat" style="font-family: monospace;"><?php echo esc_textarea( $options['enquiry_destinations'] ?? "Cannes\nNice\nMonaco\nSaint-Tropez" ); ?></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Budgets (€)</th>
+                                <td>
+                                    <textarea name="etb_general_settings[enquiry_budgets]" rows="5" class="widefat" style="font-family: monospace;"><?php echo esc_textarea( $options['enquiry_budgets'] ?? "Under 500\n500-1000\n1000-1500\n1500+" ); ?></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div class="etb-save-bar">
+                            <button type="submit" class="button button-primary">Save Settings</button>
+                        </div>
+                    </div>
+                <?php
                 } else { 
                     // Onglet natif "Configuration Formulaire"
                     settings_fields( 'etb_form_settings_group' );

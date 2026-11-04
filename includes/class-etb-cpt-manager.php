@@ -6,6 +6,9 @@ class ETB_CPT_Manager {
     public function __construct() {
         add_filter( 'manage_tour_booking_posts_columns', array( $this, 'set_booking_columns' ) );
         add_action( 'manage_tour_booking_posts_custom_column', array( $this, 'render_booking_columns' ), 10, 2 );
+        // Ajout de l'ID pour la liste des Circuits
+        add_filter( 'manage_circuit_posts_columns', array( $this, 'set_circuit_columns' ) );
+        add_action( 'manage_circuit_posts_custom_column', array( $this, 'render_circuit_columns' ), 10, 2 );
         add_action( 'admin_menu', array( $this, 'cleanup_admin_submenus' ), 999 );
         add_action( 'admin_menu', array( $this, 'add_circuit_category_submenu' ), 100 );
     }
@@ -120,6 +123,7 @@ class ETB_CPT_Manager {
         return array(
             'cb'       => $columns['cb'],
             'title'    => 'Référence',
+            'booking_id' => 'ID WP', // <-- AJOUT
             'customer' => 'Client',
             'trip'     => 'Trajet & Date',
             'total'    => 'Montant Total',
@@ -128,8 +132,24 @@ class ETB_CPT_Manager {
         );
     }
 
+    public function set_circuit_columns( $columns ) {
+        $new_columns = array();
+        foreach ( $columns as $key => $value ) {
+            $new_columns[ $key ] = $value;
+            // On insère l'ID juste après la case à cocher
+            if ( $key === 'title' ) {
+                $new_columns['circuit_id'] = 'ID WP';
+            }
+        }
+        return $new_columns;
+    }
+
     public function render_booking_columns( $column, $post_id ) {
         switch ( $column ) {
+            case 'booking_id':
+                echo '<strong>#' . $post_id . '</strong>';
+                break;
+
             case 'customer':
                 $name  = get_post_meta( $post_id, '_etb_customer_name', true );
                 $phone = get_post_meta( $post_id, '_etb_customer_phone', true );
@@ -172,6 +192,12 @@ class ETB_CPT_Manager {
                 $badge = isset( $badges[ $status ] ) ? $badges[ $status ] : $badges['pending'];
                 echo '<span style="background:' . $badge['bg'] . '; color:#fff; padding:4px 8px; border-radius:3px; font-weight:600; font-size:11px;">' . esc_html( $badge['label'] ) . '</span>';
                 break;
+        }
+    }
+
+    public function render_circuit_columns( $column, $post_id ) {
+        if ( $column === 'circuit_id' ) {
+            echo '<strong>#' . $post_id . '</strong>';
         }
     }
 

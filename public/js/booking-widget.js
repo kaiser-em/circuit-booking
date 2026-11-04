@@ -902,6 +902,19 @@ setTimeout(formatAutofilledPhone, 300);
 
             if (timeInput && departureTime) {
                 timeInput.value = departureTime;
+
+                // 👇 AJOUT : Synchroniser l'affichage visuel (label)
+                const timeHidden = root.querySelector('#etb-time-value');
+                const timeLabel = root.querySelector('#etb-time-label');
+                if (timeHidden) timeHidden.value = departureTime;
+                
+                if (timeLabel) {
+                    // Formater "14:00" en "02:00 PM" pour l'affichage
+                    const dateObj = new Date('1970-01-01T' + departureTime + ':00');
+                    const formatted = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
+                    timeLabel.textContent = formatted;
+                    timeLabel.style.color = '#1e293b'; // Couleur normale au lieu de gris
+                }
             }
 
             // Mise à jour immédiate des horaires de la timeline
@@ -1462,6 +1475,13 @@ setTimeout(formatAutofilledPhone, 300);
                 const sidebar = document.querySelector('.etb-booking-sidebar');
                 if (sidebar) sidebar.style.display = 'none';
 
+
+                // 👇 AJOUT : Cacher le titre "Configure your trip" et son sous-titre
+                // Remplace '.etb-booking-title' par la vraie classe trouvée via "Inspecter"
+                const widgetTitle = document.querySelector('.trip-x'); 
+                if (widgetTitle) widgetTitle.style.display = 'none';
+                // 👆 FIN DE L'AJOUT
+
                 const btnBackToVehicles = document.getElementById('etb-back-to-vehicles');
                 if (btnBackToVehicles) btnBackToVehicles.style.display = 'none';
 
@@ -1839,39 +1859,93 @@ setTimeout(formatAutofilledPhone, 300);
 
             // Validation ciblée par étape (sans toucher à hasAttemptedSubmit)
             const validateStep = (stepNum) => {
+                console.log("Validation de l'étape :", stepNum);
+
                 if (stepNum === 1) {
                     // Au moins un véhicule sélectionné
-                    if (!hasSelectedVehicle) return false;
-
-                    // Pickup obligatoire si le champ est visible
-                    if (pickupInput && pickupInput.offsetParent !== null && pickupInput.value.trim() === '') {
+                    if (!hasSelectedVehicle) {
+                        console.log("Erreur: Aucun véhicule sélectionné");
                         return false;
                     }
 
-                    // Date obligatoire et non passée si le champ est visible
-                    if (dateInput && dateInput.offsetParent !== null) {
-                        if (dateInput.value.trim() === '') return false;
-                        if (dateInput.value < todayStr) return false;
+                    // 👇 CORRECTION PICKUP (Sécurisé contre les undefined)
+                    const pickupIdInput = root.querySelector('input[name="etb_pickup_id"]');
+                    const hasAddress = pickupInput && String(pickupInput.value || '').trim() !== '';
+                    const hasId = pickupIdInput && String(pickupIdInput.value || '').trim() !== '' && String(pickupIdInput.value || '').trim() !== '0';
+                    
+                    if (!hasAddress && !hasId) {
+                        console.log("Erreur: Adresse de pickup manquante");
+                        return false;
                     }
 
-                    // Heure obligatoire si le champ est visible
-                    if (timeInput && timeInput.offsetParent !== null && timeInput.value.trim() === '') return false;
+                    // Date obligatoire
+                    if (dateInput) {
+                        const dateVal = String(dateInput.value || '').trim();
+                        if (dateVal === '') {
+                            console.log("Erreur: Date manquante");
+                            return false;
+                        }
+                        
+                        const _today = new Date();
+                        const todayStr = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
+                        if (dateVal < todayStr) {
+                            console.log("Erreur: Date dans le passé");
+                            return false;
+                        }
+                    }
 
+                                        // 👇 CORRECTION HEURE : Vérifie que l'heure n'est pas dans le passé
+                    const timeHidden = root.querySelector('#etb-time-value');
+                    const timeInputVal = timeInput ? String(timeInput.value || '').trim() : '';
+                    const timeHiddenVal = timeHidden ? String(timeHidden.value || '').trim() : '';
+                    
+                    if (timeInputVal === '' && timeHiddenVal === '') {
+                        console.log("Erreur: Heure manquante");
+                        return false;
+                    }
+
+                    // Si la date sélectionnée est aujourd'hui, on vérifie l'heure
+                    if (dateInput && dateInput.value) {
+                        const _now = new Date();
+                        const _todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+                        
+                        if (dateInput.value === _todayStr) {
+                            const selectedTime = timeInputVal || timeHiddenVal; // ex: "14:30"
+                            const [selH, selM] = selectedTime.split(':').map(Number);
+                            
+                            if (selH < _now.getHours() || (selH === _now.getHours() && selM <= _now.getMinutes())) {
+                                console.log("Erreur: L'heure sélectionnée est déjà passée aujourd'hui");
+                                return false;
+                            }
+                        }
+                    }
+                    
+                    console.log("Étape 1 validée avec succès");
                     return true;
                 }
 
                 if (stepNum === 2) {
-                    // Nom obligatoire si visible
-                    if (nameInput && nameInput.offsetParent !== null && nameInput.value.trim() === '') return false;
-
-                    // Email obligatoire si visible
-                    if (emailInput && emailInput.offsetParent !== null) {
-                        if (emailInput.value.trim() === '' || !emailInput.validity.valid) return false;
+                    // Nom obligatoire
+                    if (nameInput && String(nameInput.value || '').trim() === '') {
+                        console.log("Erreur: Nom manquant");
+                        return false;
                     }
 
-                    // Téléphone valide si visible
-                    if (phoneInput && phoneInput.offsetParent !== null && !isPhoneValid()) return false;
+                    // Email obligatoire
+                    if (emailInput) {
+                        if (String(emailInput.value || '').trim() === '' || !emailInput.validity.valid) {
+                            console.log("Erreur: Email invalide");
+                            return false;
+                        }
+                    }
 
+                    // Téléphone valide
+                    if (phoneInput && !isPhoneValid()) {
+                        console.log("Erreur: Téléphone invalide");
+                        return false;
+                    }
+
+                    console.log("Étape 2 validée avec succès");
                     return true;
                 }
                 return true;

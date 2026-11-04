@@ -38,7 +38,11 @@
             invalid: { color: '#dc2626', iconColor: '#dc2626' }
         };
 
-        const cardNumber = elements.create('cardNumber', { style: elementStyles, showIcon: true });
+        const cardNumber = elements.create('cardNumber', { 
+            style: elementStyles, 
+            showIcon: true,
+            // Active explicitement Stripe Link (le bouton "Payer avec Link" apparaîtra)
+        });
         const cardExpiry = elements.create('cardExpiry', { style: elementStyles });
         const cardCvc = elements.create('cardCvc', { style: elementStyles });
 
@@ -81,9 +85,14 @@
 
         paymentRequest.canMakePayment().then(function(result) {
             if (result) {
+                // Si le navigateur supporte Apple Pay / Google Pay, on affiche les boutons
                 document.getElementById('etb-wallet-container').style.display = 'block';
                 document.getElementById('etb-wallet-divider').style.display = 'flex';
                 prButton.mount('#etb-wallet-mount');
+            } else {
+                // Sinon, on s'assure que tout reste caché (display: none par défaut)
+                document.getElementById('etb-wallet-container').style.display = 'none';
+                document.getElementById('etb-wallet-divider').style.display = 'none';
             }
         });
 
@@ -185,7 +194,20 @@
             if (!email || !name) { showError('Please fill in your email and name.'); return; }
 
             payBtn.disabled = true;
-            payText.innerHTML = '<span class="etb-processing-spinner"></span> Processing...';
+            payText.innerHTML = '</span> Processing...';
+
+            // SÉCURITÉ : Timeout de 30 secondes pour éviter le bouton bloqué
+            const resetButton = () => {
+                payBtn.disabled = false;
+                payBtn.style.opacity = '1';
+                payBtn.style.cursor = 'pointer';
+                payText.textContent = 'Pay ' + amount.toFixed(2) + ' ' + etbPayData.currency;
+            };
+
+            const timeoutId = setTimeout(() => {
+                resetButton();
+                showError('The payment request timed out. Please check your internet connection and try again.');
+            }, 30000); // 30 secondes
 
             try {
                 const clientSecret = await createIntent(name, email);
@@ -194,19 +216,22 @@
                     payment_method: { card: cardNumber, billing_details: { name: name, email: email } }
                 });
 
+                clearTimeout(timeoutId); // On annule le chrono si Stripe a répondu
+
                 if (error) throw new Error(error.message);
 
                 if (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture') {
                     payText.innerHTML = 'Finalizing...';
                     settleBooking(paymentIntent.id);
+                } else {
+                    throw new Error('Payment status: ' + paymentIntent.status);
                 }
             } catch (err) {
+                clearTimeout(timeoutId);
                 showError(err.message);
-                payBtn.disabled = false;
-                payBtn.style.opacity = '1';
-                payBtn.style.cursor = 'pointer';
-                payText.textContent = 'Pay ' + amount.toFixed(2) + ' ' + etbPayData.currency;
+                resetButton();
             }
         });
+        
     });
 })();

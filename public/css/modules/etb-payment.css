@@ -137,12 +137,17 @@
     border: 1px solid #cbd5e1 !important;
     border-radius: 8px !important;
     background: #fff !important;
+    overflow: visible !important;
 }
 
 #etb-card-number-mount {
     margin-bottom: 10px !important;
     padding-bottom: 10px !important;
     border-bottom: 1px solid #f1f5f9 !important;
+    width: 100%;
+    min-width: 300px; /* Important pour Stripe Link */
+    padding: 12px 14px;
+    box-sizing: border-box;
 }
 
 .etb-pay-stripe-bottom-row {
@@ -244,6 +249,8 @@
     background: #fff8ec !important;
     padding: 4px 8px !important;
     border-radius: 4px !important;
+    min-width: 80px !important;
+    text-align: center !important;
 }
 
 .etb-invoice-trip-details {
@@ -340,3 +347,9 @@
     font-size: 15px !important;
     line-height: 1.2 !important;
 }
+
+.Button .Button--pay{
+    font-size: 12px !important;
+}
+
+
