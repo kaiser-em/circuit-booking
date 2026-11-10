@@ -18,7 +18,7 @@ if ( defined( 'ETB_VERSION' ) ) {
     } );
 } else {
 
-define( 'ETB_VERSION', '1.0.5' );
+define( 'ETB_VERSION', '1.1.0' );
 define( 'ETB_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ETB_URL', plugin_dir_url( __FILE__ ) );
 
@@ -144,7 +144,7 @@ class Elite_Transfer_Booking {
         $queried_obj = get_queried_object();
         if ( $queried_obj instanceof WP_Post && has_shortcode( $queried_obj->post_content, 'etb_enquiry_form' ) ) {
             wp_enqueue_style( 'etb-enquiry-style', ETB_URL . 'public/css/modules/etb-enquiry.css', array(), ETB_VERSION );
-            wp_enqueue_script( 'etb-enquiry-script', ETB_URL . 'public/js/enquiry-form.js', array(), ETB_VERSION, true );
+            wp_enqueue_script( 'etb-enquiry-script', ETB_URL . 'public/js/enquiry-form.js', array( 'intl-tel-input-script', 'flatpickr-script' ), ETB_VERSION, true );
         }
     }
     

@@ -310,23 +310,68 @@ class ETB_Meta_Manager {
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin: 20px 0;">
                             <label style="font-weight: 700; color: #1e293b; display: block; margin-bottom: 8px;">Trip Info Selection :</label>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                <select class="etb-tripinfo-type-select" style="min-width: 250px; height: 38px;">
-                                    <option value="transportation" data-icon="fas fa-bus" data-label="Transportation" data-default="Vtc">🚍 Transportation (VTC / Chauffeur)</option>
-                                    <option value="wifi" data-icon="fas fa-wifi" data-label="Wifi" data-default="Available">📶 Wifi</option>
-                                    <option value="cancellation" data-icon="far fa-calendar-xmark" data-label="Free Cancellation" data-default="Yes">📅 Free Cancellation</option>
-                                    <option value="language" data-icon="fas fa-language" data-label="Language" data-default="English, French">🗣 Language</option>
-                                    <option value="hotel_transfer" data-icon="fas fa-hotel" data-label="Hotel Transfer" data-default="Available">🏨 Hotel Transfer</option>
-                                    <option value="mineral_water" data-icon="fas fa-bottle-droplet" data-label="Mineral Water" data-default="Available">💧 Mineral Water</option>
-                                    <option value="guide" data-icon="fas fa-hands-praying" data-label="Guide" data-default="Guided">🙏 Guide</option>
-                                    <option value="meals" data-icon="fas fa-bowl-food" data-label="Meals" data-default="Breakfast and Dinner">🍽 Meals</option>
-                                    <option value="meeting_point" data-icon="fas fa-handshake-simple" data-label="Meeting Point" data-default="Hotel">🤝 Meeting Point</option>
-                                    <option value="payment_method" data-icon="fab fa-cc-mastercard" data-label="Payment Method" data-default="VISA, Master Card">💳 Payment Method</option>
-                                    <option value="group_size" data-icon="fas fa-user-group" data-label="Group Size" data-default="Private (1-7 pax)">👥 Group Size</option>
-                                    <option value="walking_hours" data-icon="far fa-clock" data-label="Walking Hours" data-default="5-6 Hours">⏱ Walking Hours / Duration</option>
-                                    <option value="admission_fee" data-icon="fas fa-tag" data-label="Admission Fee" data-default="Included">🏷 Admission Fee</option>
-                                    <option value="insurance" data-icon="fas fa-hospital-user" data-label="Insurance Coverage" data-default="Covered 80%">🏥 Insurance Coverage</option>
-                                    <option value="best_season" data-icon="fas fa-cloud-sun" data-label="Best Season" data-default="All year">⛅ Best Season</option>
-                                </select>
+                                <?php
+                                $fact_catalog = array(
+                                    array( 'value' => 'transportation', 'icon' => 'fas fa-bus',              'label' => 'Transportation', 'sub' => 'VTC / Chauffeur', 'default' => 'Vtc' ),
+                                    array( 'value' => 'wifi',           'icon' => 'fas fa-wifi',             'label' => 'Wifi',           'sub' => '',                'default' => 'Available' ),
+                                    array( 'value' => 'cancellation',   'icon' => 'far fa-calendar-xmark',   'label' => 'Free Cancellation','sub' => '',                'default' => 'Yes' ),
+                                    array( 'value' => 'language',       'icon' => 'fas fa-language',         'label' => 'Language',       'sub' => '',                'default' => 'English, French' ),
+                                    array( 'value' => 'hotel_transfer', 'icon' => 'fas fa-hotel',            'label' => 'Hotel Transfer', 'sub' => '',                'default' => 'Available' ),
+                                    array( 'value' => 'mineral_water',  'icon' => 'fas fa-bottle-droplet',   'label' => 'Mineral Water',  'sub' => '',                'default' => 'Available' ),
+                                    array( 'value' => 'guide',          'icon' => 'fas fa-hands-praying',    'label' => 'Guide',          'sub' => '',                'default' => 'Guided' ),
+                                    array( 'value' => 'meals',          'icon' => 'fas fa-bowl-food',        'label' => 'Meals',          'sub' => '',                'default' => 'Breakfast and Dinner' ),
+                                    array( 'value' => 'meeting_point',  'icon' => 'fas fa-handshake-simple', 'label' => 'Meeting Point',  'sub' => '',                'default' => 'Hotel' ),
+                                    array( 'value' => 'payment_method', 'icon' => 'fab fa-cc-mastercard',    'label' => 'Payment Method', 'sub' => '',                'default' => 'VISA, Master Card' ),
+                                    array( 'value' => 'group_size',     'icon' => 'fas fa-user-group',       'label' => 'Group Size',     'sub' => '',                'default' => 'Private (1-7 pax)' ),
+                                    array( 'value' => 'walking_hours',  'icon' => 'far fa-clock',            'label' => 'Walking Hours',  'sub' => 'Duration',        'default' => '5-6 Hours' ),
+                                    array( 'value' => 'admission_fee',  'icon' => 'fas fa-tag',              'label' => 'Admission Fee',  'sub' => '',                'default' => 'Included' ),
+                                    array( 'value' => 'insurance',      'icon' => 'fas fa-hospital-user',    'label' => 'Insurance Coverage','sub' => '',               'default' => 'Covered 80%' ),
+                                    array( 'value' => 'best_season',    'icon' => 'fas fa-cloud-sun',        'label' => 'Best Season',    'sub' => '',         'default' => 'All year' ),
+                                    array( 'value' => 'airport_pickup', 'icon' => 'fas fa-plane-arrival',    'label' => 'Airport Pickup', 'sub' => '',         'default' => 'Available' ),
+                                    array( 'value' => 'difficulty',     'icon' => 'fas fa-person-hiking',    'label' => 'Difficulty Level','sub' => 'Effort', 'default' => 'Easy' ),
+                                    array( 'value' => 'min_age',        'icon' => 'fas fa-child-reaching',   'label' => 'Minimum Age',    'sub' => '',         'default' => '5 years +' ),
+                                    array( 'value' => 'audio_guide',    'icon' => 'fas fa-headphones',       'label' => 'Audio Guide',    'sub' => '',         'default' => 'Available' ),
+                                    array( 'value' => 'photography',    'icon' => 'fas fa-camera',           'label' => 'Photography',    'sub' => '',         'default' => 'Allowed' ),
+                                    array( 'value' => 'accessibility',  'icon' => 'fas fa-wheelchair',       'label' => 'Accessibility',  'sub' => 'Mobility', 'default' => 'Wheelchair friendly' ),
+                                    array( 'value' => 'what_to_bring',  'icon' => 'fas fa-suitcase-rolling', 'label' => 'What To Bring',  'sub' => '',         'default' => 'Comfortable shoes' ),
+                                    array( 'value' => 'weather_policy', 'icon' => 'fas fa-cloud-rain',       'label' => 'Weather Policy', 'sub' => '',         'default' => 'Rain or shine' ),
+                                    array( 'value' => 'gratuities',     'icon' => 'fas fa-hand-holding-dollar','label' => 'Gratuities',   'sub' => '',         'default' => 'Not included' ),
+                                    array( 'value' => 'confirmation',   'icon' => 'fas fa-circle-check',     'label' => 'Confirmation',   'sub' => 'Booking',  'default' => 'Instant' ),
+                                );
+                                $picker_id = 'etb-fact-picker-' . esc_attr( $opt_id );
+                                $current   = $fact_catalog[0];
+                                ?>
+                                <div class="etb-fact-picker">
+                                    <button type="button" class="etb-fact-picker-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="<?php echo esc_attr( $picker_id ); ?>">
+                                        <span class="etb-fact-picker-chip"><i class="<?php echo esc_attr( $current['icon'] ); ?>" aria-hidden="true"></i></span>
+                                        <span class="etb-fact-picker-current">
+                                            <span class="etb-fact-picker-current-label"><?php echo esc_html( $current['label'] ); ?></span>
+                                            <span class="etb-fact-picker-current-sub"><?php echo esc_html( $current['sub'] ); ?></span>
+                                        </span>
+                                        <span class="etb-fact-picker-chevron" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                                    </button>
+                                    <div class="etb-fact-picker-panel" role="listbox" id="<?php echo esc_attr( $picker_id ); ?>" aria-label="Trip Info Selection" hidden>
+                                        <?php foreach ( $fact_catalog as $f_idx => $fact ) : ?>
+                                            <div class="etb-fact-picker-option <?php echo 0 === $f_idx ? 'is-selected' : ''; ?>" role="option"
+                                                 id="<?php echo esc_attr( $picker_id . '-' . $fact['value'] ); ?>"
+                                                 aria-selected="<?php echo 0 === $f_idx ? 'true' : 'false'; ?>"
+                                                 data-value="<?php echo esc_attr( $fact['value'] ); ?>"
+                                                 data-icon="<?php echo esc_attr( $fact['icon'] ); ?>"
+                                                 data-label="<?php echo esc_attr( $fact['label'] ); ?>"
+                                                 data-default="<?php echo esc_attr( $fact['default'] ); ?>">
+                                                <span class="etb-fact-picker-chip"><i class="<?php echo esc_attr( $fact['icon'] ); ?>" aria-hidden="true"></i></span>
+                                                <span class="etb-fact-picker-option-text">
+                                                    <span class="etb-fact-picker-option-label"><?php echo esc_html( $fact['label'] ); ?></span>
+                                                    <?php if ( ! empty( $fact['sub'] ) ) : ?>
+                                                        <span class="etb-fact-picker-option-sub"><?php echo esc_html( $fact['sub'] ); ?></span>
+                                                    <?php endif; ?>
+                                                </span>
+                                                <span class="etb-fact-picker-default"><?php echo esc_html( $fact['default'] ); ?></span>
+                                                <i class="fas fa-check etb-fact-picker-check" aria-hidden="true"></i>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
                                 
                                 <button type="button" class="button button-primary etb-add-fact-btn" data-optid="<?php echo esc_attr( $opt_id ); ?>" style="background: #2563eb; border-color: #2563eb; height: 38px; font-weight: 600;">
                                     Add Facts

@@ -1,21 +1,94 @@
-/* Formulaire d'Enquiry (Style Premium) */
+/* ==========================================================================
+   Formulaire d'Enquiry — Style Premium (Elite Circuit Booking)
+   ========================================================================== */
+
 .etb-enquiry-wrapper {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 40px;
-    /* box-shadow: 0 10px 40px rgba(15, 23, 42, 0.05); */
+    box-shadow: 0 12px 40px rgba(132, 69, 19, 0.08);
     max-width: 1000px;
-    border: 1px solid #bc8356;
+    border: 1px solid #ffd5b3;
     margin: 0 auto;
 }
 
+/* ---------- Header ---------- */
+
+.etb-enq-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #f6e3d3;
+}
+
+.etb-enq-header-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fdf1e5 0%, #fbe4cf 100%);
+    border: 1px solid #f3cbaf;
+    color: #ba6827;
+    font-size: 22px;
+}
+
 .etb-enq-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     color: #844513;
-    margin-bottom: 2px;
+    margin: 0;
+    line-height: 1.25;
     text-align: left;
 }
+
+.etb-enq-subtitle {
+    margin: 6px 0 0;
+    font-size: 14.5px;
+    color: #9a6b45;
+    line-height: 1.5;
+}
+
+/* ---------- Feedback (masqué par défaut) ---------- */
+
+.etb-enq-feedback {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14.5px;
+    line-height: 1.45;
+}
+
+.etb-enq-feedback.is-visible {
+    display: flex;
+}
+
+.etb-enq-feedback i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.etb-enq-feedback.etb-success {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.etb-enq-feedback.etb-error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* ---------- Grille & sections ---------- */
 
 .etb-enq-grid {
     display: grid;
@@ -26,43 +99,264 @@
 .etb-enq-col {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
 }
+
+.etb-enq-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+}
+
+.etb-enq-section-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #ba6827;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.etb-enq-section-label {
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #844513;
+    white-space: nowrap;
+}
+
+.etb-enq-section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, #f3cbaf 0%, rgba(243, 203, 175, 0) 100%);
+}
+
+/* ---------- Champs ---------- */
 
 .etb-enq-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
 }
 
 .etb-enq-group label {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #5b3516;
+}
+
+.etb-enq-req {
+    color: #ba6827;
+}
+
+.etb-enq-input-wrap {
+    position: relative;
+    display: block;
+}
+
+.etb-enq-field-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c98d5a;
     font-size: 14px;
-    font-weight: 600;
-    color: #334155;
+    pointer-events: none;
+    transition: color 0.2s ease;
+    z-index: 1;
+}
+
+.etb-enq-input-wrap:focus-within .etb-enq-field-icon {
+    color: #ba6827;
+}
+
+.etb-enq-textarea-wrap .etb-enq-field-icon {
+    top: 20px;
+    transform: none;
 }
 
 .etb-enq-group input,
 .etb-enq-group select,
 .etb-enq-group textarea {
     width: 100%;
-    padding: 14px 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
+    padding: 13px 16px 13px 44px;
+    border: 1px solid #f3cbaf !important;
+    border-radius: 12px;
     font-size: 15px;
-    color: #1e293b;
-    background: #f8fafc;
-    transition: all 0.2s ease;
+    color: #5b3516;
+    font-weight: 600 !important;
+    background: #fff8f3;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
+    font-family: inherit;
+}
+
+.etb-enq-group textarea {
+    resize: vertical;
+    min-height: 130px;
+    line-height: 1.55;
+}
+
+.etb-enq-group input::placeholder,
+.etb-enq-group textarea::placeholder {
+    color: #c2a184;
+    font-weight: 500 !important;
+}
+
+.etb-enq-group input:hover,
+.etb-enq-group select:hover,
+.etb-enq-group textarea:hover {
+    border-color: #e8b189 !important;
 }
 
 .etb-enq-group input:focus,
 .etb-enq-group select:focus,
 .etb-enq-group textarea:focus {
     outline: none;
-    border-color: #ba6827;
+    border-color: #ba6827 !important;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(186, 104, 39, 0.15);
+    box-shadow: 0 0 0 4px rgba(186, 104, 39, 0.14);
 }
+
+/* ---------- Selects ---------- */
+
+.etb-enq-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 44px;
+    cursor: pointer;
+}
+
+.etb-enq-select-wrap::after {
+    content: "\f078";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c98d5a;
+    font-size: 13px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.etb-enq-select-wrap:focus-within::after {
+    color: #ba6827;
+}
+
+/* ---------- Steppers Adults / Kids ---------- */
+
+.etb-enq-stepper {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.etb-enq-step-btn {
+    width: 26px;
+    height: 17px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #c98d5a;
+    font-size: 10px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.etb-enq-step-btn:hover {
+    background: #f9e6d5;
+    color: #ba6827;
+}
+
+.etb-enq-step-btn:active {
+    background: #f3cbaf;
+}
+
+.etb-enq-group input[type="number"] {
+    padding-right: 42px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.etb-enq-group input[type="number"]::-webkit-outer-spin-button,
+.etb-enq-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ---------- Téléphone international (intl-tel-input) ---------- */
+
+.etb-enq-phone-wrap .iti {
+    width: 100% !important;
+    display: block !important;
+}
+
+.etb-enq-phone-wrap .iti > input {
+    padding-left: 108px !important;
+}
+
+.etb-enq-phone-wrap .iti__selected-country {
+    background: transparent !important;
+    border-radius: 12px 0 0 12px;
+}
+
+.etb-enq-phone-wrap .iti__selected-country:hover,
+.etb-enq-phone-wrap .iti__selected-country:focus-visible {
+    background: rgba(186, 104, 39, 0.08) !important;
+}
+
+/* ---------- Calendrier (Flatpickr) ---------- */
+
+.etb-enq-input-wrap .flatpickr-calendar {
+    border: 1px solid #f3cbaf;
+    border-radius: 14px;
+    box-shadow: 0 14px 36px rgba(132, 69, 19, 0.16);
+}
+
+.etb-enq-input-wrap .flatpickr-day:hover {
+    background: #fdf1e5;
+    border-color: #fdf1e5;
+}
+
+.etb-enq-input-wrap .flatpickr-day.today {
+    border-color: #ba6827;
+}
+
+.etb-enq-input-wrap .flatpickr-day.today:hover {
+    background: #ba6827;
+    border-color: #ba6827;
+}
+
+.etb-enq-input-wrap .flatpickr-day.selected,
+.etb-enq-input-wrap .flatpickr-day.selected:hover {
+    background: #ba6827;
+    border-color: #ba6827;
+}
+
+.etb-enq-input-wrap .flatpickr-months .flatpickr-prev-month:hover svg,
+.etb-enq-input-wrap .flatpickr-months .flatpickr-next-month:hover svg {
+    fill: #ba6827;
+}
+
+/* ---------- Ligne 2 colonnes ---------- */
 
 .etb-enq-row-2 {
     display: grid;
@@ -70,80 +364,163 @@
     gap: 15px;
 }
 
+/* ---------- Autofill Chrome / Edge ---------- */
+
+.etb-enq-group input:-webkit-autofill,
+.etb-enq-group input:-webkit-autofill:hover,
+.etb-enq-group input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #fff8f3 inset !important;
+    -webkit-text-fill-color: #5b3516 !important;
+    caret-color: #5b3516;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+.etb-enq-group input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset, 0 0 0 4px rgba(186, 104, 39, 0.14) !important;
+    -webkit-text-fill-color: #5b3516 !important;
+    caret-color: #5b3516;
+}
+
+/* ---------- Bouton d'envoi ---------- */
+
 .etb-enq-submit-wrap {
     margin-top: 10px;
-    text-align: right;
-}
-
-.etb-enq-btn {
-    margin-right: auto;
-     background: #ba6827; 
-    color: #ffffff;
-    border: none;
-    padding: 16px 32px;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 60%;
-    /* box-shadow: 0 4px 15px rgba(186, 104, 39, 0.3); */
-    position: relative;
-}
-
-.etb-enq-btn:hover {
-    background: #a3591f;
-    border-radius: 50px ;
-    transition: all 0.3s ease-in-out;
-}
-
-
-.etb-enq-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-
-.etb-enq-btn span {
-    opacity: 0 !important;
-    transform: scale(1.5);
-    font-size: 12px;
-    position: absolute;
-    right: 40px !important;
-    top: 20px;
-}
-
-.etb-enq-btn:hover span{
-    opacity: 1 !important;
-    right: 50px !important;
-    transition: opacity 0.3s ease-in-out, right 0.3s ease-in-out;
-}
-
-
-.etb-enq-feedback.etb-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.etb-enq-feedback.etb-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-
-@media (max-width: 768px) {
-    .etb-enq-grid { grid-template-columns: 1fr; gap: 20px; }
-    .etb-enquiry-wrapper { padding: 25px; }
-}
-
-.err-ms {
     display: flex;
-    /* align-items: center; */
-    justify-content: center;
-    width: 100%;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 10px;
 }
 
-.etb-enq-feedback {
-    margin-top: 0px;
-    padding: 15px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    max-height: 70px;
+.etb-enq-btn {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #c4722e 0%, #ba6827 55%, #a3591f 100%);
+    color: #ffffff;
+    border: none;
+    padding: 16px 34px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 6px 18px rgba(186, 104, 39, 0.28);
+    min-width: 240px;
+}
+
+.etb-enq-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(186, 104, 39, 0.35);
+    filter: brightness(1.05);
+}
+
+.etb-enq-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(186, 104, 39, 0.3);
+}
+
+.etb-enq-btn:focus-visible {
+    outline: 3px solid rgba(186, 104, 39, 0.4);
+    outline-offset: 2px;
+}
+
+.etb-enq-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.etb-enq-btn-arrow {
+    display: inline-flex;
+    transition: transform 0.25s ease;
+    font-size: 14px;
+}
+
+.etb-enq-btn:hover .etb-enq-btn-arrow {
+    transform: translateX(5px);
+}
+
+.etb-enq-privacy {
+    margin: 0;
+    font-size: 12px;
+    color: #b08d6e;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.etb-enq-privacy i {
+    font-size: 11px;
+    color: #c98d5a;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+    .etb-enquiry-wrapper {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .etb-enq-header {
+        gap: 14px;
+        padding-bottom: 18px;
+        margin-bottom: 22px;
+    }
+
+    .etb-enq-header-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 18px;
+        border-radius: 13px;
+    }
+
+    .etb-enq-title {
+        font-size: 21px;
+    }
+
+    .etb-enq-subtitle {
+        font-size: 13.5px;
+    }
+
+    .etb-enq-grid {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+
+    .etb-enq-submit-wrap {
+        align-items: stretch;
+    }
+
+    .etb-enq-btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .etb-enq-privacy {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    .etb-enq-row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .etb-enq-btn,
+    .etb-enq-btn-arrow,
+    .etb-enq-group input,
+    .etb-enq-group select,
+    .etb-enq-group textarea {
+        transition: none;
+    }
+
+    .etb-enq-btn:hover {
+        transform: none;
+    }
 }

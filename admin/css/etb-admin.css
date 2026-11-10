@@ -802,12 +802,18 @@
     margin-top: 15px !important;
 }
 
+/* Laisse dépasser le panneau du sélecteur de facts quand il est ouvert */
+.etb-engine-container.etb-picker-open {
+    overflow: visible !important;
+}
+
 /* 2. La barre latérale (Gris très clair, style macOS) */
 .etb-engine-sidebar {
     width: 220px !important;
     background: #f8fafc !important;
     padding: 40px 15px !important;
     border-right: 1px solid #e2e8f0 !important;
+    border-radius: 16px 0 0 16px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
@@ -1093,6 +1099,60 @@
     transition: padding 0.3s ease !important;
 }
 
+/* ==========================================================================
+   METABOX : RESPONSIVE MOBILE (la sidebar passe en navigation horizontale)
+   ========================================================================== */
+@media (max-width: 782px) {
+    .etb-engine-container {
+        flex-direction: column !important;
+        min-height: 0 !important;
+    }
+    .etb-engine-sidebar {
+        width: 100% !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        overflow-x: auto !important;
+        padding: 10px 12px !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        border-radius: 16px 16px 0 0 !important;
+        gap: 6px !important;
+    }
+    .etb-engine-sidebar::-webkit-scrollbar {
+        height: 6px;
+    }
+    .etb-engine-sidebar::-webkit-scrollbar-thumb {
+        background: #e0c4ab;
+        border-radius: 3px;
+    }
+    .etb-engine-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .etb-engine-tab-btn {
+        width: auto !important;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 10px 14px !important;
+    }
+    .etb-engine-content {
+        padding: 16px !important;
+    }
+    .etb-toggle-sidebar-btn {
+        display: none !important;
+    }
+    .etb-engine-container.is-collapsed .etb-engine-sidebar {
+        width: 100% !important;
+        padding: 10px 12px !important;
+    }
+    .etb-engine-container.is-collapsed .etb-tab-text {
+        display: inline !important;
+    }
+    .etb-engine-container.is-collapsed .etb-engine-tab-btn {
+        justify-content: flex-start !important;
+        padding: 10px 14px !important;
+    }
+}
+
 .etb-aside-image-preview img{
     max-width: 200px !important;
 }
@@ -1170,13 +1230,262 @@ textarea.widefat.etb-rich-text {
 }
 
 
-select.etb-tripinfo-type-select
- {
-    height: 50px !important;
+/* ==========================================================================
+   TRIP INFO : Sélecteur de caractéristiques (icônes Font Awesome)
+   ========================================================================== */
+
+.etb-fact-picker {
+    position: relative;
+    flex: 1 1 320px;
+    min-width: 260px;
+    max-width: 100%;
+}
+
+.etb-fact-picker-trigger {
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 0 10px !important;
+    gap: 12px;
+    width: 100%;
+    height: 48px;
+    padding: 5px 14px 5px 8px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.etb-fact-picker-trigger:hover {
+    border-color: #ba6827;
+    box-shadow: 0 2px 10px rgba(186, 104, 39, .14);
+}
+
+.etb-fact-picker-trigger:focus-visible {
+    outline: 2px solid #ba6827;
+    outline-offset: 2px;
+}
+
+.etb-fact-picker.is-open .etb-fact-picker-trigger {
+    border-color: #ba6827;
+    box-shadow: 0 0 0 3px rgba(186, 104, 39, .16);
+}
+
+.etb-fact-picker-chip {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdf8f3;
+    border: 1px solid #ebd9cc;
+    border-radius: 8px;
+    color: #ba6827;
+    font-size: 14px;
+    transition: background .13s ease, color .13s ease, border-color .13s ease;
+}
+
+.etb-fact-picker-current {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.etb-fact-picker-current-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.etb-fact-picker-current-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.etb-fact-picker-current-sub:empty {
+    display: none;
+}
+
+.etb-fact-picker-chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 12px;
+    transition: transform .18s ease, color .18s ease;
+}
+
+.etb-fact-picker.is-open .etb-fact-picker-chevron {
+    transform: rotate(180deg);
+    color: #ba6827;
+}
+
+.etb-fact-picker-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    min-width: 300px;
+    max-height: 336px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 18px 44px -12px rgba(15, 23, 42, .28), 0 4px 12px rgba(15, 23, 42, .08);
+    padding: 6px;
+    z-index: 1000;
+    animation: etb-fp-in .16s cubic-bezier(.2, .8, .3, 1);
+    scrollbar-width: thin;
+    scrollbar-color: #e0c4ab #f8fafc;
+}
+
+.etb-fact-picker.is-up .etb-fact-picker-panel {
+    top: auto;
+    bottom: calc(100% + 8px);
+    animation-name: etb-fp-in-up;
+}
+
+@keyframes etb-fp-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes etb-fp-in-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.etb-fact-picker-panel::-webkit-scrollbar {
+    width: 10px;
+}
+
+.etb-fact-picker-panel::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 0 14px 14px 0;
+}
+
+.etb-fact-picker-panel::-webkit-scrollbar-thumb {
+    background: #e0c4ab;
+    border-radius: 6px;
+    border: 2px solid #f8fafc;
+}
+
+.etb-fact-picker-panel::-webkit-scrollbar-thumb:hover {
+    background: #ba6827;
+}
+
+.etb-fact-picker-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .12s ease;
+}
+
+.etb-fact-picker-option.is-active,
+.etb-fact-picker-option:hover {
+    background: #fdf8f3;
+}
+
+.etb-fact-picker-option.is-active .etb-fact-picker-chip,
+.etb-fact-picker-option:hover .etb-fact-picker-chip {
+    background: #ba6827;
+    border-color: #ba6827;
+    color: #ffffff;
+}
+
+.etb-fact-picker-option.is-selected {
+    background: #fdf8f3;
+    box-shadow: inset 0 0 0 1.5px #ebd9cc;
+}
+
+.etb-fact-picker-option.is-selected .etb-fact-picker-option-label {
+    color: #9a5420;
+}
+
+.etb-fact-picker-option-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.3;
+}
+
+.etb-fact-picker-option-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.etb-fact-picker-option-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+.etb-fact-picker-default {
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #94a3b8;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.etb-fact-picker-check {
+    flex-shrink: 0;
+    width: 16px;
+    font-size: 12px;
+    color: #ba6827;
+    visibility: hidden;
+}
+
+.etb-fact-picker-option.is-selected .etb-fact-picker-check {
+    visibility: visible;
+}
+
+@media (max-width: 480px) {
+    .etb-fact-picker {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+    .etb-fact-picker-panel {
+        min-width: 0;
+    }
+    .etb-fact-picker-default {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .etb-fact-picker-panel {
+        animation: none;
+    }
+    .etb-fact-picker-trigger,
+    .etb-fact-picker-chip,
+    .etb-fact-picker-chevron,
+    .etb-fact-picker-option {
+        transition: none;
+    }
 }
 
 select.widefat.etb-fa-icon-select

@@ -4997,28 +4997,26 @@
 
 /* 2. L'EN-TÊTE DE L'ITINÉRAIRE */
 .co-timeline-head-bar {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-end !important;
     margin-top: 20px !important;
     margin-bottom: 32px !important;
     border-bottom: 1px solid #f1f5f9 !important;
     padding-bottom: 20px !important;
+}
+
+/* Ligne du titre : Titre à gauche, Durée + Expand alignés à droite */
+.co-th-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     flex-wrap: wrap !important;
-    gap: 20px !important;
+    gap: 12px 20px !important;
 }
 
-/* Partie Gauche (Titre + Desc) */
-.co-th-left {
-    flex: 1 !important;
-    min-width: 250px !important;
-}
-
-.co-th-left .co-vip-title {
+.co-th-top .co-vip-title {
     font-size: 32px !important;
     font-weight: 800 !important;
     color: #1e293b !important;
-    margin: 0 0 8px 0 !important;
+    margin: 0 !important;
     line-height: 1.2 !important;
 }
 
@@ -5026,8 +5024,9 @@
     font-size: 15px !important;
     color: #64748b !important;
     line-height: 1.6 !important;
-    margin: 0 !important;
-    max-width: 550px !important;
+    margin: 14px 0 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
 }
 
 /* Partie Droite (Durée + Expand) */
@@ -5071,14 +5070,12 @@
 
 /* 3. RESPONSIVE */
 @media (max-width: 768px) {
-    .co-timeline-head-bar {
+    .co-th-top {
         flex-direction: column !important;
         align-items: flex-start !important;
     }
     .co-th-right {
-        align-items: flex-start !important;
         width: 100% !important;
-        flex-direction: row !important; /* Les met côte à côte sur mobile */
         justify-content: space-between !important;
     }
 }

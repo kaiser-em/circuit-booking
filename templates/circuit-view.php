@@ -265,42 +265,39 @@ if ( ! empty( $options ) && is_array( $options ) ) {
                            
                             <?php if ( ! empty( $timeline ) ) : ?>
                                 <div class="co-timeline-block">
-                                    <!-- EN-TÊTE DE L'ITINÉRAIRE (Titre + Desc + Durée + Expand) -->
+                                    <!-- EN-TÊTE DE L'ITINÉRAIRE (Titre + Durée + Expand sur la même ligne, Desc pleine largeur) -->
                                     <div class="co-timeline-head-bar">
-                                        
-                                        <!-- Partie Gauche : Titre et Description -->
 
-                                        <div class="co-th-left">
+                                        <div class="co-th-top">
                                             <h3 class="co-vip-title">
                                                 <?php echo esc_html( ! empty( $opt_data['itinerary_title'] ) ? $opt_data['itinerary_title'] : 'Itinerary' ); ?>
                                             </h3>
-                                            
-                                            <?php if ( ! empty( $opt_data['itinerary_intro'] ) ) : ?>
-                                                <p class="co-th-desc"><?php echo esc_html( $opt_data['itinerary_intro'] ); ?></p>
-                                            <?php endif; ?>
+
+                                            <div class="co-th-right">
+                                                <?php
+                                                // Calcul de la durée totale
+                                                $dur_hours = floatval( $opt_data['duration_hours'] ?? 1 );
+                                                $hours = floor($dur_hours);
+                                                $minutes = ($dur_hours - $hours) * 60;
+                                                $time_str = ($minutes > 0) ? "{$hours}h" . str_pad($minutes, 2, '0', STR_PAD_LEFT) : "{$hours}h";
+                                                ?>
+                                                <div class="co-duration-badge">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                    <span>Estimated duration: <?php echo esc_html( $time_str ); ?></span>
+                                                </div>
+
+                                                <div class="co-expand-all-wrap">
+                                                    <span class="co-expand-all-label">Expand all</span>
+                                                    <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" aria-expanded="false">
+                                                        <span class="co-expand-switch-thumb"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <!-- Partie Droite : Badge de durée + Bouton Expand -->
-                                        <div class="co-th-right">
-                                            <?php 
-                                            // Calcul de la durée totale
-                                            $dur_hours = floatval( $opt_data['duration_hours'] ?? 1 ); 
-                                            $hours = floor($dur_hours);
-                                            $minutes = ($dur_hours - $hours) * 60;
-                                            $time_str = ($minutes > 0) ? "{$hours}h" . str_pad($minutes, 2, '0', STR_PAD_LEFT) : "{$hours}h";
-                                            ?>
-                                            <div class="co-duration-badge">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                <span>Estimated duration: <?php echo esc_html( $time_str ); ?></span>
-                                            </div>
-                                            
-                                            <div class="co-expand-all-wrap">
-                                                <span class="co-expand-all-label">Expand all</span>
-                                                <button type="button" class="co-expand-toggle-switch" aria-label="Toggle all steps" aria-expanded="false">
-                                                    <span class="co-expand-switch-thumb"></span>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <?php if ( ! empty( $opt_data['itinerary_intro'] ) ) : ?>
+                                            <p class="co-th-desc"><?php echo esc_html( $opt_data['itinerary_intro'] ); ?></p>
+                                        <?php endif; ?>
 
                                     </div>
                                     

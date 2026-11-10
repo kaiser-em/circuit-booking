@@ -267,14 +267,149 @@ jQuery(document).ready(function ($) {
         return html;
     }
 
+    // ==========================================================================
+    // TRIP INFO : Sélecteur personnalisé à icônes Font Awesome
+    // (événements délégués : fonctionne aussi dans les options clonées)
+    // ==========================================================================
+
+    function etbCloseFactPickers($except) {
+        $('.etb-fact-picker.is-open').not($except).each(function () {
+            var $p = $(this);
+            $p.removeClass('is-open is-up');
+            $p.find('.etb-fact-picker-trigger').attr('aria-expanded', 'false').removeAttr('aria-activedescendant');
+            $p.find('.etb-fact-picker-panel').prop('hidden', true);
+            $p.find('.etb-fact-picker-option').removeClass('is-active');
+            $p.closest('.etb-engine-container').removeClass('etb-picker-open');
+        });
+    }
+
+    function etbSetActiveFactOption($picker, $opt, scroll) {
+        $picker.find('.etb-fact-picker-option').removeClass('is-active');
+        $opt.addClass('is-active');
+        $picker.find('.etb-fact-picker-trigger').attr('aria-activedescendant', $opt.attr('id'));
+        if (scroll && $opt[0]) {
+            var panel = $picker.find('.etb-fact-picker-panel')[0];
+            var top = $opt[0].offsetTop;
+            var bottom = top + $opt[0].offsetHeight;
+            if (top < panel.scrollTop) {
+                panel.scrollTop = top - 6;
+            } else if (bottom > panel.scrollTop + panel.clientHeight) {
+                panel.scrollTop = bottom - panel.clientHeight + 6;
+            }
+        }
+    }
+
+    function etbOpenFactPicker($picker) {
+        etbCloseFactPickers($picker);
+        $picker.addClass('is-open');
+        $picker.closest('.etb-engine-container').addClass('etb-picker-open');
+        $picker.find('.etb-fact-picker-trigger').attr('aria-expanded', 'true');
+        var $panel = $picker.find('.etb-fact-picker-panel').prop('hidden', false);
+        var $active = $panel.find('.etb-fact-picker-option.is-selected').first();
+        if (!$active.length) $active = $panel.find('.etb-fact-picker-option').first();
+        etbSetActiveFactOption($picker, $active, true);
+        $picker.removeClass('is-up');
+        var panelRect = $panel[0].getBoundingClientRect();
+        var triggerTop = $picker.find('.etb-fact-picker-trigger')[0].getBoundingClientRect().top;
+        if (panelRect.bottom > window.innerHeight - 16 && triggerTop > panelRect.height + 24) {
+            $picker.addClass('is-up');
+        }
+    }
+
+    function etbSelectFactOption($picker, $opt) {
+        $picker.find('.etb-fact-picker-option').removeClass('is-selected').attr('aria-selected', 'false');
+        $opt.addClass('is-selected').attr('aria-selected', 'true');
+        var $trigger = $picker.find('.etb-fact-picker-trigger');
+        $trigger.find('.etb-fact-picker-chip i').attr('class', $opt.attr('data-icon'));
+        $trigger.find('.etb-fact-picker-current-label').text($opt.attr('data-label'));
+        $trigger.find('.etb-fact-picker-current-sub').text($opt.find('.etb-fact-picker-option-sub').text() || '');
+        etbCloseFactPickers();
+        $trigger.trigger('focus');
+    }
+
+    $(document).on('click', '.etb-fact-picker-trigger', function (e) {
+        e.preventDefault();
+        var $picker = $(this).closest('.etb-fact-picker');
+        if ($picker.hasClass('is-open')) {
+            etbCloseFactPickers();
+        } else {
+            etbOpenFactPicker($picker);
+        }
+    });
+
+    $(document).on('click', '.etb-fact-picker-option', function () {
+        etbSelectFactOption($(this).closest('.etb-fact-picker'), $(this));
+    });
+
+    $(document).on('mouseenter', '.etb-fact-picker-option', function () {
+        var $picker = $(this).closest('.etb-fact-picker');
+        if ($picker.hasClass('is-open')) {
+            etbSetActiveFactOption($picker, $(this), false);
+        }
+    });
+
+    $(document).on('keydown', '.etb-fact-picker-trigger', function (e) {
+        var $picker = $(this).closest('.etb-fact-picker');
+        var isOpen  = $picker.hasClass('is-open');
+        var $opts   = $picker.find('.etb-fact-picker-option');
+        var $active = $opts.filter('.is-active');
+        var idx     = $opts.index($active);
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                if (!isOpen) { etbOpenFactPicker($picker); }
+                else { etbSetActiveFactOption($picker, $opts.eq((idx + 1) % $opts.length), true); }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (!isOpen) {
+                    etbOpenFactPicker($picker);
+                    etbSetActiveFactOption($picker, $opts.last(), true);
+                } else {
+                    etbSetActiveFactOption($picker, $opts.eq((idx - 1 + $opts.length) % $opts.length), true);
+                }
+                break;
+            case 'Enter':
+            case ' ':
+                e.preventDefault();
+                if (!isOpen) { etbOpenFactPicker($picker); }
+                else if ($active.length) { etbSelectFactOption($picker, $active); }
+                break;
+            case 'Escape':
+                if (isOpen) { e.preventDefault(); etbCloseFactPickers(); }
+                break;
+            case 'Tab':
+                if (isOpen) { etbCloseFactPickers(); }
+                break;
+            case 'Home':
+                if (isOpen) { e.preventDefault(); etbSetActiveFactOption($picker, $opts.first(), true); }
+                break;
+            case 'End':
+                if (isOpen) { e.preventDefault(); etbSetActiveFactOption($picker, $opts.last(), true); }
+                break;
+        }
+    });
+
+    // Empêche le clic natif généré par la barre espace sur le bouton
+    $(document).on('keyup', '.etb-fact-picker-trigger', function (e) {
+        if (e.key === ' ') e.preventDefault();
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.etb-fact-picker').length) {
+            etbCloseFactPickers();
+        }
+    });
+
     // 14. Ajouter un Trip Fact depuis le sélecteur rapide (Add Facts)
     $(document).on('click', '.etb-add-fact-btn', function (e) {
         e.preventDefault();
         var optId     = $(this).attr('data-optid') || $(this).closest('.co-pane').attr('id');
-        var $select   = $(this).siblings('.etb-tripinfo-type-select');
-        var $selected = $select.find(':selected');
+        var $picker   = $(this).siblings('.etb-fact-picker');
+        var $selected = $picker.find('.etb-fact-picker-option.is-selected');
 
-        var factType    = $selected.val() || 'custom';
+        var factType    = $selected.attr('data-value') || 'custom';
         var factIcon    = $selected.attr('data-icon') || 'fas fa-info-circle';
         var factLabel   = $selected.attr('data-label') || 'Info';
         var factDefault = $selected.attr('data-default') || '';
@@ -298,7 +433,6 @@ jQuery(document).ready(function ($) {
                         <i class="${factIcon}"></i>
                     </span>
                     <input type="text" name="co_options[${optId}][trip_facts][${factIdx}][icon]" value="${factIcon}" class="widefat etb-fa-icon-input" style="font-size: 12px; height: 36px; font-family: monospace;" placeholder="ex: fas fa-bus">
-                </div>
                 </div>
 
                 <!-- Valeur -->
